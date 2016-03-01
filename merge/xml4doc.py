@@ -1,6 +1,8 @@
 import xmltodict
 import json
 import datetime
+from .testData import xml0, xml1
+from .merge_utils import folder_file,file_content_as
 
 xml = '''
 <ItpDocumentRequest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -896,9 +898,26 @@ def force_lists(doc):
             doc[key]=goodlist
     return doc
 
-def getData():
-    data = xmltodict.parse(xml)
+def getData(test_case = None, xml_payload=None, json_payload=None, data_file=None, data_folder = None):
+    data = None
+    if xml_payload:
+        data = xmltodict.parse(xml_payload)
+    elif json_payload:
+        data = json.loads(json_payload)
+    #todo, test case db
+    elif test_case == "0":
+        data = xmltodict.parse(xml0) 
+    elif test_case == "1":
+        data = xmltodict.parse(xml1) 
+    elif data_file:
+        data_doc_id = folder_file(data_folder, data_file)["id"]
+#        doc_xml = dat_doc_id
+        doc_xml = file_content_as(data_doc_id)
+        data = xmltodict.parse(doc_xml) 
+    if data == None: #default
+        data = xmltodict.parse(xml)
     data = force_lists(data)
     return data
 
 #print(json.dumps(getData(), indent=2))
+

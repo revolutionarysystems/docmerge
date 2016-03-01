@@ -19,6 +19,13 @@ from django.conf import settings
 from apiclient import errors
 from markdown import markdown
 
+import smtplib
+
+# Import the email modules we'll need
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+
 #try:
 #    import argparse
 #    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
@@ -79,6 +86,20 @@ def file_export(service, file_id, mimetype="application/pdf"):
     print(error.__dict__)
     return ""
 
+def file_get(service, file_id):
+  try:
+    content = service.files().get_media(fileId=file_id).execute()
+    return content
+  except errors.HttpError as error:
+    print('An error occurred: %s' % error)
+    print(error.__dict__)
+    return ""
+
+def file_content_as(doc_id):
+    content = file_get(service, doc_id)
+#    content = '<ItpDocumentRequest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><DocumentCode>AgreementTimerExtended</DocumentCode></ItpDocumentRequest>'
+    return content
+
 def downloadFile(doc_id, fileName, mimetype):
     #print_file_metadata(service, doc_id)
     #content = file_content(service, docId)
@@ -90,6 +111,7 @@ def downloadFile(doc_id, fileName, mimetype):
         outfile = open(fileName,"w")
         outfile.write(content_doc)
     outfile.close()
+    return {"file":fileName}
 
 def replaceParams(txt, subs):
     for key in subs.keys():
@@ -112,6 +134,7 @@ def substituteVariablesPlain(fileNameIn, fileNameOut, subs):
     xtxt = t.render(c)
     fileOut = open(fileNameOut, "w")
     fileOut.write(xtxt)
+    return {"file":fileNameOut}
     
 
 
@@ -193,6 +216,7 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
             #print(p.text)
 
     doc.save(fileNameOut)
+    return {"file":fileNameOut}
 
 
 
@@ -245,6 +269,7 @@ def convert_markdown(fileNameIn, fileNameOut):
     fileOut = open(fileNameOut, "w")
     fileOut.write(markdown(fileIn.read()))
     fileOut.close()
+    return {"file":fileNameOut}
 
 #### Navigate Drive folders
 
@@ -291,6 +316,37 @@ def folder_file(path, name, parent='root', mimeType='*'):
     foldr = folder(path, parent)
     return folder_item(foldr["id"], name, mimeType=mimeType)
     
+def email_file(baseFileName, me, you, subject, credentials):
+    # Open a plain text file for reading.  For this example, assume that
+    # the text file contains only ASCII characters.
+    textfile=baseFileName+".md"
+    fp = open(textfile, 'r')
+    text = fp.read()
+    fp.close()
+    htmlfile=baseFileName+".html"
+    fp = open(htmlfile, 'r')
+    html = fp.read()
+    fp.close()
+    # Create a text/plain message
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = me
+    msg['To'] = you.replace(" ","+")
+
+    msg.attach(MIMEText(text, 'plain'))
+    msg.attach(MIMEText(html, 'html'))
+
+    username = credentials["username"]
+    password = credentials["password"]
+    server = smtplib.SMTP(credentials["server"])
+
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(username,password)
+    response = server.sendmail(me, [you.replace(" ","+")], msg.as_string())
+    server.quit()
+    return {"email":you.replace(" ","+")}
 
 
 
@@ -308,5 +364,7 @@ APPLICATION_NAME = 'RevSys DocMerge'
 
 service = initialiseService()
 
-#settings.configure(TEMPLATE_DIRS=("./templates",))
-#django.setup()
+#doc = folder_file("/Doc Merge/Test Data", "testData0.xml")
+#print(doc)
+#doc_id = doc["id"]
+#print(file_content_as(doc_id, "text/xml"))

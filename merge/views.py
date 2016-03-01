@@ -18,13 +18,20 @@ def merge(request):
     params = request.GET
     id = getParamDefault(params, "id", str(randint(0,10000)))
     flow = getParamDefault(params, "flow", "md")
+    xml_payload = getParamDefault(params, "xml_payload", None)
+    json_payload = getParamDefault(params, "json_payload", None)
+    test_case = getParamDefault(params, "test_case", None)
     remoteTemplateFolder = getParamDefault(params, "template_folder", "/Doc Merge/Templates")
     remoteOutputFolder = getParamDefault(params, "output_folder", "/Doc Merge/Output")
+    data_folder = getParamDefault(params, "data_folder", "/Doc Merge/Test Data")
+    data_file = getParamDefault(params, "data_file", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
-    subs = getData()["ItpDocumentRequest"]
-    response = mergeDocument(flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder)    
+    email = getParamDefault(params, "email", None)
+    subs = getData(test_case=test_case, xml_payload=xml_payload, json_payload=json_payload, data_folder = data_folder, data_file=data_file)["ItpDocumentRequest"]
+    response = mergeDocument(flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
     return JsonResponse(response)
 
+#"andrew.elliott@revolutionarysystems.co.uk"
 
 #doc_id="1BmoI4S_kqRDLGRb4t3k8iijIpz3NVBZrizqygfzHfns"
 #subs = xml4doc2.getData()["ItpDocumentRequest"]
