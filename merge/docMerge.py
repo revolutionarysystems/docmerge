@@ -7,12 +7,14 @@ from .merge_utils import initialiseService, downloadFile, substituteVariablesDoc
 
 credentials = {"username":"DOCMERGE\\andrew", "password":"mnemonic10", "server":"ssrs.reachmail.net:25"}
 
-
+cwd = os.getcwd()
+if (cwd.find("home")>=0):
+    cwd = cwd+"/docmerge"
 def mergeDocument(flow, template_folder, template_name, uniq, subs, output_folder, email=None):
     doc_id = folder_file(template_folder, template_name)["id"]
     output_id = folder(output_folder)["id"]
-    localTemplateFileName = "./merge/templates/"+template_name.split(".")[0]
-    localMergedFileName = "./merge/output/"+template_name.split(".")[0]
+    localTemplateFileName = cwd+"/merge/templates/"+template_name.split(".")[0]
+    localMergedFileName = cwd+"/merge/output/"+template_name.split(".")[0]
     outcomes = {}
 
 
