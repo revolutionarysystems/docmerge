@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'dash',
     'merge',
+    'django_extensions',
 ]
 
 MIDDLEWARE_CLASSES = [
