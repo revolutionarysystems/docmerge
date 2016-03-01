@@ -8,7 +8,7 @@ def getParamDefault(params, key, default):
     try:
     	result = params.get(key)
     	if result != None:
-    	    return result
+    	    return result.replace("+"," ")
     	else:
     	    return default
     except:
@@ -16,7 +16,7 @@ def getParamDefault(params, key, default):
 
 def merge(request):
     params = request.GET
-    id = getParamDefault(params, "id", str(randint(0,10000)))
+    id = getParamDefault(params, "ident", str(randint(0,10000)))
     flow = getParamDefault(params, "flow", "md")
     xml_payload = getParamDefault(params, "xml_payload", None)
     json_payload = getParamDefault(params, "json_payload", None)

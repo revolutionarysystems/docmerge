@@ -1,0 +1,13 @@
+{% extends 'dash/dash_base.html' %}
+
+{% block content %}
+        <div class="row widget">
+            <div>
+		<h1><a href="">Submit Merge Job</a></h1>
+	        <form method="GET" class="query-form freeform" action="/merge">
+	                {{ mergeForm.as_p }}
+	                <button type="submit" class="save btn btn-warning">Request Doc</button>
+	        </form>
+            </div>
+        </div>
+{% endblock %}        
