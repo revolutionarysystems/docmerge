@@ -11,8 +11,8 @@ credentials = {"username":"DOCMERGE\\andrew", "password":"mnemonic10", "server":
 def mergeDocument(flow, template_folder, template_name, uniq, subs, output_folder, email=None):
     doc_id = folder_file(template_folder, template_name)["id"]
     output_id = folder(output_folder)["id"]
-    localTemplateFileName = "merge/templates/"+template_name.split(".")[0]
-    localMergedFileName = "merge/output/"+template_name.split(".")[0]
+    localTemplateFileName = "./merge/templates/"+template_name.split(".")[0]
+    localMergedFileName = "./merge/output/"+template_name.split(".")[0]
     outcomes = {}
 
 
