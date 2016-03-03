@@ -898,11 +898,11 @@ def force_lists(doc):
             doc[key]=goodlist
     return doc
 
-def getData(test_case = None, xml_payload=None, json_payload=None, data_file=None, data_folder = None):
+def getData(test_case = None, payload=None, payload_type="xml", data_file=None, data_folder = None):
     data = None
-    if xml_payload:
-        data = xmltodict.parse(xml_payload)
-    elif json_payload:
+    if payload and payload_type=="xml":
+        data = xmltodict.parse(payload)
+    elif payload and payload_type=="json":
         data = json.loads(json_payload)
     #todo, test case db
     elif test_case == "0":

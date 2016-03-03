@@ -355,16 +355,9 @@ SCOPES = 'https://www.googleapis.com/auth/drive'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'RevSys DocMerge'
 
-#try:
-#    import argparse
-#    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-#except ImportError:
-#    flags = None
-
 
 service = initialiseService()
 
-#doc = folder_file("/Doc Merge/Test Data", "testData0.xml")
-#print(doc)
-#doc_id = doc["id"]
-#print(file_content_as(doc_id, "text/xml"))
+#docs = folder_files("/Doc Merge/Templates")
+#print([file["name"] for file in docs])
+print([(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates")])

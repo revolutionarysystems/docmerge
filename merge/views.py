@@ -18,16 +18,16 @@ def merge(request):
     params = request.GET
     id = getParamDefault(params, "ident", str(randint(0,10000)))
     flow = getParamDefault(params, "flow", "md")
-    xml_payload = getParamDefault(params, "xml_payload", None)
-    json_payload = getParamDefault(params, "json_payload", None)
-    test_case = getParamDefault(params, "test_case", None)
     remoteTemplateFolder = getParamDefault(params, "template_folder", "/Doc Merge/Templates")
     remoteOutputFolder = getParamDefault(params, "output_folder", "/Doc Merge/Output")
+    payload = getParamDefault(params, "payload", None)
+    payload_type = getParamDefault(params, "payload_type", None)
+    test_case = getParamDefault(params, "test_case", None)
     data_folder = getParamDefault(params, "data_folder", "/Doc Merge/Test Data")
     data_file = getParamDefault(params, "data_file", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
     email = getParamDefault(params, "email", None)
-    subs = getData(test_case=test_case, xml_payload=xml_payload, json_payload=json_payload, data_folder = data_folder, data_file=data_file)["ItpDocumentRequest"]
+    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, data_folder = data_folder, data_file=data_file)["ItpDocumentRequest"]
     response = mergeDocument(flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
     return JsonResponse(response)
 
