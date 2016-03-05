@@ -219,19 +219,31 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
     return {"file":fileNameOut}
 
 
+def uploadAsGoogleDoc(fileName, folder, mimeType):
+    body ={}
+    body["name"]=fileName
+    body["parents"]=[folder]
+    body["mimeType"]='application/vnd.google-apps.document'
+    ##
+    #'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    media = MediaFileUpload(fileName, mimetype=mimeType, resumable=True)
+    request = service.files().create(body=body, media_body=media)
+    upload = request.execute()
+    return upload
+
 
 def uploadFile(fileName, folder, mimeType):
     body ={}
     body["name"]=fileName
     body["parents"]=[folder]
-    media = MediaFileUpload(fileName, mimetype=mimeType, resumable=1)
+    media = MediaFileUpload(fileName, mimetype=mimeType, resumable=True)
     request = service.files().create(body=body, media_body=media)
     upload = request.execute()
     return upload
 
-def getPdf(doc_id): #assuming a google docs file
+def getPdf(doc_id, fileNameOut="writeTest.pdf"): #assuming a google docs file
     content_pdf = file_export(service, doc_id)
-    outfile = open("writeTest.pdf","wb")
+    outfile = open(fileNameOut,"wb")
     outfile.write(content_pdf)
     outfile.close()
 
@@ -360,4 +372,4 @@ service = initialiseService()
 
 #docs = folder_files("/Doc Merge/Templates")
 #print([file["name"] for file in docs])
-print([(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates")])
+#print([(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates")])

@@ -3,7 +3,7 @@ import os
 #from django.conf import settings
 from random import randint
 
-from .merge_utils import initialiseService, downloadFile, substituteVariablesDocx, substituteVariablesPlain, convertToPdf,uploadFile,convert_markdown,folder_file,folder,email_file
+from .merge_utils import initialiseService, downloadFile, substituteVariablesDocx, substituteVariablesPlain, convertToPdf,uploadFile,convert_markdown,folder_file,folder,email_file,uploadAsGoogleDoc,getPdf
 
 credentials = {"username":"DOCMERGE\\andrew", "password":"mnemonic10", "server":"ssrs.reachmail.net:25"}
 
@@ -24,6 +24,16 @@ def mergeDocument(flow, template_folder, template_name, uniq, subs, output_folde
         outcomes["gdoc_dl_as_docx"]=downloadFile(doc_id, localTemplateFileName+localExt, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
         outcomes["merge_docx"]=substituteVariablesDocx(localTemplateFileName+localExt, localMergedFileName+'_'+uniq+localExt, subs)
         outcomes["pdf_conversion"]=str(convertToPdf(localMergedFileName+'_'+uniq+localExt, outdir="./merge/output"))
+        outcomes["pdf_upload"]=uploadFile(localMergedFileName+'_'+uniq+".pdf", output_id, "application/pdf")
+        outcomes["pdf_link"]=''.join(["https://drive.google.com/a/revolutionarysystems.co.uk/file/d/",outcomes["pdf_upload"]["id"],"/view?usp=sharing"])
+    if flow == "docx2":
+        localExt=".docx"    
+        outcomes["gdoc_dl_as_docx"]=downloadFile(doc_id, localTemplateFileName+localExt, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        outcomes["merge_docx"]=substituteVariablesDocx(localTemplateFileName+localExt, localMergedFileName+'_'+uniq+localExt, subs)
+        gdoc_file=uploadAsGoogleDoc(localMergedFileName+'_'+uniq+localExt, output_id, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        gdoc_id = gdoc_file["id"]
+        outcomes["docx_ul_as_gdoc"]=gdoc_file
+        outcomes["pdf_export"]=getPdf(gdoc_id, fileNameOut = localMergedFileName+'_'+uniq+".pdf")
         outcomes["pdf_upload"]=uploadFile(localMergedFileName+'_'+uniq+".pdf", output_id, "application/pdf")
         outcomes["pdf_link"]=''.join(["https://drive.google.com/a/revolutionarysystems.co.uk/file/d/",outcomes["pdf_upload"]["id"],"/view?usp=sharing"])
     if flow =="html":
