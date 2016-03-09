@@ -8,8 +8,6 @@ from .merge_utils import initialiseService, downloadFile, substituteVariablesDoc
 #credentials = {"username":"DOCMERGE\\andrew", "password":"mnemonic10", "server":"ssrs.reachmail.net:25"}
 credentials = {"username":"andrewcaelliott@gmail.com", "password":"napier", "server":"smtp.gmail.com:587"}
 
-
-
 cwd = os.getcwd()
 if (cwd.find("home")>=0):  #fudge for windows/linux difference
     cwd = cwd+"/docmerge"
