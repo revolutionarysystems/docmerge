@@ -39,5 +39,6 @@ def emailDoc(baseFileName, me, you, subject, credentials):
 	server.quit()
 	return {"email_result":response}
 
-credentials = {"username":"DOCMERGE\\andrew", "password":"mnemonic10", "server":"ssrs.reachmail.net:25"}
+#credentials = {"username":"DOCMERGE\\andrew", "password":"mnemonic10", "server":"ssrs.reachmail.net:25"}
+credentials = {"username":"andrewcaelliott@gmail.com", "password":"napier", "server":"smtp.gmail.com:587"}
 print(emailDoc("AddParty_test02", "fake@fake.com", "andrew.elliott@revolutionarysystems.co.uk", "Your Tenancy", credentials))
