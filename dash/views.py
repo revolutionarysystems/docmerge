@@ -62,10 +62,14 @@ def test_result(request):
 
 def library(request):
     widgets = []
-    widgets.append({"title":"Templates"})
-    widgets.append({"title":"Test Cases"})
-    widgets.append({"title":"Brandings"})
-    widgets.append({"title":"Flows"})
+    files = folder_files("/Doc Merge/Templates",fields="files(id, name, mimeType)")
+    widgets.append({"title":"Templates", "files":files})
+    files = folder_files("/Doc Merge/Test Data",fields="files(id, name, mimeType)")
+    widgets.append({"title":"Test Cases", "files":files})
+    files = folder_files("/Doc Merge/Branding",fields="files(id, name, mimeType)")
+    widgets.append({"title":"Branding", "files":files})
+    files = folder_files("/Doc Merge/Flows",fields="files(id, name, mimeType)")
+    widgets.append({"title":"Flows", "files":files})
     return render(request, 'dash/library.html', {"widgets":widgets})
 
 def archive(request):

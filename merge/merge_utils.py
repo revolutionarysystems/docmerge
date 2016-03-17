@@ -313,9 +313,9 @@ def convert_markdown(fileNameIn, fileNameOut):
 
 def folder_contents(parent, mimeType='application/vnd.google-apps.folder', fields="nextPageToken, files(id, name, mimeType, parents)"):
     if mimeType=="*":
-        q = "'"+parent+"' in parents"
+        q = "trashed = false and '"+parent+"' in parents"
     else:
-        q = "mimeType = '"+mimeType+"' and '"+parent+"' in parents" 
+        q = "trashed = false and mimeType = '"+mimeType+"' and '"+parent+"' in parents" 
 
     results = service.files().list(
         fields=fields, q=q).execute()
