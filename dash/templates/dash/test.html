@@ -1,0 +1,21 @@
+{% extends 'dash/base.html' %}
+
+{% block content %}
+	<h2><a href="">Test Document Merge Flow</a></h2>
+        <div class="row widget">
+            <div>
+	        <form method="GET" class="query-form" action="/test-result">
+	                {{ mergeForm.as_p }}
+	                <button type="submit" class="save btn btn-warning">Request Doc</button>
+	        </form>
+	        {% for outcome in merge_response.outcomes %}
+		        <h3>{{ outcome.step }}</h3>
+		        <ul>
+		        <li>file: {{ outcome.outcome.file }}{{ outcome.outcome.name }}</li>
+		        <li>type: {{ outcome.outcome.mimeType }}</li>
+		        <li>id: {{ outcome.outcome.id }}</li>
+		        </ul>
+		 {% endfor %}
+            </div>
+        </div>
+{% endblock %}        

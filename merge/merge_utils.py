@@ -100,7 +100,33 @@ def file_content_as(doc_id):
 #    content = '<ItpDocumentRequest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><DocumentCode>AgreementTimerExtended</DocumentCode></ItpDocumentRequest>'
     return content
 
+def getFile(doc_id, fileName, mimetype):
+    #print_file_metadata(service, doc_id)
+    #content = file_content(service, docId)
+    content_doc = file_get(service, doc_id)
+    try:
+        outfile = open(fileName,"wb")
+        outfile.write(content_doc)
+    except:
+        outfile = open(fileName,"w")
+        outfile.write(content_doc)
+    outfile.close()
+    return {"file":fileName}
+
 def downloadFile(doc_id, fileName, mimetype):
+    #print_file_metadata(service, doc_id)
+    #content = file_content(service, docId)
+    content_doc = file_export(service, doc_id, mimetype)
+    try:
+        outfile = open(fileName,"wb")
+        outfile.write(content_doc)
+    except:
+        outfile = open(fileName,"w")
+        outfile.write(content_doc)
+    outfile.close()
+    return {"file":fileName}
+
+def exportFile(doc_id, fileName, mimetype):
     #print_file_metadata(service, doc_id)
     #content = file_content(service, docId)
     content_doc = file_export(service, doc_id, mimetype)
@@ -329,25 +355,23 @@ def folder_file(path, name, parent='root', mimeType='*'):
     return folder_item(foldr["id"], name, mimeType=mimeType)
     
 def email_file(baseFileName, me, you, subject, credentials):
-    # Open a plain text file for reading.  For this example, assume that
-    # the text file contains only ASCII characters.
-    textfile=baseFileName+".md"
-    fp = open(textfile, 'r')
-    text = fp.read()
-    fp.close()
-    htmlfile=baseFileName+".html"
-    fp = open(htmlfile, 'r')
-    html = fp.read()
-    fp.close()
-    # Create a text/plain message
+
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = me
     msg['To'] = you.replace(" ","+")
 
-    msg.attach(MIMEText(text, 'plain'))
-    msg.attach(MIMEText(html, 'html'))
+    mimetypes = ["text/plain", "text/html"]
+    file_exts = [".md", ".html"]
 
+    for mime in zip(mimetypes, file_exts):
+        file=baseFileName+mime[1]
+        fp = open(file, 'r')
+        content = fp.read()
+        fp.close()
+        print(mime[0].split("/"))
+        msg.attach(MIMEText(content, mime[0].split("/")[1]))    
+    
     username = credentials["username"]
     password = credentials["password"]
     server = smtplib.SMTP(credentials["server"])
@@ -356,6 +380,9 @@ def email_file(baseFileName, me, you, subject, credentials):
     server.starttls()
     server.ehlo()
     server.login(username,password)
+    print(me)
+    print(you.replace(" ","+"))
+    print(msg.as_string())
     response = server.sendmail(me, [you.replace(" ","+")], msg.as_string())
     server.quit()
     return {"email":you.replace(" ","+")}

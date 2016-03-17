@@ -1,7 +1,7 @@
 
 . . . .
 
-"9yds" email
+"{{ branding.brand.brandname }}" email
 =========
 	{% block content %}
 	{% endblock %}

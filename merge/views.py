@@ -14,7 +14,7 @@ def getParamDefault(params, key, default):
     except:
     	return default
 
-def merge(request):
+def merge_raw(request):
     params = request.GET
     id = getParamDefault(params, "ident", str(randint(0,10000)))
     flow = getParamDefault(params, "flow", "md")
@@ -25,16 +25,20 @@ def merge(request):
     test_case = getParamDefault(params, "test_case", None)
     data_folder = getParamDefault(params, "data_folder", "/Doc Merge/Test Data")
     data_file = getParamDefault(params, "data_file", None)
+    data_root = getParamDefault(params, "data_root", None)
+    branding_folder = getParamDefault(params, "branding_folder", "/Doc Merge/Branding")
+    branding_file = getParamDefault(params, "branding_file", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
     email = getParamDefault(params, "email", None)
-    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, data_folder = data_folder, data_file=data_file)["ItpDocumentRequest"]
-    response = mergeDocument(flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
-    return JsonResponse(response)
+    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, data_folder = data_folder, data_file=data_file)
+    if data_root:
+        subs = subs[data_root]
+    if branding_file:
+        branding_subs = getData(data_folder = branding_folder, data_file=branding_file)
+        subs["branding"]= branding_subs
+        
+    return mergeDocument(flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
 
-#"andrew.elliott@revolutionarysystems.co.uk"
-
-#doc_id="1BmoI4S_kqRDLGRb4t3k8iijIpz3NVBZrizqygfzHfns"
-#subs = xml4doc2.getData()["ItpDocumentRequest"]
-#subs["AgreementDate"]="2016-02-15"
-#mergeDocument("docx", doc_id, "tenancy", "tenancy_01", subs)    
+def merge(request):
+    return JsonResponse(merge_raw(request))
     
