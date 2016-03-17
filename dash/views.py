@@ -75,7 +75,8 @@ def library(request):
 def archive(request):
     widgets = []
     widgets.append({"title":"Merge Requests"})
-    widgets.append({"title":"Documents"})
+    files = folder_files("/Doc Merge/Output",fields="files(id, name, mimeType, modifiedTime)")
+    widgets.append({"title":"Documents", "files":files})
     return render(request, 'dash/archive.html', {"widgets":widgets})
 
 def account(request):

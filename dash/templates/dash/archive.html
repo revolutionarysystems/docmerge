@@ -4,8 +4,11 @@
 	<h2><a href="">Result Archive</a></h2>
         <div class="row widget">
                 {% for widget in widgets %}
-                <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                <div class="widget col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
+                        {% for file in widget.files %}
+                            <p><a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">Link</a> {{ file.modifiedTime }} - {{ file.name }} - {{ file.mimeType }}</p>
+                        {% endfor %}
                 </div>
                 {% endfor %}
         </div>
