@@ -903,7 +903,7 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
     if payload and payload_type=="xml":
         data = xmltodict.parse(payload)
     elif payload and payload_type=="json":
-        data = json.loads(json_payload)
+        data = json.loads(payload)
     #todo, test case db
     elif test_case == "0":
         data = xmltodict.parse(xml0) 

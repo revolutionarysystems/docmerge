@@ -8,5 +8,12 @@
                     <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
                 </div>
                 {% endfor %}
+                <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                    <h3><a href=""><span class="{{ widget.glyph }}"></span> Quick Test</a></h3>
+                    <form method="GET" class="query-form" action="/test-result">
+                            {{ mergeForm.as_p }}
+                            <button type="submit" class="save btn btn-warning">Request Doc</button>
+                    </form>
+                </div>
         </div>
 {% endblock %}        

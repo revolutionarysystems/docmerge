@@ -12,8 +12,20 @@ def dash(request):
     widgets = []
     widgets.append({"title":"Merge Requests"})
     widgets.append({"title":"Service Status"})
-    widgets.append({"title":"Quick Test"})
-    return render(request, 'dash/home.html', {"widgets":widgets})
+    files = {"files":folder_files("/Doc Merge/Templates",fields="files(id, name, mimeType, trashed)")}
+    quickTestJob=MergeJob(
+        template_folder="/Doc Merge/Templates",
+        template="Library.md",
+        ident = "123",
+        output_folder="/Doc Merge/Output",
+        data_folder="/Doc Merge/Test Data",
+        payload = json.dumps(files),
+        payload_type = "json",
+        branding_folder="/Doc Merge/Branding",
+        flow = "md",
+        )
+    mergeForm = MergeForm(instance=quickTestJob)
+    return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm})
 
 def test(request):
     mergeJob=MergeJob(

@@ -311,14 +311,14 @@ def convert_markdown(fileNameIn, fileNameOut):
 
 #### Navigate Drive folders
 
-def folder_contents(parent, mimeType='application/vnd.google-apps.folder', ):
+def folder_contents(parent, mimeType='application/vnd.google-apps.folder', fields="nextPageToken, files(id, name, mimeType, parents)"):
     if mimeType=="*":
         q = "'"+parent+"' in parents"
     else:
         q = "mimeType = '"+mimeType+"' and '"+parent+"' in parents" 
 
     results = service.files().list(
-        fields="nextPageToken, files(id, name, mimeType, parents)", q=q).execute()
+        fields=fields, q=q).execute()
 #        pageSize=50,fields="nextPageToken, files(id, name, mimeType)", q="'0B-R1VJ7CNz2ZYlI0M3ROR0YzS00' in parents").execute()
     items = results.get('files', [])
     return items
@@ -346,9 +346,9 @@ def folder(path, parent='root'):
         path_parts = path_parts[1:]
     return ls_list(path_parts, parent=parent)
 
-def folder_files(path, parent='root', mimeType='*'):
+def folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
     foldr = folder(path, parent)
-    return folder_contents(foldr["id"], mimeType=mimeType)
+    return folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
     
 def folder_file(path, name, parent='root', mimeType='*'):
     foldr = folder(path, parent)
