@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render
-from .forms import MergeForm, SimpleMergeForm
+from .forms import MergeForm, SimpleMergeForm, MinimalMergeForm
 from .models import MergeJob
 from merge.merge_utils import folder_files
 from merge.views import merge_raw
@@ -34,7 +34,7 @@ def test(request):
     	output_folder="/Doc Merge/Output",
     	data_folder="/Doc Merge/Test Data",
     	branding_folder="/Doc Merge/Branding",
-    	flow = "md",
+    	flow = "md.txt",
     	)
 
     mergeForm = SimpleMergeForm(instance=mergeJob)
@@ -55,8 +55,7 @@ def test_result(request):
         branding_folder="/Doc Merge/Branding",
         branding_file=mergeForm["branding_file"].value(),
         flow = mergeForm["flow"].value(),
-
-        )
+    )
     mergeForm = SimpleMergeForm(instance=mergeJob)
     advMergeForm = MergeForm(instance=mergeJob)
     json_response = merge_raw(request)

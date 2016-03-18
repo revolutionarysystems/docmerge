@@ -18,4 +18,9 @@ class SimpleMergeForm(forms.ModelForm):
         	'data_file', 'data_root',
         	'branding_file',
         	)                
+
+class MinimalMergeForm(forms.ModelForm):
+    class Meta:
+        model = MergeJob
+        fields = ()
     

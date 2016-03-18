@@ -152,15 +152,28 @@ div.content.container{
     color: #000000;
 }
 
+#form_control {
+    visibility: hidden;
+}
+
+#form_control + label {
+    font-size: 80%;
+    font-weight: normal;
+}
+
+#form_control:checked + label {
+    text-decoration: underline;
+}
+
 #advanced {
     display: none;
 }
 
-#form_control:checked + #basic {
+#form_control:checked + label + #basic {
     display: none;
 }
 
-#form_control:checked + #advanced {
+#form_control:checked + label + form + #advanced {
     display: block;
 }
 
