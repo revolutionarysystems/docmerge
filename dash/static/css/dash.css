@@ -2,6 +2,14 @@ h1, h2, h3, h4 {
     font-family: 'Helvetica', 'Arial', sans-serif;
 }
 
+select {
+    padding: 3px 0;
+}
+
+textarea {
+    vertical-align: top;
+}
+
 .page-header {
     background-color: #5e5293;
     margin-top: 0;
@@ -22,7 +30,6 @@ h1, h2, h3, h4 {
     color: white;
     text-decoration: none;
 }
-
 
 .share {
     height: 3rem;
@@ -64,8 +71,10 @@ div.content.container{
 }
 
 .content .widget {
-    margin-bottom: 1rem;
     padding: 0.5rem;
+    border: 0 solid transparent;
+    border-width: 0 1rem 1rem 0;
+    background-clip: padding-box;
 }
 
 .content .widget h1 {
@@ -142,3 +151,16 @@ div.content.container{
 .post h1 a, .post h1 a:visited {
     color: #000000;
 }
+
+#advanced {
+    display: none;
+}
+
+#form_control:checked + #basic {
+    display: none;
+}
+
+#form_control:checked + #advanced {
+    display: block;
+}
+

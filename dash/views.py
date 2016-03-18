@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render
-from .forms import MergeForm
+from .forms import MergeForm, SimpleMergeForm
 from .models import MergeJob
 from merge.merge_utils import folder_files
 from merge.views import merge_raw
@@ -16,7 +16,7 @@ def dash(request):
     quickTestJob=MergeJob(
         template_folder="/Doc Merge/Templates",
         template="Library.md",
-        ident = "123",
+        identifier = "123",
         output_folder="/Doc Merge/Output",
         data_folder="/Doc Merge/Test Data",
         payload = json.dumps(files),
@@ -37,9 +37,11 @@ def test(request):
     	flow = "md",
     	)
 
-    mergeForm = MergeForm(instance=mergeJob)
+    mergeForm = SimpleMergeForm(instance=mergeJob)
+    advMergeForm = MergeForm(instance=mergeJob)
     mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates")]
-    return render(request, 'dash/test.html', {"mergeForm": mergeForm})
+    mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Flows")]
+    return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm})
 
 
 def test_result(request):
@@ -55,9 +57,10 @@ def test_result(request):
         flow = mergeForm["flow"].value(),
 
         )
-    mergeForm = MergeForm(instance=mergeJob)
+    mergeForm = SimpleMergeForm(instance=mergeJob)
+    advMergeForm = MergeForm(instance=mergeJob)
     json_response = merge_raw(request)
-    return render(request, 'dash/test.html', {"mergeForm": mergeForm, 'merge_response': json_response})
+    return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response})
 
 
 def library(request):

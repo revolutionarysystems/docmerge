@@ -5,9 +5,9 @@ class MergeJob(models.Model):
 
     template_folder = models.CharField(max_length=100)
     template = models.CharField(max_length=100, choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates")])
-    flow = models.CharField(max_length=100)
+    flow = models.CharField(max_length=100, choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Flows")])
     output_folder = models.CharField(max_length=100)
-    ident = models.CharField(max_length=100)
+    identifier = models.CharField(max_length=100)
     payload = models.TextField()
     payload_type = models.CharField(max_length=100)
     test_case = models.CharField(max_length=100)

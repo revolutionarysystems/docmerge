@@ -17,6 +17,7 @@ def getParamDefault(params, key, default):
 def merge_raw(request):
     params = request.GET
     id = getParamDefault(params, "ident", str(randint(0,10000)))
+    flowFolder = getParamDefault(params, "flow_folder", "/Doc Merge/Flows")
     flow = getParamDefault(params, "flow", "md")
     remoteTemplateFolder = getParamDefault(params, "template_folder", "/Doc Merge/Templates")
     remoteOutputFolder = getParamDefault(params, "output_folder", "/Doc Merge/Output")
@@ -37,7 +38,7 @@ def merge_raw(request):
         branding_subs = getData(data_folder = branding_folder, data_file=branding_file)
         subs["branding"]= branding_subs
         
-    return mergeDocument(flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
+    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
 
 def merge(request):
     return JsonResponse(merge_raw(request))

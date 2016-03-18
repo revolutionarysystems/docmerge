@@ -7,7 +7,7 @@
                     <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
                         <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
                         {% for file in widget.files %}
-                            <p><a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">Link</a> {{ file.name }} - {{ file.mimeType }}</p>
+                            <p><a href="https://drive.google.com/open?id={{ file.id}}" target="_blank">Edit</a> <a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">View</a> {{ file.name }} - {{ file.mimeType }}</p>
                         {% endfor %}
                     </div>
                 {% endfor %}

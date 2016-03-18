@@ -1,5 +1,6 @@
 import os
-from .merge_utils import initialiseService, downloadFile, substituteVariablesDocx, substituteVariablesPlain, convertToPdf,uploadFile,convert_markdown,folder_file,folder,email_file,uploadAsGoogleDoc,exportFile,getFile
+import json
+from .merge_utils import initialiseService, downloadFile, substituteVariablesDocx, substituteVariablesPlain, convertToPdf,uploadFile,convert_markdown,folder_file,folder,email_file,uploadAsGoogleDoc,exportFile,getFile,file_content_as
 
 cwd = os.getcwd()
 if (cwd.find("home")>=0):  #fudge for windows/linux difference
@@ -10,20 +11,20 @@ if (cwd.find("scripts")>=0):
 
 docx_flow = [
 		{
-			"name": "gdoc_dl_as_docx",
+			"name": "Download to docx",
 			"step": "download",
 			"folder": "templates",
 			"mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 			"local_ext":".docx"
 		},
 		{
-			"name": "merge_docx",
+			"name": "Merge docx",
 			"step": "merge",
 			"mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 			"local_ext":".docx"
 		},
 		{
-			"name": "docx_ul_as_gdoc",
+			"name": "Upload to gdoc",
 			"step": "upload",
 			"convert":"gdoc",
 			"folder": "output",
@@ -31,14 +32,14 @@ docx_flow = [
 			"local_ext":".docx"
 		},
 		{
-			"name": "gdoc_dl_as_pdf",
+			"name": "Generate pdf",
 			"step": "download",
 			"folder": "output",
 			"mimetype": "application/pdf",
 			"local_ext":".pdf"
 		},
 		{
-			"name": "pdf_ul",
+			"name": "Upload pdf",
 			"step": "upload",
 			"convert":"none",
 			"mimetype": "application/pdf",
@@ -48,39 +49,39 @@ docx_flow = [
 
 md_flow = [
 		{
-			"name": "gdoc_dl_as_text",
+			"name": "Download to markdown",
 			"step": "download",
 			"folder": "templates",
 			"mimetype": "text/plain",
 			"local_ext":".md"
 		},
 		{
-			"name": "merge_md",
+			"name": "Merge markdown",
 			"step": "merge",
 			"mimetype": "text/plain",
 			"local_ext":".md"
 		},
 		{
-			"name": "convert_md",
+			"name": "Convert to html",
 			"step": "markdown",
 			"local_ext":".md"
 		},
 		{
-			"name": "md_ul",
+			"name": "Upload markdown",
 			"step": "upload",
 			"convert":"none",
 			"mimetype": "text/plain",
 			"local_ext":".md"
 		},
 		{
-			"name": "html_ul",
+			"name": "Upload html",
 			"step": "upload",
 			"convert":"none",
 			"mimetype": "text/html",
 			"local_ext":".html"
 		},
 		{
-			"name": "email",
+			"name": "Send email",
 			"step": "xemail",
 			"subject": "Your Tenancy",
 			"from": "fake@fake.con",
@@ -113,20 +114,29 @@ html_flow = [
 	]
 
 
-def get_flow(flowcode):
+def get_flow_resource(flow_folder, flow_file_name):
+    flow_doc_id = folder_file(flow_folder, flow_file_name)["id"]
+    doc_content = file_content_as(flow_doc_id)
+    #print(doc_content)
+    str_content = '{"flow":'+doc_content.decode("utf-8")+'}'
+    print(str_content)
+    return json.loads(str_content)["flow"]
+
+def get_flow(flow_folder, flowcode):
     if flowcode == "docx":
     	return docx_flow
     elif flowcode == "md":
     	return md_flow
     elif flowcode == "html":
     	return html_flow
+    else:
+    	return get_flow_resource(flow_folder, flowcode)
 
 def process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName):
     if step["folder"]=="templates":
          localFileName = localTemplateFileName
     else:
          localFileName = localMergedFileName
-    print(doc_mimetype)
     if doc_mimetype == 'application/vnd.google-apps.document':         
     	print("export")
     	return exportFile(doc_id, localFileName+step["local_ext"], step["mimetype"])

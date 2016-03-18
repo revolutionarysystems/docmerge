@@ -4,8 +4,13 @@
 	<h2><a href="">Test Document Merge Flow</a></h2>
         <div class="row widget">
             <div>
-	        <form method="GET" class="query-form" action="/test-result">
+            	<input id="form_control" type="checkbox"/><label for="form_control">Advanced</label>
+	        <form id="basic" method="GET" class="query-form" action="/test-result">
 	                {{ mergeForm.as_p }}
+	                <button type="submit" class="save btn btn-warning">Request Doc</button>
+	        </form>
+	        <form id="advanced" method="GET" class="query-form" action="/test-result">
+	                {{ advMergeForm.as_p }}
 	                <button type="submit" class="save btn btn-warning">Request Doc</button>
 	        </form>
 	        {% for outcome in merge_response.outcomes %}
