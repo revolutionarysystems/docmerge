@@ -6,17 +6,19 @@ from random import randint
 
 def getParamDefault(params, key, default):
     try:
-    	result = params.get(key)
-    	if result != None:
-    	    return result.replace("+"," ")
-    	else:
-    	    return default
+        result = params.get(key)
+        if result == None:
+            return default
+        elif result == "":
+            return default
+        else:
+            return result.replace("+"," ")
     except:
-    	return default
+        return default
 
 def merge_raw(request):
     params = request.GET
-    id = getParamDefault(params, "ident", str(randint(0,10000)))
+    id = getParamDefault(params, "identifier", str(randint(0,10000)))
     flowFolder = getParamDefault(params, "flow_folder", "/Doc Merge/Flows")
     flow = getParamDefault(params, "flow", "md")
     remoteTemplateFolder = getParamDefault(params, "template_folder", "/Doc Merge/Templates")

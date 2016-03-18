@@ -16,13 +16,12 @@ def dash(request):
     quickTestJob=MergeJob(
         template_folder="/Doc Merge/Templates",
         template="Library.md",
-        identifier = "123",
         output_folder="/Doc Merge/Output",
         data_folder="/Doc Merge/Test Data",
         payload = json.dumps(files),
         payload_type = "json",
         branding_folder="/Doc Merge/Branding",
-        flow = "md",
+        flow = "md.txt",
         )
     mergeForm = MergeForm(instance=quickTestJob)
     return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm})

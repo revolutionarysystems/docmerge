@@ -159,6 +159,7 @@ div.content.container{
 #form_control + label {
     font-size: 80%;
     font-weight: normal;
+    cursor: pointer;
 }
 
 #form_control:checked + label {
@@ -177,3 +178,11 @@ div.content.container{
     display: block;
 }
 
+#quickTest > p {
+    display: none;
+}
+
+#quickTestButton {
+   float: right;
+   margin-top: -4rem;
+}
