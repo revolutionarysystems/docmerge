@@ -186,3 +186,11 @@ div.content.container{
    float: right;
    margin-top: -4rem;
 }
+
+
+#logo {
+    height: 5.5rem;
+    width: 5.5rem;
+    padding-bottom: 1rem;
+    padding-right: 1rem;
+}
