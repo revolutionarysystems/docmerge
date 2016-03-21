@@ -10,8 +10,8 @@ from merge.views import merge_raw
 
 def dash(request):
     widgets = []
-    widgets.append({"title":"Merge Requests"})
-    widgets.append({"title":"Service Status"})
+    widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-flash"})
+    widgets.append({"title":"Service Status", "glyph":"glyphicon glyphicon-info-sign"})
     files = {"files":folder_files("/Doc Merge/Templates",fields="files(id, name, mimeType, trashed)")}
     quickTestJob=MergeJob(
         template_folder="/Doc Merge/Templates",
@@ -34,6 +34,7 @@ def test(request):
     	data_folder="/Doc Merge/Test Data",
     	branding_folder="/Doc Merge/Branding",
     	flow = "md.txt",
+        data_root = "ItpDocumentRequest"
     	)
 
     mergeForm = SimpleMergeForm(instance=mergeJob)
@@ -54,6 +55,8 @@ def test_result(request):
         branding_folder="/Doc Merge/Branding",
         branding_file=mergeForm["branding_file"].value(),
         flow = mergeForm["flow"].value(),
+        identifier = mergeForm["identifier"].value(),
+        data_root = mergeForm["data_root"].value(),
     )
     mergeForm = SimpleMergeForm(instance=mergeJob)
     advMergeForm = MergeForm(instance=mergeJob)
@@ -64,28 +67,28 @@ def test_result(request):
 def library(request):
     widgets = []
     files = folder_files("/Doc Merge/Templates",fields="files(id, name, mimeType)")
-    widgets.append({"title":"Templates", "files":files})
+    widgets.append({"title":"Templates", "files":files, "glyph":"glyphicon glyphicon-file"})
     files = folder_files("/Doc Merge/Test Data",fields="files(id, name, mimeType)")
-    widgets.append({"title":"Test Cases", "files":files})
+    widgets.append({"title":"Test Cases", "files":files, "glyph":"glyphicon glyphicon-tags"})
     files = folder_files("/Doc Merge/Branding",fields="files(id, name, mimeType)")
-    widgets.append({"title":"Branding", "files":files})
+    widgets.append({"title":"Branding", "files":files, "glyph":"glyphicon glyphicon-certificate"})
     files = folder_files("/Doc Merge/Flows",fields="files(id, name, mimeType)")
-    widgets.append({"title":"Flows", "files":files})
+    widgets.append({"title":"Flows", "files":files, "glyph":"glyphicon glyphicon-tasks"})
     return render(request, 'dash/library.html', {"widgets":widgets})
 
 def archive(request):
     widgets = []
-    widgets.append({"title":"Merge Requests"})
+    widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-flash"})
     files = folder_files("/Doc Merge/Output",fields="files(id, name, mimeType, modifiedTime)")
-    widgets.append({"title":"Documents", "files":files})
+    widgets.append({"title":"Documents", "files":files, "glyph":"glyphicon glyphicon-file"})
     return render(request, 'dash/archive.html', {"widgets":widgets})
 
 def account(request):
     widgets = []
-    widgets.append({"title":"Configuration"})
-    widgets.append({"title":"Users"})
-    widgets.append({"title":"Statistics"})
-    widgets.append({"title":"Credit"})
+    widgets.append({"title":"Configuration", "glyph":"glyphicon glyphicon-cog"})
+    widgets.append({"title":"Users", "glyph":"glyphicon glyphicon-user"})
+    widgets.append({"title":"Reports", "glyph":"glyphicon glyphicon-list-alt"})
+    widgets.append({"title":"Credit", "glyph":"glyphicon glyphicon-star"})
     return render(request, 'dash/account.html', {"widgets":widgets})
 
 def links(request):

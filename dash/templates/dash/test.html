@@ -4,6 +4,7 @@
 	<h2><a href="">Test Document Merge Flow</a></h2>
         <div class="row widget">
             <div>
+	 	<h3><a href=""><span class="glyphicon glyphicon-question-sign"></span> Request</a></h2>
             	<input id="form_control" type="checkbox"/><label for="form_control">Advanced</label>
 	        <form id="basic" method="GET" class="query-form" action="/test-result">
 	                {{ mergeForm.as_p }}
@@ -13,14 +14,28 @@
 	                {{ advMergeForm.as_p }}
 	                <button type="submit" class="save btn btn-warning">Request Doc</button>
 	        </form>
+	 	<h3><a href=""><span class="glyphicon glyphicon-info-sign"></span> Result</a></h2>
+		 <ul>
 	        {% for outcome in merge_response.outcomes %}
-		        <h3>{{ outcome.step }}</h3>
+		        <li>{{ outcome.step }}</li>
+		        <ul>
+		        {% if outcome.outcome.id %} 
+			        <li><a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ outcome.outcome.id }}/view" target="_blank">Link</a> {{ outcome.outcome.name }} - {{ outcome.outcome.mimeType }}</li>		 
+		        {% endif %}
+		        </ul>
+		{% endfor %}
+		</ul>
+		<!--
+		 <h3>Detail</h3>
+	        {% for outcome in merge_response.outcomes %}
+		        <p>{{ outcome.step }}</p>
 		        <ul>
 		        <li>file: {{ outcome.outcome.file }}{{ outcome.outcome.name }}</li>
 		        <li>type: {{ outcome.outcome.mimeType }}</li>
 		        <li>id: {{ outcome.outcome.id }}</li>
 		        </ul>
 		 {% endfor %}
+		 -->
             </div>
         </div>
 {% endblock %}        

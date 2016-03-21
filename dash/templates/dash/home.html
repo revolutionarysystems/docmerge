@@ -1,6 +1,7 @@
 {% extends 'dash/base.html' %}
 
 {% block content %}
+        <h2><a href="">Home</a></h2>
         <div class="row widget">
                 {% for widget in widgets %}
                 <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
@@ -8,7 +9,7 @@
                 </div>
                 {% endfor %}
                 <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                    <h3><a href=""><span class="{{ widget.glyph }}"></span> Quick Test</a></h3>
+                    <h3><a href=""><span class="glyphicon glyphicon-check"></span> Quick Test</a></h3>
                     <form id = "quickTest" method="GET" class="query-form" action="/test-result">
                             {{ mergeForm.as_p }}
                     <button id="quickTestButton" type="submit" class="save btn btn-warning">Test</button>
