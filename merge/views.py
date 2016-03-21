@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from .docMerge import mergeDocument
 from .xml4doc import getData
 from random import randint
+from datetime import datetime
 
 def getParamDefault(params, key, default):
     try:
@@ -39,6 +40,7 @@ def merge_raw(request):
     if branding_file:
         branding_subs = getData(data_folder = branding_folder, data_file=branding_file)
         subs["branding"]= branding_subs
+        subs["AgreementDate"]=datetime.now()
         
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
 

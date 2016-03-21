@@ -119,7 +119,7 @@ def get_flow_resource(flow_folder, flow_file_name):
     doc_content = file_content_as(flow_doc_id)
     #print(doc_content)
     str_content = '{"flow":'+doc_content.decode("utf-8")+'}'
-    print(str_content)
+    #print(str_content)
     return json.loads(str_content)["flow"]
 
 def get_flow(flow_folder, flowcode):
