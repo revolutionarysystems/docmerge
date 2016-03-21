@@ -13,7 +13,7 @@ cwd = os.getcwd()
 if (cwd.find("home")>=0):  #fudge for windows/linux difference
     cwd = cwd+"/docmerge"
 
-def mergeDocument(flow_folder, flow, template_folder, template_name, uniq, subs, output_folder, email=None):
+def mergeDocument(flow_folder, flow, template_folder, template_name, uniq, subs, output_folder, email="andrew.elliott+epub@revolutionarysystems.co.uk"):
     outcomes = process_flow(get_flow(flow_folder, flow), template_folder, template_name, uniq, subs, output_folder, email, email_credentials)
     return {"outcomes":outcomes}
 

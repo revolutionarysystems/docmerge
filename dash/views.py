@@ -39,6 +39,7 @@ def test(request):
 
     mergeForm = SimpleMergeForm(instance=mergeJob)
     advMergeForm = MergeForm(instance=mergeJob)
+    mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Test Data")]
     mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates")]
     mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Flows")]
     return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm})

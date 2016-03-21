@@ -32,7 +32,7 @@ def merge_raw(request):
     branding_folder = getParamDefault(params, "branding_folder", "/Doc Merge/Branding")
     branding_file = getParamDefault(params, "branding_file", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
-    email = getParamDefault(params, "email", None)
+    email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
     subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, data_folder = data_folder, data_file=data_file)
     if data_root:
         subs = subs[data_root]
