@@ -10,7 +10,7 @@ from merge.views import merge_raw
 
 def dash(request):
     widgets = []
-    widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-flash"})
+    widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-hand-up"})
     widgets.append({"title":"Service Status", "glyph":"glyphicon glyphicon-info-sign"})
     files = {"files":folder_files("/Doc Merge/Templates",fields="files(id, name, mimeType, trashed)")}
     quickTestJob=MergeJob(
@@ -79,7 +79,7 @@ def library(request):
 
 def archive(request):
     widgets = []
-    widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-flash"})
+    widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-hand-up"})
     files = folder_files("/Doc Merge/Output",fields="files(id, name, mimeType, modifiedTime)")
     widgets.append({"title":"Documents", "files":files, "glyph":"glyphicon glyphicon-file"})
     return render(request, 'dash/archive.html', {"widgets":widgets})
