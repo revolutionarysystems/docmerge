@@ -167,7 +167,6 @@ def substituteVariablesPlain(fileNameIn, fileNameOut, subs):
 def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
     c = Context(subs)
     doc = Document(docx=fileNameIn)
-    #docOut = Document()
     fullText=""
     paras=doc.paragraphs
     control_paras = []  # starting and ending {%  %}
@@ -180,14 +179,15 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
             txt = run.text
             paraText+= txt+"+"+str(j)+"+run+"
             j+=1
-        #print(txt)
+#        print(paraText)
         if paraText.find("{%")>=0:
             control_paras.append(i)
         fullText+= paraText+str(i)+"+para+"
         i+=1
-
+    print(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
+    print(xtxt)
     xParaTxts = xtxt.split("+para+")
 
 #    for para in doc.paragraphs:
@@ -240,6 +240,10 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
                     elif reused:
                         p.add_run(text=txt, style=paras[para_n].runs[run_n].style)
             #print(p.text)
+    print(unused)
+    for unused_p in unused:
+        p = paras[unused_p]
+        removePara(p)
 
     doc.save(fileNameOut)
     return {"file":fileNameOut}
@@ -387,6 +391,13 @@ def email_file(baseFileName, me, you, subject, credentials):
     server.quit()
     return {"email":you.replace(" ","+")}
 
+def get_working_dir():
+    cwd = os.getcwd()
+    if (cwd.find("home")>=0):  
+        cwd = cwd+"/docmerge"
+    if (cwd.find("scripts")>=0):  
+        cwd = cwd.replace("\scripts","")
+    return cwd
 
 
 
@@ -396,6 +407,8 @@ APPLICATION_NAME = 'RevSys DocMerge'
 
 
 service = initialiseService()
+
+
 
 #docs = folder_files("/Doc Merge/Templates")
 #print([file["name"] for file in docs])
