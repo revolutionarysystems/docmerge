@@ -78,6 +78,8 @@ def library(request):
     widgets.append({"title":"Branding", "files":files, "glyph":"glyphicon glyphicon-certificate"})
     files = folder_files("/Doc Merge/Flows",fields="files(id, name, mimeType)")
     widgets.append({"title":"Flows", "files":files, "glyph":"glyphicon glyphicon-tasks"})
+    files = folder_files("/Doc Merge/Transforms",fields="files(id, name, mimeType)")
+    widgets.append({"title":"Transforms", "files":files, "glyph":"glyphicon glyphicon-transfer"})
     return render(request, 'dash/library.html', {"widgets":widgets})
 
 def archive(request):
