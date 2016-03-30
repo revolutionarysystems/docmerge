@@ -32,7 +32,8 @@ def test(request):
     	#template="AddParty_v3.md",
     	output_folder="/Doc Merge/Output",
     	data_folder="/Doc Merge/Test Data",
-    	branding_folder="/Doc Merge/Branding",
+        branding_folder="/Doc Merge/Branding",
+        xform_folder="/Doc Merge/Transforms",
     	flow = "md.txt",
         data_root = "ItpDocumentRequest"
     	)
@@ -55,6 +56,8 @@ def test_result(request):
         data_file=mergeForm["data_file"].value(),
         branding_folder="/Doc Merge/Branding",
         branding_file=mergeForm["branding_file"].value(),
+        xform_folder="/Doc Merge/Transforms",
+        xform_file=mergeForm["xform_file"].value(),
         flow = mergeForm["flow"].value(),
         identifier = mergeForm["identifier"].value(),
         data_root = mergeForm["data_root"].value(),

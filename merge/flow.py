@@ -59,6 +59,7 @@ def process_email(step, localFileName, you, credentials):
 
 # Process all steps in the flow: grab the template document, construct local path names and then invoke steps in turn
 def process_flow(cwd, flow, template_folder, template_name, uniq, subs, output_folder, you, email_credentials):
+    #print(flow)
     doc = folder_file(template_folder, template_name)
     doc_id = doc["id"]
     doc_mimetype = doc["mimeType"]

@@ -16,4 +16,6 @@ class MergeJob(models.Model):
     data_root = models.CharField(max_length=100)
     branding_folder = models.CharField(max_length=100)
     branding_file = models.CharField(max_length=100, choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Branding")])
+    xform_folder = models.CharField(max_length=100)
+    xform_file = models.CharField(max_length=100, choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Transforms")])
 

@@ -32,15 +32,23 @@ def merge_raw(request):
     data_root = getParamDefault(params, "data_root", None)
     branding_folder = getParamDefault(params, "branding_folder", "/Doc Merge/Branding")
     branding_file = getParamDefault(params, "branding_file", None)
+    xform_folder = getParamDefault(params, "xform_folder", "/Doc Merge/Transforms")
+    xform_file = getParamDefault(params, "xform_file", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
     email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
-    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, data_folder = data_folder, data_file=data_file)
+    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, data_folder = data_folder, data_file=data_file, xform_folder = xform_folder, xform_file=xform_file)
     if data_root:
         subs = subs[data_root]
     if branding_file:
         branding_subs = getData(data_folder = branding_folder, data_file=branding_file)
         subs["branding"]= branding_subs
         subs["AgreementDate"]=datetime.now()
+    subs["docs"]=[templateName]
+    subs["roles"]=[
+        {"called":"Landlord", "values":["PropertyOwner", "AdditionalLandlord"]},
+        {"called":"Tenant", "values":["ManuallyInvitedTenant", "AdditionalTenant"]},
+        {"called":"Guarantor", "values":["Guarantor"]},
+    ]
         
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
 

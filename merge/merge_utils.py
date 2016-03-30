@@ -162,6 +162,12 @@ def substituteVariablesPlain(fileNameIn, fileNameOut, subs):
     fileOut.write(xtxt)
     return {"file":fileNameOut}
     
+def preprocess(text):
+    text = text.replace("{% #A %}", "{% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'%}")    
+    text = text.replace("{% #9 %}", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' as level1 %}")    
+    text = text.replace("{% #9= %}", "{{ level1 }}")    
+    print(text)
+    return text
 
 
 def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
@@ -181,20 +187,20 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
             j+=1
 #        print(paraText)
         if paraText.find("{%")>=0:
-            control_paras.append(i)
+            print(">>>",paraText[paraText.find("{%"):paraText.find("%}")+2])
+            non_control_text=paraText[:paraText.find("{%")].strip()+paraText[paraText.find("%}")+2:].strip()
+            print(">>>",non_control_text)
+            if non_control_text.find('+0+run+')==0: # pure control para should not show up in output
+                print("control para")
+                control_paras.append(i)
         fullText+= paraText+str(i)+"+para+"
         i+=1
     print(fullText)
+    fullText = preprocess(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
     print(xtxt)
     xParaTxts = xtxt.split("+para+")
-
-#    for para in doc.paragraphs:
-#        p = para._element
-#        p.getparent().remove(p)
-#        p._p = p._element = None
-
     used = []
     unused = list(range(0,len(paras)))
     for xParaTxt in xParaTxts:
@@ -209,8 +215,16 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
                 unused.remove(para_n)
                 if para_n in control_paras:
                     removePara(p)
+                else:
+                    print(">> using", para_n, txt)
+                    print(used)
+                    print(unused)
             else:   
                 if not(para_n in control_paras):
+                    print(">> inserting", para_n, unused[0], txt)
+                    print(used)
+                    print(unused)
+                    print()
                     p = paras[unused[0]].insert_paragraph_before(text=txt, style=paras[para_n].style)
                     p.clear()
                     p.paragraph_format.alignment = paras[para_n].paragraph_format.alignment
@@ -228,6 +242,7 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
 
 
             if reused or ('{' in p.text):   # replace para text
+                print(p.text)
                 for runTxt in runTxts[:-1]:
                     try:
                         txt = runTxt.split("+")[-2]
@@ -335,7 +350,10 @@ def folder_item(parent, name, mimeType='application/vnd.google-apps.folder', ):
     results = service.files().list(
         fields="nextPageToken, files(id, name, mimeType, parents)", q=q).execute()
     items = results.get('files', [])
-    return items[0]
+    try:
+        return items[0]
+    except:
+        raise FileNotFoundError("'"+name+"' was not found")
 
 def ls_list(pathlist, parent='root'):
     next_level = folder_item(parent, pathlist[0])

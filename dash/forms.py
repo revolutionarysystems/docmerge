@@ -8,6 +8,7 @@ class MergeForm(forms.ModelForm):
         	'template_folder', 'template', 'flow', 'output_folder', 'identifier',
         	'payload', 'payload_type', 'test_case', 'data_folder', 'data_file', 'data_root',
         	'branding_folder', 'branding_file',
+        	'xform_folder', 'xform_file',
         	)                
 
 class SimpleMergeForm(forms.ModelForm):
@@ -17,6 +18,7 @@ class SimpleMergeForm(forms.ModelForm):
         	'template', 'flow', 'identifier',
         	'data_file', 'data_root',
         	'branding_file',
+        	'xform_file',
         	)                
 
 class MinimalMergeForm(forms.ModelForm):

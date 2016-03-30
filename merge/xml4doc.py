@@ -3,7 +3,7 @@ import json
 import datetime
 from .testData import xml0, xml1
 from .merge_utils import folder_file,file_content_as
-
+import lxml.etree as etree
 xml = '''
 <ItpDocumentRequest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <DocumentCode>AgreementTimerExtended</DocumentCode>
@@ -898,7 +898,14 @@ def force_lists(doc):
             doc[key]=goodlist
     return doc
 
-def getData(test_case = None, payload=None, payload_type="xml", data_file=None, data_folder = None):
+def xform_xml(content, xform_folder, xform_file):
+    dom = etree.fromstring(content)
+    xslt = etree.fromstring(get_xml_content(xform_folder, xform_file))
+    transform = etree.XSLT(xslt)
+    newdom = transform(dom)
+    return etree.tostring(newdom, pretty_print=True).decode("utf-8")
+
+def getData(test_case = None, payload=None, payload_type="xml", data_file=None, data_folder = None, xform_folder = None, xform_file = None):
     data = None
     if payload and payload_type=="xml":
         data = xmltodict.parse(payload)
@@ -913,6 +920,8 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
         data_doc_id = folder_file(data_folder, data_file)["id"]
 #        doc_xml = dat_doc_id
         doc_xml = file_content_as(data_doc_id)
+        if xform_file:
+            doc_xml = xform_xml(doc_xml, xform_folder, xform_file)
         data = xmltodict.parse(doc_xml) 
     if data == None: #default
         data = xmltodict.parse(xml)
@@ -920,4 +929,9 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
     return data
 
 #print(json.dumps(getData(), indent=2))
+
+def get_xml_content(data_folder, data_file):
+    data_doc_id = folder_file(data_folder, data_file)["id"]
+    doc_xml = file_content_as(data_doc_id)
+    return doc_xml
 
