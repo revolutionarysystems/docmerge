@@ -35,7 +35,7 @@ def test(request):
         branding_folder="/Doc Merge/Branding",
         xform_folder="/Doc Merge/Transforms",
     	flow = "md.txt",
-        data_root = "ItpDocumentRequest"
+        data_root = "docroot"
     	)
 
     mergeForm = SimpleMergeForm(instance=mergeJob)
