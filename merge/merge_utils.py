@@ -336,10 +336,13 @@ def folder_contents(parent, mimeType='application/vnd.google-apps.folder', field
     else:
         q = "trashed = false and mimeType = '"+mimeType+"' and '"+parent+"' in parents" 
 
-    results = service.files().list(
-        fields=fields, q=q).execute()
+    try:
+        results = service.files().list(
+            fields=fields, q=q).execute()
 #        pageSize=50,fields="nextPageToken, files(id, name, mimeType)", q="'0B-R1VJ7CNz2ZYlI0M3ROR0YzS00' in parents").execute()
-    items = results.get('files', [])
+        items = results.get('files', [])
+    except:
+        return []
     return items
 
 def folder_item(parent, name, mimeType='application/vnd.google-apps.folder', ):

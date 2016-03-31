@@ -1,0 +1,119 @@
+Parameters for calling Echo Publish merge function.
+
+Parameter names, defaults and description
+
+    "flow_folder": "/Doc Merge/Flows"
+        The name of the Google Drive folder where the flows are held
+
+*   "flow": "md"
+        The name of the flow: use "docx.txt"
+
+    "template_folder": "/Doc Merge/Templates"
+        The name of the Google Drive folder where the templates are held
+
+*   "template": None
+        The name of the template eg "Tenancy_Agreement_v1_sect_1_2"
+
+    "output_folder": "/Doc Merge/Output"
+        The name of the Google Drive folder where the output should go
+
++   "payload": None
+        The xml payload if directly supplied eg "<ItpDocumentRequest> ... </ItpDocumentRequest>"
+
++   "payload_type": None
+        use "xml" if an xml payload is provided
+
+    "test_case": None
+        Not currently used
+
+    "data_folder": "/Doc Merge/Test Data"
+        The name of the Google Drive folder where the test data files are held
+
++   "data_file": None
+        The name of a test file if used eg "testData3.xml"
+
+*   "data_root": None
+        The root of the data xml AFTER transformation: use "docroot" if the "ITP_9yds_TA.xml" transform file is used
+
+    "branding_folder": "/Doc Merge/Branding"
+        The name of the Google Drive folder where the branding files are held
+
+*   "branding_file": None
+        The name of the branding file. Use "nineyds.xml"
+
+    "xform_folder": "/Doc Merge/Transforms"
+        The name of the Google Drive folder where the transform files are held
+
+*    "xform_file": None
+        The name of the transform file. Use "ITP_9yds_TA.xml"
+
+    "identifier": None
+        Your unique identifier for the case, will form part of the output file name
+
+
+* = these are mandatory for the 9yds Tenancy Agreement
++ = Either include an xml payload and payload type  OR  the name of a test data fine in the Test Data folder
+
+
+Sample Post
+to
+http://docmerge.pythonanywhere.com/merge/
+
+Parameters
+xform_file=ITP_9yds_TA.xml&payload=%3CItpDocumentRequest%3E%3Cstuff%3Estuff%3C%2Fstuff%3E%3C%2FItpDocumentRequest%3E&flow=docx.txt&payload_type=xml&branding_file=nineyds.xml&data_root=docroot&template=Tenancy_Agreement_v1_sect_1_2&identifier=1
+
+xform_file=ITP_9yds_TA.xml&
+payload=%3CItpDocumentRequest%3E%3Cstuff%3Estuff%3C%2Fstuff%3E%3C%2FItpDocumentRequest%3E&
+flow=docx.txt&
+payload_type=xml&
+branding_file=nineyds.xml&
+data_root=docroot&
+template=Tenancy_Agreement_v1_sect_1_2&
+identifier=1
+
+
+Sample Response
+
+In the sample resonse below, "id" refers to the Google Drive file id.
+
+
+{
+    "outcomes": [
+        {
+            "step": "Download to docx",
+            "outcome": {
+                "file": "/home/docmerge/docmerge/merge/templates/Tenancy_Agreement_v1_sect_1_2.docx"
+            }
+        },
+        {
+            "step": "Merge docx",
+            "outcome": {
+                "file": "/home/docmerge/docmerge/merge/output/Tenancy_Agreement_v1_sect_1_2_1.docx"
+            }
+        },
+        {
+            "step": "Upload to gdoc",
+            "outcome": {
+                "id": "13jbYHwnIzLjJwSWv6LKqGGQX-qCnrm1cP6DaGe2KUx8",
+                "name": "/home/docmerge/docmerge/merge/output/Tenancy_Agreement_v1_sect_1_2_1.docx",
+                "mimeType": "application/vnd.google-apps.document",
+                "kind": "drive#file"
+            }
+        },
+        {
+            "step": "Generate pdf",
+            "outcome": {
+                "file": "/home/docmerge/docmerge/merge/output/Tenancy_Agreement_v1_sect_1_2_1.pdf"
+            }
+        },
+        {
+            "step": "Upload pdf",
+            "outcome": {
+                "id": "0B-R1VJ7CNz2ZZzBTM2ZaZE5GblU",
+                "name": "/home/docmerge/docmerge/merge/output/Tenancy_Agreement_v1_sect_1_2_1.pdf",
+                "mimeType": "application/pdf",
+                "kind": "drive#file"
+            }
+        }
+    ]
+}
