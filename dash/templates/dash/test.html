@@ -6,11 +6,11 @@
             <div>
 	 	<h3><a href=""><span class="glyphicon glyphicon-question-sign"></span> Request</a></h2>
             	<input id="form_control" type="checkbox"/><label for="form_control">Advanced</label>
-	        <form id="basic" method="GET" class="query-form" action="/test-result">
+	        <form id="basic" method="GET" class="query-form" action="/test-result-get">
 	                {{ mergeForm.as_p }}
 	                <button type="submit" class="save btn btn-warning">Request Doc</button>
 	        </form>
-	        <form id="advanced" method="GET" class="query-form" action="/test-result">
+	        <form id="advanced" method="POST" class="query-form" action="/test-result-post/">{% csrf_token %}
 	                {{ advMergeForm.as_p }}
 	                <button type="submit" class="save btn btn-warning">Request Doc</button>
 	        </form>

@@ -907,7 +907,12 @@ def xform_xml(content, xform_folder, xform_file):
 
 def getData(test_case = None, payload=None, payload_type="xml", data_file=None, data_folder = None, xform_folder = None, xform_file = None):
     data = None
-    if payload and payload_type=="xml":
+    #print(xform_file, payload[:10], payload_type)
+    if payload and payload_type.lower()=="xml":
+        print(xform_file)
+        if xform_file:
+            print("transforming")
+            payload = xform_xml(payload, xform_folder, xform_file)
         data = xmltodict.parse(payload)
     elif payload and payload_type=="json":
         data = json.loads(payload)

@@ -187,19 +187,19 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
             j+=1
 #        print(paraText)
         if paraText.find("{%")>=0:
-            print(">>>",paraText[paraText.find("{%"):paraText.find("%}")+2])
+#            print(">>>",paraText[paraText.find("{%"):paraText.find("%}")+2])
             non_control_text=paraText[:paraText.find("{%")].strip()+paraText[paraText.find("%}")+2:].strip()
-            print(">>>",non_control_text)
+#            print(">>>",non_control_text)
             if non_control_text.find('+0+run+')==0: # pure control para should not show up in output
-                print("control para")
+#                print("control para")
                 control_paras.append(i)
         fullText+= paraText+str(i)+"+para+"
         i+=1
-    print(fullText)
+#   print(fullText)
     fullText = preprocess(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
-    print(xtxt)
+#    print(xtxt)
     xParaTxts = xtxt.split("+para+")
     used = []
     unused = list(range(0,len(paras)))
@@ -215,16 +215,16 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
                 unused.remove(para_n)
                 if para_n in control_paras:
                     removePara(p)
-                else:
-                    print(">> using", para_n, txt)
-                    print(used)
-                    print(unused)
+#                else:
+#                    print(">> using", para_n, txt)
+#                    print(used)
+#                    print(unused)
             else:   
                 if not(para_n in control_paras):
-                    print(">> inserting", para_n, unused[0], txt)
-                    print(used)
-                    print(unused)
-                    print()
+ #                   print(">> inserting", para_n, unused[0], txt)
+ #                   print(used)
+ #                   print(unused)
+ #                   print()
                     p = paras[unused[0]].insert_paragraph_before(text=txt, style=paras[para_n].style)
                     p.clear()
                     p.paragraph_format.alignment = paras[para_n].paragraph_format.alignment
@@ -242,7 +242,7 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
 
 
             if reused or ('{' in p.text):   # replace para text
-                print(p.text)
+ #               print(p.text)
                 for runTxt in runTxts[:-1]:
                     try:
                         txt = runTxt.split("+")[-2]
@@ -255,7 +255,7 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
                     elif reused:
                         p.add_run(text=txt, style=paras[para_n].runs[run_n].style)
             #print(p.text)
-    print(unused)
+ #   print(unused)
     for unused_p in unused:
         p = paras[unused_p]
         removePara(p)

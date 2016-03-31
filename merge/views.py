@@ -17,8 +17,16 @@ def getParamDefault(params, key, default):
     except:
         return default
 
-def merge_raw(request):
-    params = request.GET
+def merge_raw(request, method="POST"):
+    if method=="GET":
+        params = request.GET
+    else:
+        params = request.POST
+    for param in params:
+        if param=="payload":
+            print(param,":",params[param][:20],params[param][-20:])
+        else:
+            print(param,":",params[param])
     id = getParamDefault(params, "identifier", str(randint(0,10000)))
     flowFolder = getParamDefault(params, "flow_folder", "/Doc Merge/Flows")
     flow = getParamDefault(params, "flow", "md")
@@ -55,3 +63,5 @@ def merge_raw(request):
 def merge(request):
     return JsonResponse(merge_raw(request))
     
+def merge_get(request):
+    return JsonResponse(merge_raw(request, method="GET"))

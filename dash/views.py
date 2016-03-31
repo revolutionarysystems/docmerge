@@ -46,7 +46,7 @@ def test(request):
     return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm})
 
 
-def test_result(request):
+def test_result(mergeForm, request, method="POST"):
     mergeForm =  MergeForm(request.GET)
     mergeJob=MergeJob(
         template_folder="/Doc Merge/Templates",
@@ -64,9 +64,16 @@ def test_result(request):
     )
     mergeForm = SimpleMergeForm(instance=mergeJob)
     advMergeForm = MergeForm(instance=mergeJob)
-    json_response = merge_raw(request)
+    json_response = merge_raw(request, method=method)
     return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response})
 
+def test_result_get(request):
+    mergeForm =  MergeForm(request.GET)
+    return test_result(mergeForm, request, method="GET")
+
+def test_result_post(request):
+    mergeForm =  MergeForm(request.POST)
+    return test_result(mergeForm, request, method="POST")
 
 def library(request):
     widgets = []

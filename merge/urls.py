@@ -3,4 +3,5 @@ from . import views
 
 urlpatterns = [
     url(r'^merge/', views.merge, name='merge'),
+    url(r'^merge-get/', views.merge_get, name='merge_get'),
 ]
