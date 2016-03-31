@@ -4,6 +4,7 @@ from .docMerge import mergeDocument
 from .xml4doc import getData
 from random import randint
 from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
 
 def getParamDefault(params, key, default):
     try:
@@ -60,6 +61,7 @@ def merge_raw(request, method="POST"):
         
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
 
+@csrf_exempt
 def merge(request):
     return JsonResponse(merge_raw(request))
     
