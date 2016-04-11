@@ -29,7 +29,7 @@ def merge_raw(request, method="POST"):
             print(param,":",params[param][:20],params[param][-20:])
         else:
             print(param,":",params[param])
-    site = request.build_absolute_uri().split("merge")[0] 
+    site = request.build_absolute_uri().split("/merge")[0]+"/"
     print("site=", site)            
     id = getParamDefault(params, "identifier", str(randint(0,10000)))
     flowFolder = getParamDefault(params, "flow_folder", "/Doc Merge/Flows")
