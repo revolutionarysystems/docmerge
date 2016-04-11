@@ -1,10 +1,11 @@
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from .docMerge import mergeDocument
 from .xml4doc import getData
 from random import randint
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
+from .merge_utils import get_output_dir, local_textfile_content
 
 def getParamDefault(params, key, default):
     try:
@@ -28,6 +29,8 @@ def merge_raw(request, method="POST"):
             print(param,":",params[param][:20],params[param][-20:])
         else:
             print(param,":",params[param])
+    site = request.build_absolute_uri().split("merge")[0] 
+    print("site=", site)            
     id = getParamDefault(params, "identifier", str(randint(0,10000)))
     flowFolder = getParamDefault(params, "flow_folder", "/Doc Merge/Flows")
     flow = getParamDefault(params, "flow", "md")
@@ -53,12 +56,8 @@ def merge_raw(request, method="POST"):
         subs["branding"]= branding_subs
         subs["AgreementDate"]=datetime.now()
     subs["docs"]=[templateName]
-    subs["roles"]=[
-        {"called":"Landlord", "values":["PropertyOwner", "AdditionalLandlord"]},
-        {"called":"Tenant", "values":["ManuallyInvitedTenant", "AdditionalTenant"]},
-        {"called":"Guarantor", "values":["Guarantor"]},
-    ]
-        
+    subs["site"]= site
+    print(site)        
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
 
 @csrf_exempt
@@ -67,3 +66,17 @@ def merge(request):
     
 def merge_get(request):
     return JsonResponse(merge_raw(request, method="GET"))
+
+def file_raw(request):
+    params = request.GET
+    filename = getParamDefault(params, "name", None)
+    filepath = getParamDefault(params, "path", get_output_dir())
+    #file_content=""
+    #with open(filepath+filename) as file:
+    #    for line in file:
+    #        file_content+=(line+"\n")
+    print(filepath,filename)
+    return local_textfile_content(filename, filepath=filepath)
+
+def file(request):
+    return HttpResponse(file_raw(request))

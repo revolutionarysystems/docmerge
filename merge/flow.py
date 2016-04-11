@@ -8,7 +8,7 @@ import os
 import json
 from .merge_utils import (substituteVariablesDocx, substituteVariablesPlain,
     convert_markdown, folder_file, folder, email_file, uploadAsGoogleDoc, uploadFile, 
-    exportFile, getFile, file_content_as)
+    exportFile, getFile, file_content_as, local_textfile_content)
 
 # retrieve flow definition from library
 def get_flow_resource(flow_folder, flow_file_name):
@@ -33,11 +33,13 @@ def process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMer
         return getFile(doc_id, localFileName+step["local_ext"], step["mimetype"])
 
 # perform a merge operation, either using more complex docx logic, or as plain text
-def process_merge(step, doc_id, localTemplateFileName, localMergedFileName, subs):
+def process_merge(step, doc_id, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, subs):
     if step["local_ext"]==".docx":
         outcome = substituteVariablesDocx(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
     else:
         outcome = substituteVariablesPlain(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+        outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
+
     return outcome
 
 # convert markdown format to html
@@ -65,13 +67,14 @@ def process_flow(cwd, flow, template_folder, template_name, uniq, subs, output_f
     doc_mimetype = doc["mimeType"]
     output_id = folder(output_folder)["id"]
     localTemplateFileName = cwd+"/merge/templates/"+template_name.split(".")[0]
-    localMergedFileName = cwd+"/merge/output/"+template_name.split(".")[0]+'_'+uniq
+    localMergedFileNameOnly = template_name.split(".")[0]+'_'+uniq
+    localMergedFileName = cwd+"/merge/output/"+localMergedFileNameOnly
     outcomes = []
     for step in flow:
         if step["step"]=="download":
             outcome = process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName)
         if step["step"]=="merge":
-            outcome = process_merge(step, doc_id, localTemplateFileName, localMergedFileName, subs)
+            outcome = process_merge(step, doc_id, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, subs)
         if step["step"]=="markdown":
             outcome = process_markdown(step, localMergedFileName)
         if step["step"]=="upload":

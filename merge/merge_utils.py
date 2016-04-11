@@ -420,6 +420,23 @@ def get_working_dir():
         cwd = cwd.replace("\scripts","")
     return cwd
 
+def get_output_dir():
+    cwd = os.getcwd()
+    if (cwd.find("home")>=0):  
+        opd = "/home/docmerge/docmerge/merge/output/"
+    else:  
+        opd = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\output\\"
+    return opd
+
+def local_textfile_content(filename, filepath=get_output_dir()):
+    file_content=""
+    with open(filepath+filename) as file:
+        for line in file:
+            file_content+=(line+"\n")
+    #return {"content":file_content}
+    return file_content
+
+
 
 
 SCOPES = 'https://www.googleapis.com/auth/drive'

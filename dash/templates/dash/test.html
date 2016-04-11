@@ -22,6 +22,9 @@
 		        {% if outcome.outcome.id %} 
 			        <li><a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ outcome.outcome.id }}/view" target="_blank">Link</a> {{ outcome.outcome.name }} - {{ outcome.outcome.mimeType }}</li>		 
 		        {% endif %}
+		        {% if outcome.outcome.link %} 
+			        <li><a href="{{ outcome.outcome.link }}" target="_blank">Link</a> {{ outcome.outcome.file }}</li>		 
+		        {% endif %}
 		        </ul>
 		{% endfor %}
 		</ul>
