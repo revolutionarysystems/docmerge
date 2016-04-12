@@ -70,6 +70,7 @@ def process_flow(cwd, flow, template_folder, template_name, uniq, subs, output_f
     localMergedFileNameOnly = template_name.split(".")[0]+'_'+uniq
     localMergedFileName = cwd+"/merge/output/"+localMergedFileNameOnly
     outcomes = []
+    overall_outcome = {}
     for step in flow:
         if step["step"]=="download":
             outcome = process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName)
@@ -83,5 +84,13 @@ def process_flow(cwd, flow, template_folder, template_name, uniq, subs, output_f
         if step["step"]=="email":
             outcome = process_email(step, localMergedFileName, you, email_credentials)
         outcomes.append({"step":step["name"], "outcome":outcome})
-    return outcomes
+        print(outcome)
+        for key in outcome.keys():
+            if key in ["link","id", "mimeType"]:
+                overall_outcome[key]=outcome[key]
+    overall_outcome["success"]=True
+    overall_outcome["messages"]=[{"level":"info", "message": "sample message 1"}]
+    overall_outcome["steps"]=outcomes
+
+    return overall_outcome
 

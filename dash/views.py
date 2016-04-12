@@ -3,7 +3,7 @@ from django.shortcuts import render
 from .forms import MergeForm, SimpleMergeForm, MinimalMergeForm
 from .models import MergeJob
 from merge.merge_utils import folder_files
-from merge.views import merge_raw
+from merge.views import merge_raw_wrapped
 
 # Create your views here.
 
@@ -64,7 +64,7 @@ def test_result(mergeForm, request, method="POST"):
     )
     mergeForm = SimpleMergeForm(instance=mergeJob)
     advMergeForm = MergeForm(instance=mergeJob)
-    json_response = merge_raw(request, method=method)
+    json_response = merge_raw_wrapped(request, method=method)
     return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response})
 
 def test_result_get(request):

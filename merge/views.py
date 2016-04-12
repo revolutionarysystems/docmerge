@@ -63,15 +63,28 @@ def merge_raw(request, method="POST"):
         subs["AgreementDate"]=datetime.now()
     subs["docs"]=[templateName]
     subs["site"]= site
-    print(site)        
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
+
+def error_response(ex):
+    overall_outcome = {}
+    overall_outcome["success"]=False
+    overall_outcome["messages"]=[{"level":"error", "message": str(ex)}]
+    overall_outcome["steps"]=[]
+    return overall_outcome
+
+def merge_raw_wrapped(request, method="POST"):
+    try:
+        return merge_raw(request, method=method)
+    except Exception as ex:
+        return error_response(ex)
+
 
 @csrf_exempt
 def merge(request):
-    return JsonResponse(merge_raw(request))
+    return JsonResponse(merge_raw_wrapped(request))
     
 def merge_get(request):
-    return JsonResponse(merge_raw(request, method="GET"))
+    return JsonResponse(merge_raw_wrapped(request, method="GET"))
 
 def file_raw(request):
     params = request.GET

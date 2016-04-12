@@ -16,7 +16,14 @@
 	        </form>
 	 	<h3><a href=""><span class="glyphicon glyphicon-info-sign"></span> Result</a></h2>
 		 <ul>
-	        {% for outcome in merge_response.outcomes %}
+		<h4>Overall success:</h4>
+		<li>{{ merge_response.success}}</li>
+		<h4>Messages:</h4>
+		{% for message in merge_response.messages %}
+		        <li>{{ message }}</li>
+		{% endfor %}
+		<h4>Steps:</h4>
+	        {% for outcome in merge_response.steps %}
 		        <li>{{ outcome.step }}</li>
 		        <ul>
 		        {% if outcome.outcome.id %} 
