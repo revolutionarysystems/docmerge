@@ -17,9 +17,21 @@ def get_flow_resource(flow_folder, flow_file_name):
     str_content = '{"flow":'+doc_content.decode("utf-8")+'}'
     return json.loads(str_content)["flow"]
 
-def get_flow(flow_folder, flowcode):
+# retrieve flow definition locally
+def get_flow_local(cwd, flow_local_folder, flow_file_name):
+    try:
+        with open(cwd+"/merge/"+flow_local_folder+flow_file_name, "r") as flow_file:
+            str_content = '{"flow":'+flow_file.read()+'}'
+        return json.loads(str_content)["flow"]
+    except FileNotFoundError:
+        return None
+
+def get_flow(cwd, flow_local_folder, flow_folder, flow_file_name):
     # potential pre-processing here
-    return get_flow_resource(flow_folder, flowcode)
+    flow = get_flow_local(cwd, flow_local_folder, flow_file_name)
+    if flow == None:
+        flow = get_flow_resource(flow_folder, flow_file_name)
+    return flow
 
 # perform a download from Google drive, either as an export or getting content directly
 def process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName):

@@ -1,1 +1,8 @@
-<brand><brandname>9 yds</brandname></brand>
+<brand>
+    <brandname>9yds</brandname>
+    <agent_name>9yds</agent_name>
+    <agent_address>9yds, PO Box 459, Gravesend, DA12 9JW</agent_address>
+    <agent_phone>0333 006 3000</agent_phone>
+    <agent_fax></agent_fax>
+    <agent_email>theteam@9yds-testing.co.uk</agent_email>
+</brand>

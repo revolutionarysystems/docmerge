@@ -14,9 +14,8 @@ email_credentials = {"username":"andrewcaelliott@gmail.com", "password":"napier"
 #    cwd = cwd+"/docmerge"
 
 cwd = get_working_dir()
-
 def mergeDocument(flow_folder, flow, template_folder, template_name, uniq, subs, output_folder, email="andrew.elliott+epub@revolutionarysystems.co.uk"):
-    response = process_flow(cwd, get_flow(flow_folder, flow), template_folder, template_name, uniq, subs, output_folder, email, email_credentials)
+    response = process_flow(cwd, get_flow(cwd, "flows/", flow_folder, flow), template_folder, template_name, uniq, subs, output_folder, email, email_credentials)
     return response
 
 

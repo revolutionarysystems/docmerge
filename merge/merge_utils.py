@@ -41,10 +41,9 @@ def get_credentials():
     """
     home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir, '.credentials')
-    print(credential_dir)
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir,
+    credential_path = os.path.join(credential_dir, 
                                    'drive-python-quickstart.json')
 
     store = oauth2client.file.Storage(credential_path)
@@ -166,9 +165,19 @@ def preprocess(text):
     text = text.replace("{% #A %}", "{% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'%}")    
     text = text.replace("{% #9 %}", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' as level1 %}")    
     text = text.replace("{% #9= %}", "{{ level1 }}")    
-    print(text)
     return text
 
+
+def docx_copy_run_style_from(run1, run2):
+    run1.font.color.rgb = run2.font.color.rgb
+    run1.font.all_caps = run2.font.all_caps
+    run1.font.bold = run2.font.bold
+    run1.font.italic = run2.font.italic
+    run1.font.size = run2.font.size
+    run1.font.underline = run2.font.underline
+    #complex_script, cs_bold, cs_italic, double_strike, emboss, hidden, highlight_color,
+    #imprint, math, name, no_proof, outline, rtl, shadow, small_caps, snap_to_grid, spec_vanish, 
+    #strike, superscript, underline, web_hidden
 
 def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
     c = Context(subs)
@@ -182,6 +191,8 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
         runs = para.runs
         j = 0
         for run in runs:
+            print(run.text, run.font)
+
             txt = run.text
             paraText+= txt+"+"+str(j)+"+run+"
             j+=1
@@ -199,7 +210,7 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
     fullText = preprocess(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
-#    print(xtxt)
+    print(xtxt)
     xParaTxts = xtxt.split("+para+")
     used = []
     unused = list(range(0,len(paras)))
@@ -249,13 +260,14 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
                     except:
                         txt=""
                     run_n = int(runTxt.split("+")[-1])
+                    print(para_n, run_n, txt, paras[para_n].runs[run_n].font)
                     r = paras[para_n].runs[run_n]
                     if ('{' in r.text):
                         r.text = txt
                     elif reused:
-                        p.add_run(text=txt, style=paras[para_n].runs[run_n].style)
-            #print(p.text)
- #   print(unused)
+                        run = p.add_run(text=txt, style=paras[para_n].runs[run_n].style)
+                        docx_copy_run_style_from(run, paras[para_n].runs[run_n])
+
     for unused_p in unused:
         p = paras[unused_p]
         removePara(p)
@@ -374,6 +386,25 @@ def folder(path, parent='root'):
 def folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
     foldr = folder(path, parent)
     return folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+
+def refresh_files(path, local_dir, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
+    foldr = folder(path, parent)
+    files = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+    files_info=[]
+    for file in files:
+        doc_id =file["id"]
+        cwd = get_working_dir()
+        localFileName = cwd+"/merge/"+local_dir+"/"+file["name"]
+        if file["mimeType"] == 'application/vnd.google-apps.document':
+            if localFileName.find(".") < 0: # no extension
+                files_info.append(exportFile(doc_id, localFileName+".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+            else:
+                files_info.append(exportFile(doc_id, localFileName, "text/plain"))
+        else:
+            files_info.append(getFile(doc_id, localFileName, file["mimeType"]))
+    return files_info
+
+
     
 def folder_file(path, name, parent='root', mimeType='*'):
     foldr = folder(path, parent)

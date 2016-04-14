@@ -5,7 +5,7 @@ from .xml4doc import getData
 from random import randint
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
-from .merge_utils import get_output_dir, local_textfile_content
+from .merge_utils import get_output_dir, local_textfile_content, refresh_files
 
 def getParamDefault(params, key, default):
     try:
@@ -62,6 +62,11 @@ def merge_raw(request, method="POST"):
         subs["branding"]= branding_subs
         subs["AgreementDate"]=datetime.now()
     subs["docs"]=[templateName]
+    subs["roles"]=[
+        {"called":"Landlord", "values":["PropertyOwner", "AdditionalLandlord"]},
+        {"called":"Tenant", "values":["ManuallyInvitedTenant", "AdditionalTenant"]},
+        {"called":"Guarantor", "values":["Guarantor"]},
+    ]    
     subs["site"]= site
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
 
@@ -77,7 +82,6 @@ def merge_raw_wrapped(request, method="POST"):
         return merge_raw(request, method=method)
     except Exception as ex:
         return error_response(ex)
-
 
 @csrf_exempt
 def merge(request):
@@ -99,3 +103,28 @@ def file_raw(request):
 
 def file(request):
     return HttpResponse(file_raw(request))
+
+def refresh(request):
+    try:
+        params = request.GET
+        local = getParamDefault(params, "local", "templates")
+        if local == "templates":
+            remote_default = "/Doc Merge/Templates"
+        elif local == "flows":
+            remote_default = "/Doc Merge/Flows"    
+        elif local == "branding":
+            remote_default = "/Doc Merge/Branding"    
+        elif local == "test_data":
+            remote_default = "/Doc Merge/Test Data"    
+        elif local == "transforms":
+            remote_default = "/Doc Merge/Transforms"
+        else:
+            remote_default = None    
+
+        remote = getParamDefault(params, "remote", remote_default)
+        files = refresh_files(remote, local)
+        response = {"refreshed_files":files}
+    except Exception as ex:
+        response = error_response(ex)
+    return JsonResponse(response)
+

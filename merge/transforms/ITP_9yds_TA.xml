@@ -1,0 +1,44 @@
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="#default,#all">
+
+<xsl:template match="/">
+    <docroot>
+        <xsl:for-each select = "ItpDocumentRequest/*">
+            <xsl:copy-of select = "."/>
+        </xsl:for-each>
+        <userRegisteringDeposit>
+            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[IsRegisteringDeposit='true']/*">
+                <xsl:copy-of select = "."/>
+            </xsl:for-each>
+        </userRegisteringDeposit>
+        <landlords list="true">
+            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='PropertyOwner']">
+                <xsl:copy-of select = "."/>
+            </xsl:for-each>
+            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='AdditionalLandlord']">
+                <xsl:copy-of select = "."/>
+            </xsl:for-each>
+        </landlords>
+        <tenants list="true">
+            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='ManuallyInvitedTenant']">
+                <xsl:copy-of select = "."/>
+            </xsl:for-each>
+            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='AdditionalTenant']">
+                <xsl:copy-of select = "."/>
+            </xsl:for-each>
+        </tenants>
+        <guarantors list="true">
+            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='Guarantor']">
+                <xsl:copy-of select = "."/>
+            </xsl:for-each>
+        </guarantors>
+        <agentSignatory>
+            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='PropertyOwner' and AgencyStaff='true' and SigningUser='true']">
+                <xsl:copy-of select = "."/>
+            </xsl:for-each>
+        </agentSignatory>
+    </docroot>
+    <xsl:copy-of select="/"/>
+</xsl:template>
+
+</xsl:stylesheet>
