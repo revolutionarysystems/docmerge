@@ -19,10 +19,12 @@
 		 <ul>
 		<h4>Overall success:</h4>
 		<li>{{ merge_response.success}}</li>
+		{% if merge_response.messages %}
 		<h4>Messages:</h4>
 		{% for message in merge_response.messages %}
 		        <li>{{ message }}</li>
 		{% endfor %}
+		{% endif %}
 		<h4>Steps:</h4>
 	        {% for outcome in merge_response.steps %}
 		        <li>{{ outcome.step }}</li>

@@ -467,7 +467,27 @@ def local_textfile_content(filename, filepath=get_output_dir()):
     #return {"content":file_content}
     return file_content
 
+def get_remote_txt_content(data_folder, data_file):
+    data_doc_id = folder_file(data_folder, data_file)["id"]
+    doc_txt = file_content_as(data_doc_id)
+    return doc_txt
 
+def get_local_txt_content(cwd, data_folder, data_file):
+#def get_flow_local(cwd, flow_local_folder, flow_file_name):
+    try:
+        with open(cwd+"/merge/"+data_folder+data_file, "r") as file:
+            return  file.read()
+    except FileNotFoundError:
+        return None
+
+def get_txt_content(local_data_folder, remote_data_folder, data_file):
+    content = get_local_txt_content(get_working_dir(), local_data_folder, data_file)
+    if content == None:
+        content = get_remote_txt_content(remote_data_folder, data_file)
+    return content
+
+def get_xml_content(local_data_folder, remote_data_folder, data_file):
+    return get_txt_content(local_data_folder, remote_data_folder, data_file)
 
 
 SCOPES = 'https://www.googleapis.com/auth/drive'

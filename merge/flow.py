@@ -33,6 +33,8 @@ def get_flow(cwd, flow_local_folder, flow_folder, flow_file_name):
         flow = get_flow_resource(flow_folder, flow_file_name)
     return flow
 
+
+
 # perform a download from Google drive, either as an export or getting content directly
 def process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName):
     if step["folder"]=="templates":
@@ -101,7 +103,7 @@ def process_flow(cwd, flow, template_folder, template_name, uniq, subs, output_f
             if key in ["link","id", "mimeType"]:
                 overall_outcome[key]=outcome[key]
     overall_outcome["success"]=True
-    overall_outcome["messages"]=[{"level":"info", "message": "sample message 1"}]
+    overall_outcome["messages"]=[]
     overall_outcome["steps"]=outcomes
 
     return overall_outcome

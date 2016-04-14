@@ -1,5 +1,6 @@
-from merge.merge_utils import folder_files, refresh_files, get_working_dir
+from merge.merge_utils import folder_files, refresh_files, get_working_dir, get_xml_content
 from merge.flow import get_flow_local, get_flow
+from merge.xml4doc import getData
 
 def run1():
     files = folder_files("/Doc Merge/Flows",fields="files(id, name, mimeType, trashed)")
@@ -14,10 +15,16 @@ def run2():
     for file in files:
         print(file)
 
-def run():
+def run3():
     run2()
     cwd = get_working_dir()
     print(cwd)
     flow = get_flow(cwd, "flows/", "/Doc Merge/Flows", "docx2.txt")
     print(flow)
 
+
+def run():
+    #content = get_xml_content("branding", "/Doc Merge/Branding", "superll.xml")
+    content = getData(local_data_folder="branding", remote_data_folder = "/Doc Merge/Branding", data_file="superll.xml")
+    print(content)
+    

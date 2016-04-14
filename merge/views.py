@@ -51,14 +51,14 @@ def merge_raw(request, method="POST"):
     xform_file = getParamDefault(params, "xform_file", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
     email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
-    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, data_folder = data_folder, data_file=data_file, xform_folder = xform_folder, xform_file=xform_file)
+    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, local_data_folder="test_data", remote_data_folder = data_folder, data_file=data_file, xform_folder = xform_folder, xform_file=xform_file)
     if data_root:
         if data_root in subs:
             subs = subs[data_root]
         else:
             raise ValueError("Invalid data_root: " + data_root)
     if branding_file:
-        branding_subs = getData(data_folder = branding_folder, data_file=branding_file)
+        branding_subs = getData(local_data_folder = "branding", remote_data_folder = branding_folder, data_file=branding_file)
         subs["branding"]= branding_subs
         subs["AgreementDate"]=datetime.now()
     subs["docs"]=[templateName]

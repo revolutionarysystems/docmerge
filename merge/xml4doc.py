@@ -2,7 +2,7 @@ import xmltodict
 import json
 import datetime
 from .testData import xml0, xml1
-from .merge_utils import folder_file,file_content_as
+from .merge_utils import folder_file,file_content_as,get_xml_content
 import lxml.etree as etree
 xml = '''
 <ItpDocumentRequest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -898,21 +898,20 @@ def force_lists(doc):
             doc[key]=goodlist
     return doc
 
-def xform_xml(content, xform_folder, xform_file):
+def xform_xml(content, local_folder, remote_folder, xform_file):
     dom = etree.fromstring(content)
-    xslt = etree.fromstring(get_xml_content(xform_folder, xform_file))
+    xslt = etree.fromstring(get_xml_content(local_folder, remote_folder, xform_file))
     transform = etree.XSLT(xslt)
     newdom = transform(dom)
     return etree.tostring(newdom, pretty_print=True).decode("utf-8")
 
-def getData(test_case = None, payload=None, payload_type="xml", data_file=None, data_folder = None, xform_folder = None, xform_file = None):
+def getData(test_case = None, payload=None, payload_type="xml", data_file=None, remote_data_folder = None, local_data_folder = None, xform_folder = None, xform_file = None):
     data = None
     #print(xform_file, payload[:10], payload_type)
     if payload and payload_type.lower()=="xml":
         print(xform_file)
         if xform_file:
-            print("transforming")
-            payload = xform_xml(payload, xform_folder, xform_file)
+            payload = xform_xml(payload, "transforms", xform_folder, xform_file)
         data = xmltodict.parse(payload)
     elif payload and payload_type=="json":
         data = json.loads(payload)
@@ -922,11 +921,11 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
     elif test_case == "1":
         data = xmltodict.parse(xml1) 
     elif data_file:
-        data_doc_id = folder_file(data_folder, data_file)["id"]
-#        doc_xml = dat_doc_id
-        doc_xml = file_content_as(data_doc_id)
+        doc_xml = get_xml_content(local_data_folder, remote_data_folder, data_file)
+#        data_doc_id = folder_file(data_folder, data_file)["id"]
+#        doc_xml = file_content_as(data_doc_id)
         if xform_file:
-            doc_xml = xform_xml(doc_xml, xform_folder, xform_file)
+            doc_xml = xform_xml(doc_xml, "transforms", xform_folder, xform_file)
         data = xmltodict.parse(doc_xml) 
     if data == None: #default
         data = xmltodict.parse(xml)
@@ -935,8 +934,4 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
 
 #print(json.dumps(getData(), indent=2))
 
-def get_xml_content(data_folder, data_file):
-    data_doc_id = folder_file(data_folder, data_file)["id"]
-    doc_xml = file_content_as(data_doc_id)
-    return doc_xml
 
