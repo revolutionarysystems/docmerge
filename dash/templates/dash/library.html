@@ -6,6 +6,10 @@
                 {% for widget in widgets %}
                     <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
                         <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
+                    <form id = "quickTest" method="GET" class="query-form" action="/refresh/" target="_blank">
+                            {{ widget.refreshForm.as_p }}
+                    <button id="quickTestButton" type="submit" class="save btn btn-warning">Refresh</button>
+                    </form>
                         {% for file in widget.files %}
                             <p><a href="https://drive.google.com/open?id={{ file.id}}" target="_blank">Edit</a> <a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">View</a> {{ file.name }} - {{ file.mimeType }}</p>
                         {% endfor %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import MergeJob
+from .models import MergeJob, RefreshJob
 
 class MergeForm(forms.ModelForm):
     class Meta:
@@ -21,8 +21,11 @@ class SimpleMergeForm(forms.ModelForm):
         	'xform_file',
         	)                
 
-class MinimalMergeForm(forms.ModelForm):
+class RefreshForm(forms.ModelForm):
     class Meta:
-        model = MergeJob
-        fields = ()
+        model = RefreshJob
+        fields = (
+            'local', 'remote',
+            )                
+
     

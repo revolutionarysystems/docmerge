@@ -19,3 +19,7 @@ class MergeJob(models.Model):
     xform_folder = models.CharField(max_length=100)
     xform_file = models.CharField(max_length=100, choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Transforms")])
 
+class RefreshJob(models.Model):
+
+    local = models.CharField(max_length=100)
+    remote = models.CharField(max_length=100)

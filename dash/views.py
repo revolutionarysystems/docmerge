@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import render
-from .forms import MergeForm, SimpleMergeForm, MinimalMergeForm
-from .models import MergeJob
+from .forms import MergeForm, SimpleMergeForm, RefreshForm
+from .models import MergeJob, RefreshJob
 from merge.merge_utils import folder_files
 from merge.views import merge_raw_wrapped
 
@@ -75,18 +75,24 @@ def test_result_post(request):
     mergeForm =  MergeForm(request.POST)
     return test_result(mergeForm, request, method="POST")
 
+def refresh_form(local):
+    refreshJob=RefreshJob(local=local)
+    refreshForm = RefreshForm(instance=refreshJob)
+    return refreshForm
+
 def library(request):
     widgets = []
+    
     files = folder_files("/Doc Merge/Templates",fields="files(id, name, mimeType)")
-    widgets.append({"title":"Templates", "files":files, "glyph":"glyphicon glyphicon-file"})
+    widgets.append({"title":"Templates", "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form("templates")})
     files = folder_files("/Doc Merge/Test Data",fields="files(id, name, mimeType)")
-    widgets.append({"title":"Test Cases", "files":files, "glyph":"glyphicon glyphicon-tags"})
+    widgets.append({"title":"Test Data", "files":files, "glyph":"glyphicon glyphicon-tags", "refreshForm": refresh_form("test_data")})
     files = folder_files("/Doc Merge/Branding",fields="files(id, name, mimeType)")
-    widgets.append({"title":"Branding", "files":files, "glyph":"glyphicon glyphicon-certificate"})
+    widgets.append({"title":"Branding", "files":files, "glyph":"glyphicon glyphicon-certificate", "refreshForm": refresh_form("branding")})
     files = folder_files("/Doc Merge/Flows",fields="files(id, name, mimeType)")
-    widgets.append({"title":"Flows", "files":files, "glyph":"glyphicon glyphicon-tasks"})
+    widgets.append({"title":"Flows", "files":files, "glyph":"glyphicon glyphicon-tasks", "refreshForm": refresh_form("flows")})
     files = folder_files("/Doc Merge/Transforms",fields="files(id, name, mimeType)")
-    widgets.append({"title":"Transforms", "files":files, "glyph":"glyphicon glyphicon-transfer"})
+    widgets.append({"title":"Transforms", "files":files, "glyph":"glyphicon glyphicon-transfer", "refreshForm": refresh_form("transforms")})
     return render(request, 'dash/library.html', {"widgets":widgets})
 
 def archive(request):
