@@ -6,6 +6,7 @@ from random import randint
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 from .merge_utils import get_local_dir, local_textfile_content, refresh_files
+from traceback import format_exc
 
 def getParamDefault(params, key, default):
     try:
@@ -32,6 +33,8 @@ def merge_raw(request, method="POST"):
     flow = getParamDefault(params, "flow", "md")
     remoteTemplateFolder = getParamDefault(params, "template_folder", "/Doc Merge/Templates")
     remoteOutputFolder = getParamDefault(params, "output_folder", "/Doc Merge/Output")
+    template_subfolder = getParamDefault(params, "template_subfolder", None)
+    output_subfolder = getParamDefault(params, "output_subfolder", None)
     payload = getParamDefault(params, "payload", None)
     payload_type = getParamDefault(params, "payload_type", None)
     test_case = getParamDefault(params, "test_case", None)
@@ -61,7 +64,9 @@ def merge_raw(request, method="POST"):
         {"called":"Guarantor", "values":["Guarantor"]},
     ]    
     subs["site"]= site
-    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload)    
+#    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload)    
+    return mergeDocument(flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
+                        remoteOutputFolder, output_subfolder, email=email, payload=payload)    
 
 
 def push_raw(request, method="POST"):
@@ -89,6 +94,8 @@ def push_raw(request, method="POST"):
 #    xform_folder = getParamDefault(params, "xform_folder", "/Doc Merge/Transforms")
 #    xform_file = getParamDefault(params, "xform_file", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
+    template_subfolder = getParamDefault(params, "template_subfolder", None)
+    output_subfolder = getParamDefault(params, "output_subfolder", None)
     email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
  #   subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, local_data_folder="test_data", remote_data_folder = data_folder, data_file=data_file, xform_folder = xform_folder, xform_file=xform_file)
 #    if data_root:
@@ -108,7 +115,8 @@ def push_raw(request, method="POST"):
 #    ]    
     subs={}
     subs["site"]= site
-    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload, require_template=False)    
+    return mergeDocument(flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
+                        remoteOutputFolder, output_subfolder, email=email, payload=payload, require_template=False)    
 
 
 def error_response(ex):
@@ -116,6 +124,8 @@ def error_response(ex):
     overall_outcome["success"]=False
     overall_outcome["messages"]=[{"level":"error", "message": str(ex)}]
     overall_outcome["steps"]=[]
+    overall_outcome["traceback"]=format_exc(5)
+
     return overall_outcome
 
 def merge_raw_wrapped(request, method="POST"):

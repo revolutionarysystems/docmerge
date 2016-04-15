@@ -15,8 +15,10 @@ email_credentials = {"username":"andrewcaelliott@gmail.com", "password":"napier"
 
 cwd = get_working_dir()
 cwd = cwd.replace("\\", "/")
-def mergeDocument(flow_folder, flow, template_folder, template_name, uniq, subs, output_folder, email="andrew.elliott+epub@revolutionarysystems.co.uk", payload="", require_template=True):
-    response = process_flow(cwd, get_flow(cwd, "flows/", flow_folder, flow), template_folder, template_name, uniq, subs, output_folder, email, email_credentials, payload=payload, require_template=require_template)
+def mergeDocument(flow_folder, flow, template_folder, template_subfolder, template_name, 
+	                uniq, subs, output_folder, output_subfolder, email="andrew.elliott+epub@revolutionarysystems.co.uk", payload="", require_template=True):
+    response = process_flow(cwd, get_flow(cwd, "flows", flow_folder, flow), template_folder, template_subfolder,
+    			template_name, uniq, subs, output_folder, output_subfolder, email, email_credentials, payload=payload, require_template=require_template)
     return response
 
 

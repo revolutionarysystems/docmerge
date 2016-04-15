@@ -20,7 +20,6 @@ def get_flow_resource(flow_folder, flow_file_name):
 # retrieve flow definition locally
 def get_flow_local(cwd, flow_local_folder, flow_file_name):
     try:
-        print(cwd+"/merge/"+flow_local_folder+"/"+flow_file_name)
         with open(cwd+"/merge/"+flow_local_folder+"/"+flow_file_name, "r") as flow_file:
             str_content = '{"flow":'+flow_file.read()+'}'
         return json.loads(str_content)["flow"]
@@ -48,7 +47,7 @@ def process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMer
         return getFile(doc_id, localFileName+step["local_ext"], step["mimetype"])
 
 # perform a merge operation, either using more complex docx logic, or as plain text
-def process_merge(step, doc_id, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, subs):
+def process_merge(step, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, subs):
     if step["local_ext"]==".docx":
         outcome = substituteVariablesDocx(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
     else:
@@ -64,7 +63,6 @@ def process_markdown(step, localMergedFileName):
 
 # upload to Google drive, optionally converting to Google Drive format
 def process_upload(step, localFileName, output_id):
-    print(">>process_upload")
     localFileName = localFileName
     if step["convert"]=="gdoc":
         return uploadAsGoogleDoc(localFileName+step["local_ext"], output_id, step["mimetype"])
@@ -76,45 +74,49 @@ def process_email(step, localFileName, you, credentials):
     return email_file(localFileName, step["from"], you, step["subject"], credentials) 
 
 # push file to server
-def process_push(cwd, step, localFileName, subs, payload=""):
+def process_push(cwd, step, localFileName, template_local_folder, subs, payload=""):
     file_name = push_local_txt(cwd, step["folder"], localFileName+step["local_ext"], payload)  
-    return {"file":file_name, "link":subs["site"]+"file/?name="+file_name.split("/")[-1]+"&path="+step["folder"]}
+    return {"file":file_name, "link":subs["site"]+"file/?name="+file_name.split("/")[-1]+"&path="+template_local_folder}
     #return {"file":file_name}
 
 # Process all steps in the flow: grab the template document, construct local path names and then invoke steps in turn
-def process_flow(cwd, flow, template_folder, template_name, uniq, subs, output_folder, you, email_credentials, payload=None, require_template=True):
-    print(">>> flow")
-    if require_template:
-        doc = folder_file(template_folder, template_name)
-        doc_id = doc["id"]
-        doc_mimetype = doc["mimeType"]
+def process_flow(cwd, flow, template_remote_folder, template_subfolder, template_name, uniq, subs, output_folder, output_subfolder, you, email_credentials, payload=None, require_template=True):
     output_id = folder(output_folder)["id"]
-    template_id = folder(template_folder)["id"]
-    localTemplateFileName = cwd+"/merge/templates/"+template_name.split(".")[0]
+    template_id = folder(template_remote_folder)["id"]
+    template_local_folder = cwd+"/merge/templates/"
+    if template_subfolder:
+        template_local_folder+=template_subfolder+"/"
+        if not os.path.exists(template_local_folder):
+            os.makedirs(template_local_folder)
+    localTemplateFileName = template_local_folder+template_name.split(".")[0]
     localMergedFileNameOnly = template_name.split(".")[0]+'_'+uniq
-    local_folder = "output"
-
-    localMergedFileName = cwd+"/merge/"+local_folder+"/"+localMergedFileNameOnly
+    output_folder = "output"
+    if output_subfolder:
+        output_folder+=output_subfolder+"/"
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+    localMergedFileName = cwd+"/merge/"+output_folder+"/"+localMergedFileNameOnly
     outcomes = []
     overall_outcome = {}
     for step in flow:
-        print(step)
         try:
             local_folder = step["folder"]
         except:
-            pass
-        print(local_folder)
+            local_folder = output_folder
         if local_folder=="templates":
             localFileName = localTemplateFileName
             upload_id = template_id
         else:
             localFileName = localMergedFileName
             upload_id = output_id
-        print(localFileName)
         if step["step"]=="download":
+            if require_template:
+                doc = folder_file(template_remote_folder, template_name)
+                doc_id = doc["id"]
+                doc_mimetype = doc["mimeType"]
             outcome = process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName)
         if step["step"]=="merge":
-            outcome = process_merge(step, doc_id, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, subs)
+            outcome = process_merge(step, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, subs)
         if step["step"]=="markdown":
             outcome = process_markdown(step, localMergedFileName)
         if step["step"]=="upload":
@@ -123,9 +125,8 @@ def process_flow(cwd, flow, template_folder, template_name, uniq, subs, output_f
         if step["step"]=="email":
             outcome = process_email(step, localMergedFileName, you, email_credentials)
         if step["step"]=="push":
-            outcome = process_push(cwd, step, localTemplateFileName, subs, payload=payload)
+            outcome = process_push(cwd, step, localTemplateFileName, "templates/"+template_subfolder+"/", subs, payload=payload)
         outcomes.append({"step":step["name"], "outcome":outcome})
-        print(outcome)
         for key in outcome.keys():
             if key in ["link","id", "mimeType"]:
                 overall_outcome[key]=outcome[key]

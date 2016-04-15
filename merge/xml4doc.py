@@ -898,7 +898,19 @@ def force_lists(doc):
             doc[key]=goodlist
     return doc
 
+def strip_xml_dec(content):
+    print(content[:20])
+    xml_dec_start = content.find("<?xml")
+    if xml_dec_start>=0:
+        return content[content.find(">")+1:]
+    else:
+        return content
+
 def xform_xml(content, local_folder, remote_folder, xform_file):
+    print(type(content))
+    if type(content) is bytes:
+        content = content.decode("UTF-8")
+    content = strip_xml_dec(content)
     dom = etree.fromstring(content)
     xslt = etree.fromstring(get_xml_content(local_folder, remote_folder, xform_file))
     transform = etree.XSLT(xslt)
@@ -909,7 +921,6 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
     data = None
     #print(xform_file, payload[:10], payload_type)
     if payload and payload_type.lower()=="xml":
-        print(xform_file)
         if xform_file:
                 payload = xform_xml(payload, "transforms", xform_folder, xform_file)
         data = xmltodict.parse(payload)
