@@ -1,4 +1,4 @@
-from merge.merge_utils import folder_files, refresh_files, get_working_dir, get_xml_content
+from merge.merge_utils import folder_files, refresh_files, get_working_dir, get_xml_content, push_local_txt
 from merge.flow import get_flow_local, get_flow
 from merge.xml4doc import getData
 
@@ -23,8 +23,12 @@ def run3():
     print(flow)
 
 
-def run():
+def run4():
     #content = get_xml_content("branding", "/Doc Merge/Branding", "superll.xml")
     content = getData(local_data_folder="branding", remote_data_folder = "/Doc Merge/Branding", data_file="superll.xml")
     print(content)
     
+def run():
+    cwd = get_working_dir()
+    file_name = push_local_txt(cwd, "branding", "text.xml", "<brand/>")
+    print(file_name)

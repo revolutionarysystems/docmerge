@@ -296,7 +296,12 @@ def uploadFile(fileName, folder, mimeType):
     media = MediaFileUpload(fileName, mimetype=mimeType, resumable=True)
     request = service.files().create(body=body, media_body=media)
     upload = request.execute()
-    return upload
+    id =upload["id"]
+    body ={}
+    body["name"]=fileName.split("/")[-1]
+    update_request = service.files().update(fileId=id, body=body)
+    update = update_request.execute()
+    return update
 
 def getPdf(doc_id, fileNameOut="writeTest.pdf"): #assuming a google docs file
     content_pdf = file_export(service, doc_id)
@@ -454,14 +459,22 @@ def get_working_dir():
 def get_output_dir():
     cwd = os.getcwd()
     if (cwd.find("home")>=0):  
-        opd = "/home/docmerge/docmerge/merge/output/"
+        opd = "/home/docmerge/docmerge/merge/output"
     else:  
-        opd = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\output\\"
+        opd = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\output"
+    return opd
+
+def get_local_dir(local):
+    cwd = os.getcwd()
+    if (cwd.find("home")>=0):  
+        opd = "/home/docmerge/docmerge/merge/"+local
+    else:  
+        opd = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\"+local
     return opd
 
 def local_textfile_content(filename, filepath=get_output_dir()):
     file_content=""
-    with open(filepath+filename) as file:
+    with open(filepath+"/"+filename) as file:
         for line in file:
             file_content+=(line+"\n")
     #return {"content":file_content}
@@ -488,6 +501,13 @@ def get_txt_content(local_data_folder, remote_data_folder, data_file):
 
 def get_xml_content(local_data_folder, remote_data_folder, data_file):
     return get_txt_content(local_data_folder, remote_data_folder, data_file)
+
+def push_local_txt(cwd, data_folder, data_file, payload):
+    full_file_path = data_file
+    with open(full_file_path, "w") as file:
+        file.write(payload)
+        file.close()
+    return full_file_path
 
 
 SCOPES = 'https://www.googleapis.com/auth/drive'

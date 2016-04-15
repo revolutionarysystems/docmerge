@@ -911,7 +911,7 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
     if payload and payload_type.lower()=="xml":
         print(xform_file)
         if xform_file:
-            payload = xform_xml(payload, "transforms", xform_folder, xform_file)
+                payload = xform_xml(payload, "transforms", xform_folder, xform_file)
         data = xmltodict.parse(payload)
     elif payload and payload_type=="json":
         data = json.loads(payload)

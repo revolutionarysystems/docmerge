@@ -5,7 +5,7 @@ from .xml4doc import getData
 from random import randint
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
-from .merge_utils import get_output_dir, local_textfile_content, refresh_files
+from .merge_utils import get_local_dir, local_textfile_content, refresh_files
 
 def getParamDefault(params, key, default):
     try:
@@ -24,16 +24,9 @@ def merge_raw(request, method="POST"):
         params = request.GET
     else:
         params = request.POST
-    for param in params:
-        if param=="payload":
-            print(param,":",params[param][:20],params[param][-20:])
-        else:
-            print(param,":",params[param])
     abs_uri = request.build_absolute_uri()            
-    print("abs_uri=", abs_uri)            
     protocol, uri = abs_uri.split("://")
     site = protocol+"://"+uri.split("/")[0]+"/"
-    print("site=", site)            
     id = getParamDefault(params, "identifier", str(randint(0,10000)))
     flowFolder = getParamDefault(params, "flow_folder", "/Doc Merge/Flows")
     flow = getParamDefault(params, "flow", "md")
@@ -68,7 +61,55 @@ def merge_raw(request, method="POST"):
         {"called":"Guarantor", "values":["Guarantor"]},
     ]    
     subs["site"]= site
-    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email)    
+    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload)    
+
+
+def push_raw(request, method="POST"):
+    print(">> push_raw")
+    if method=="GET":
+        params = request.GET
+    else:
+        params = request.POST
+    abs_uri = request.build_absolute_uri()            
+    protocol, uri = abs_uri.split("://")
+    site = protocol+"://"+uri.split("/")[0]+"/"
+    id = getParamDefault(params, "identifier", str(randint(0,10000)))
+    flowFolder = getParamDefault(params, "flow_folder", "/Doc Merge/Flows")
+    flow = getParamDefault(params, "flow", "md")
+    remoteTemplateFolder = getParamDefault(params, "template_folder", "/Doc Merge/Templates")
+    remoteOutputFolder = getParamDefault(params, "output_folder", "/Doc Merge/Output")
+    payload = getParamDefault(params, "payload", None)
+#    payload_type = getParamDefault(params, "payload_type", None)
+#    test_case = getParamDefault(params, "test_case", None)
+#    data_folder = getParamDefault(params, "data_folder", "/Doc Merge/Test Data")
+#    data_file = getParamDefault(params, "data_file", None)
+#    data_root = getParamDefault(params, "data_root", None)
+#    branding_folder = getParamDefault(params, "branding_folder", "/Doc Merge/Branding")
+#    branding_file = getParamDefault(params, "branding_file", None)
+#    xform_folder = getParamDefault(params, "xform_folder", "/Doc Merge/Transforms")
+#    xform_file = getParamDefault(params, "xform_file", None)
+    templateName = getParamDefault(params, "template", "AddParty.md")
+    email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
+ #   subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, local_data_folder="test_data", remote_data_folder = data_folder, data_file=data_file, xform_folder = xform_folder, xform_file=xform_file)
+#    if data_root:
+#        if data_root in subs:
+#            subs = subs[data_root]
+#        else:
+#            raise ValueError("Invalid data_root: " + data_root)
+#    if branding_file:
+#        branding_subs = getData(local_data_folder = "branding", remote_data_folder = branding_folder, data_file=branding_file)
+#        subs["branding"]= branding_subs
+#        subs["AgreementDate"]=datetime.now()
+#    subs["docs"]=[templateName]
+#    subs["roles"]=[
+#        {"called":"Landlord", "values":["PropertyOwner", "AdditionalLandlord"]},
+#        {"called":"Tenant", "values":["ManuallyInvitedTenant", "AdditionalTenant"]},
+#        {"called":"Guarantor", "values":["Guarantor"]},
+#    ]    
+    subs={}
+    subs["site"]= site
+    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload, require_template=False)    
+
 
 def error_response(ex):
     overall_outcome = {}
@@ -87,13 +128,25 @@ def merge_raw_wrapped(request, method="POST"):
 def merge(request):
     return JsonResponse(merge_raw_wrapped(request))
     
+def push_raw_wrapped(request, method="POST"):
+    try:
+        return push_raw(request, method=method)
+    except Exception as ex:
+        return error_response(ex)
+
+@csrf_exempt
+def push(request):
+    return JsonResponse(push_raw_wrapped(request))
+    
+
+
 def merge_get(request):
     return JsonResponse(merge_raw_wrapped(request, method="GET"))
 
 def file_raw(request):
     params = request.GET
     filename = getParamDefault(params, "name", None)
-    filepath = getParamDefault(params, "path", get_output_dir())
+    filepath = get_local_dir(getParamDefault(params, "path", "output"))
     #file_content=""
     #with open(filepath+filename) as file:
     #    for line in file:
