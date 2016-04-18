@@ -87,8 +87,8 @@ def library_folder(request):
     widgets = []
     for folder in lib_folders:
         folder_name =lib_root+"/"+folder
-        files = folder_files("/Doc Merge"+folder_name, fields="files(id, name, mimeType)")
-        widgets.append({"title": folder_name, "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form(folder_name.replace("/Templates", "templates"))})
+        files = folder_files("/Doc Merge/"+folder_name, fields="files(id, name, mimeType)")
+        widgets.append({"title": folder_name, "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form(folder_name.replace("Templates", "templates"))})
     return render(request, 'dash/library.html', {"widgets":widgets})
 
 def library(request):
