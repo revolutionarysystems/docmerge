@@ -396,8 +396,13 @@ def folder(path, parent='root', create_if_absent=False):
     return ls_list(path_parts, parent=parent, create_if_absent=create_if_absent)
 
 def folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
-    foldr = folder(path, parent)
-    return folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+    try:
+        foldr = folder(path, parent)
+        contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+    except HttpError as ex:
+        contents = []
+    return contents
+
 
 def refresh_files(path, local_dir, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
     foldr = folder(path, parent)
