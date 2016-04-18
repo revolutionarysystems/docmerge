@@ -375,18 +375,25 @@ def folder_item(parent, name, mimeType='application/vnd.google-apps.folder', ):
     except:
         raise FileNotFoundError("'"+name+"' was not found")
 
-def ls_list(pathlist, parent='root'):
-    next_level = folder_item(parent, pathlist[0])
+def ls_list(pathlist, parent='root', create_if_absent=False):
+    try:
+        next_level = folder_item(parent, pathlist[0])
+    except FileNotFoundError as ex:
+        if create_if_absent:
+            "Try to create"
+            return []
+        else:
+            raise ex   
     if len(pathlist)==1:
         return next_level
     else:
         return ls_list(pathlist[1:], parent = next_level['id'])
 
-def folder(path, parent='root'):
+def folder(path, parent='root', create_if_absent=False):
     path_parts = path.split("/")
     if parent == 'root':
         path_parts = path_parts[1:]
-    return ls_list(path_parts, parent=parent)
+    return ls_list(path_parts, parent=parent, create_if_absent=create_if_absent)
 
 def folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
     foldr = folder(path, parent)

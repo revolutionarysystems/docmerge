@@ -1,4 +1,4 @@
-from merge.merge_utils import folder_files, refresh_files, get_working_dir, get_xml_content, push_local_txt
+from merge.merge_utils import folder_files, refresh_files, get_working_dir, get_xml_content, push_local_txt, folder
 from merge.flow import get_flow_local, get_flow
 from merge.xml4doc import getData
 
@@ -28,7 +28,20 @@ def run4():
     content = getData(local_data_folder="branding", remote_data_folder = "/Doc Merge/Branding", data_file="superll.xml")
     print(content)
     
-def run():
+def run5():
     cwd = get_working_dir()
     file_name = push_local_txt(cwd, "branding", "text.xml", "<brand/>")
     print(file_name)
+
+def run():
+    fldr = folder("/Doc Merge/Dummy", create_if_absent=True)
+    print(fldr)
+    files = folder_files("/Doc Merge/Dummy",fields="files(id, name, mimeType, trashed)", mimeType='application/vnd.google-apps.folder')
+    target = "Output"    
+    for file in files:
+        if file["name"] == target:
+            print(file) 
+    print("done")
+#def folder_item(parent, name, mimeType='application/vnd.google-apps.folder', ):
+
+    

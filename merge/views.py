@@ -88,6 +88,9 @@ def push_raw(request, method="POST"):
     template_subfolder = getParamDefault(params, "template_subfolder", None)
     output_subfolder = getParamDefault(params, "output_subfolder", None)
     email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
+    templateName = templateName.replace("\\", "/")
+    if template_subfolder:
+        template_subfolder = template_subfolder.replace("\\", "/")
     sep = templateName.rfind("/")
     if sep >=0:
         path = templateName[:sep]
