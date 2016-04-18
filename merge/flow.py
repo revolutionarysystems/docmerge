@@ -89,13 +89,13 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
         if not os.path.exists(template_local_folder):
             os.makedirs(template_local_folder)
     localTemplateFileName = template_local_folder+template_name.split(".")[0]
-    localMergedFileNameOnly = template_name.split(".")[0]+'_'+uniq
+    localMergedFileNameOnly = (template_name.split(".")[0]+'_'+uniq).replace(" ","_").replace("/","-")
     output_folder = "output"
     if output_subfolder:
         output_folder+=output_subfolder+"/"
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
-    localMergedFileName = cwd+"/merge/"+output_folder+"/"+localMergedFileNameOnly.replace(" ","_").replace("/","-") #for now, avoid creating output folders
+    localMergedFileName = cwd+"/merge/"+output_folder+"/"+localMergedFileNameOnly #for now, avoid creating output folders
     outcomes = []
     overall_outcome = {}
     for step in flow:
