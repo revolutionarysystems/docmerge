@@ -34,14 +34,14 @@ def run5():
     print(file_name)
 
 def run():
-    fldr = folder("/Doc Merge/Dummy", create_if_absent=True)
+    fldr = folder("/Doc Merge/Dummy2/Sub", create_if_absent = True)
     print(fldr)
-    files = folder_files("/Doc Merge/Dummy",fields="files(id, name, mimeType, trashed)", mimeType='application/vnd.google-apps.folder')
-    target = "Output"    
-    for file in files:
-        if file["name"] == target:
-            print(file) 
-    print("done")
+#    files = folder_files("/Doc Merge/Dummy",fields="files(id, name, mimeType, trashed)", mimeType='application/vnd.google-apps.folder')
+#    target = "Output"    
+#    for file in files:
+#        if file["name"] == target:
+#            print(file) 
+#    print("done")
 #def folder_item(parent, name, mimeType='application/vnd.google-apps.folder', ):
 
     

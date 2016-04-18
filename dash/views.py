@@ -3,7 +3,7 @@ from django.shortcuts import render
 from .forms import MergeForm, SimpleMergeForm, RefreshForm
 from .models import MergeJob, RefreshJob
 from merge.merge_utils import folder_files
-from merge.views import merge_raw_wrapped
+from merge.views import merge_raw_wrapped,getParamDefault 
 
 # Create your views here.
 
@@ -80,9 +80,19 @@ def refresh_form(local):
     refreshForm = RefreshForm(instance=refreshJob)
     return refreshForm
 
+def library_folder(request):
+    params = request.GET
+    lib_root = getParamDefault(params, "root", "")
+    lib_folders = getParamDefault(params, "folders", "Templates").split(",")
+    widgets = []
+    for folder in lib_folders:
+        folder_name =lib_root+"/"+folder
+        files = folder_files("/Doc Merge"+folder_name, fields="files(id, name, mimeType)")
+        widgets.append({"title": folder_name, "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form(folder_name.replace("/Templates", "templates"))})
+    return render(request, 'dash/library.html', {"widgets":widgets})
+
 def library(request):
     widgets = []
-    
     files = folder_files("/Doc Merge/Templates",fields="files(id, name, mimeType)")
     widgets.append({"title":"Templates", "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form("templates")})
     files = folder_files("/Doc Merge/Test Data",fields="files(id, name, mimeType)")

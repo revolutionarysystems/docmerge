@@ -11,7 +11,11 @@
                     <button id="quickTestButton" type="submit" class="save btn btn-warning">Refresh</button>
                     </form>
                         {% for file in widget.files %}
+                            {% if file.mimeType = "application/vnd.google-apps.folder" %}
+                            <strong><p><a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" target="_blank">Open Folder</a> {{ file.name }}</p></strong>
+                            {% else %}
                             <p><a href="https://drive.google.com/open?id={{ file.id}}" target="_blank">Edit</a> <a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">View</a> {{ file.name }} - {{ file.mimeType }}</p>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 {% endfor %}

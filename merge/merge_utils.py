@@ -380,14 +380,14 @@ def ls_list(pathlist, parent='root', create_if_absent=False):
         next_level = folder_item(parent, pathlist[0])
     except FileNotFoundError as ex:
         if create_if_absent:
-            "Try to create"
-            return []
+            print(">>Try to create")
+            next_level = create_folder(parent, pathlist[0])
         else:
             raise ex   
     if len(pathlist)==1:
         return next_level
     else:
-        return ls_list(pathlist[1:], parent = next_level['id'])
+        return ls_list(pathlist[1:], parent = next_level['id'], create_if_absent=create_if_absent)
 
 def folder(path, parent='root', create_if_absent=False):
     path_parts = path.split("/")
@@ -399,10 +399,18 @@ def folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files
     try:
         foldr = folder(path, parent)
         contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
-    except HttpError as ex:
+    except errors.HttpError as ex:
         contents = []
     return contents
 
+def create_folder(parent_id, name):
+    folder_metadata = {
+      'name' : name,
+      'parents' : [parent_id],
+      'mimeType' : 'application/vnd.google-apps.folder'
+    }
+    folder = service.files().create(body=folder_metadata, fields='id').execute()
+    return folder
 
 def refresh_files(path, local_dir, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
     foldr = folder(path, parent)

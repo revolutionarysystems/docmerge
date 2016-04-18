@@ -62,12 +62,16 @@ def process_markdown(step, localMergedFileName):
     return outcome
 
 # upload to Google drive, optionally converting to Google Drive format
-def process_upload(step, localFileName, output_id):
+def process_upload(step, localFileName, subfolder, upload_id):
     localFileName = localFileName
+    if subfolder:
+        upload_folder = folder(subfolder, upload_id, create_if_absent=True)
+        upload_id=upload_folder["id"]
+
     if step["convert"]=="gdoc":
-        return uploadAsGoogleDoc(localFileName+step["local_ext"], output_id, step["mimetype"])
+        return uploadAsGoogleDoc(localFileName+step["local_ext"], upload_id, step["mimetype"])
     else:
-        return uploadFile(localFileName+step["local_ext"], output_id, step["mimetype"])
+        return uploadFile(localFileName+step["local_ext"], upload_id, step["mimetype"])
 
 # send email
 def process_email(step, localFileName, you, credentials):
@@ -120,7 +124,7 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
         if step["step"]=="markdown":
             outcome = process_markdown(step, localMergedFileName)
         if step["step"]=="upload":
-            outcome = process_upload(step, localFileName, upload_id)
+            outcome = process_upload(step, localFileName, template_subfolder, upload_id)
             doc_id = outcome["id"]
         if step["step"]=="email":
             outcome = process_email(step, localMergedFileName, you, email_credentials)

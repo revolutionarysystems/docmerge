@@ -160,19 +160,20 @@ def refresh(request):
     try:
         params = request.GET
         local = getParamDefault(params, "local", "templates")
-        if local == "templates":
-            remote_default = "/Doc Merge/Templates"
-        elif local == "flows":
-            remote_default = "/Doc Merge/Flows"    
-        elif local == "branding":
-            remote_default = "/Doc Merge/Branding"    
-        elif local == "test_data":
-            remote_default = "/Doc Merge/Test Data"    
-        elif local == "transforms":
-            remote_default = "/Doc Merge/Transforms"
+        if local.find("templates")==0:
+            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Templates")
+        elif local.find("flows")==0:
+            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Flows")
+        elif local.find("branding")==0:
+            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Branding")
+        elif local.find("test_data")==0:
+            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Test Data")
+        elif local.find("transforms")==0:
+            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Transforms")
         else:
             remote_default = None    
 
+        print("refresh:", local, remote_default)
         remote = getParamDefault(params, "remote", remote_default)
         files = refresh_files(remote, local)
         response = {"refreshed_files":files}
