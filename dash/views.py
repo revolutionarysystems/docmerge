@@ -27,8 +27,13 @@ def dash(request):
     return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm})
 
 def test(request):
+    params = request.GET
+    template_subfolder = getParamDefault(params, "template_subfolder", "")
+    if template_subfolder != "":
+        template_subfolder = "/"+template_subfolder
     mergeJob=MergeJob(
-    	template_folder="/Doc Merge/Templates",
+    	template_folder="/Doc Merge/Templates/",
+        template_subfolder = template_subfolder,
     	#template="AddParty_v3.md",
     	output_folder="/Doc Merge/Output",
     	data_folder="/Doc Merge/Test Data",
@@ -41,15 +46,18 @@ def test(request):
     mergeForm = SimpleMergeForm(instance=mergeJob)
     advMergeForm = MergeForm(instance=mergeJob)
     mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Test Data")]
-    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates")]
+    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates"+template_subfolder)]
     mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Flows")]
     return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm})
 
-
 def test_result(mergeForm, request, method="POST"):
     mergeForm =  MergeForm(request.GET)
+    params = request.GET
+    print(params)
+    template_subfolder = getParamDefault(params, "template_subfolder", "")
     mergeJob=MergeJob(
-        template_folder="/Doc Merge/Templates",
+        template_folder="/Doc Merge/Templates/",
+        template_subfolder = mergeForm["template_subfolder"].value(),
         template=mergeForm["template"].value(),
         output_folder="/Doc Merge/Output",
         data_folder="/Doc Merge/Test Data",
@@ -64,6 +72,10 @@ def test_result(mergeForm, request, method="POST"):
     )
     mergeForm = SimpleMergeForm(instance=mergeJob)
     advMergeForm = MergeForm(instance=mergeJob)
+    mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Test Data")]
+    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates"+template_subfolder)]
+    mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Flows")]
+    #print(mergeForm.instance.template_folder, mergeForm.instance.subfolder, mergeForm.instance.template)
     json_response = merge_raw_wrapped(request, method=method)
     return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response})
 
@@ -87,8 +99,9 @@ def library_folder(request):
     widgets = []
     for folder in lib_folders:
         folder_name =lib_root+"/"+folder
+        subfolder = folder_name[folder_name.find("/")+1:]
         files = folder_files("/Doc Merge/"+folder_name, fields="files(id, name, mimeType)")
-        widgets.append({"title": folder_name, "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form(folder_name.replace("Templates", "templates"))})
+        widgets.append({"subfolder": subfolder, "title": folder_name, "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form(folder_name.replace("Templates", "templates"))})
     return render(request, 'dash/library.html', {"widgets":widgets})
 
 def library(request):

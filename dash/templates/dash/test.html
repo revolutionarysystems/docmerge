@@ -25,6 +25,9 @@
 		        <li>{{ message }}</li>
 		{% endfor %}
 		{% endif %}
+		{% if merge_response.traceback %}
+		        <li>{{ merge_response.traceback }}</li>
+		{% endif %}
 		<h4>Steps:</h4>
 	        {% for outcome in merge_response.steps %}
 		        <li>{{ outcome.step }}</li>

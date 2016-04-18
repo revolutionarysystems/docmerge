@@ -4,6 +4,7 @@ from merge.merge_utils import folder_files
 class MergeJob(models.Model):
 
     template_folder = models.CharField(max_length=100)
+    template_subfolder = models.CharField(max_length=100)
     template = models.CharField(max_length=100, choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates")])
     flow = models.CharField(max_length=100, choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Flows")])
     output_folder = models.CharField(max_length=100)
