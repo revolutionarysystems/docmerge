@@ -524,8 +524,21 @@ def get_txt_content(local_data_folder, remote_data_folder, data_file):
         content = get_remote_txt_content(remote_data_folder, data_file)
     return content
 
+def strip_xml_dec(content):
+    print(content[:20])
+    xml_dec_start = content.find("<?xml")
+    if xml_dec_start>=0:
+        return content[content.find(">")+1:]
+    else:
+        return content
+
+
+
 def get_xml_content(local_data_folder, remote_data_folder, data_file):
-    return get_txt_content(local_data_folder, remote_data_folder, data_file)
+    content = get_txt_content(local_data_folder, remote_data_folder, data_file)
+    if type(content) is bytes:
+        content = content.decode("UTF-8")
+    return strip_xml_dec(content)
 
 def push_local_txt(cwd, data_folder, data_file, payload):
     full_file_path = data_file
@@ -537,7 +550,7 @@ def push_local_txt(cwd, data_folder, data_file, payload):
 
 SCOPES = 'https://www.googleapis.com/auth/drive'
 CLIENT_SECRET_FILE = 'client_secret.json'
-APPLICATION_NAME = 'RevSys DocMerge'
+APPLICATION_NAME = 'Echo Publish'
 
 
 service = initialiseService()

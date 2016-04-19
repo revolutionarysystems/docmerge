@@ -2,7 +2,7 @@ import xmltodict
 import json
 import datetime
 from .testData import xml0, xml1
-from .merge_utils import folder_file,file_content_as,get_xml_content
+from .merge_utils import folder_file,file_content_as,get_xml_content,strip_xml_dec
 import lxml.etree as etree
 xml = '''
 <ItpDocumentRequest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -898,14 +898,6 @@ def force_lists(doc):
             doc[key]=goodlist
     return doc
 
-def strip_xml_dec(content):
-    print(content[:20])
-    xml_dec_start = content.find("<?xml")
-    if xml_dec_start>=0:
-        return content[content.find(">")+1:]
-    else:
-        return content
-
 def xform_xml(content, local_folder, remote_folder, xform_file):
     print(type(content))
     if type(content) is bytes:
@@ -921,9 +913,15 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
     data = None
     #print(xform_file, payload[:10], payload_type)
     if payload and payload_type.lower()=="xml":
+        print("Original Payload")
+        print(payload)
         if xform_file:
                 payload = xform_xml(payload, "transforms", xform_folder, xform_file)
+        print("Xform Payload")
+        print(payload)
         data = xmltodict.parse(payload)
+        print("Dict")
+        print(json.dumps(data, indent=2))
     elif payload and payload_type=="json":
         data = json.loads(payload)
     #todo, test case db
@@ -933,11 +931,17 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
         data = xmltodict.parse(xml1) 
     elif data_file:
         doc_xml = get_xml_content(local_data_folder, remote_data_folder, data_file)
+        print("Original Payload")
+        print(doc_xml)
 #        data_doc_id = folder_file(data_folder, data_file)["id"]
 #        doc_xml = file_content_as(data_doc_id)
         if xform_file:
             doc_xml = xform_xml(doc_xml, "transforms", xform_folder, xform_file)
+        print("Xform Payload")
+        print(doc_xml)
         data = xmltodict.parse(doc_xml) 
+        print("Dict")
+        print(json.dumps(data, indent=2))
     if data == None: #default
         data = xmltodict.parse(xml)
     data = force_lists(data)
