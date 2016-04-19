@@ -112,6 +112,8 @@ def getFile(doc_id, fileName, mimetype):
     outfile.close()
     return {"file":fileName}
 
+
+
 def downloadFile(doc_id, fileName, mimetype):
     #print_file_metadata(service, doc_id)
     #content = file_content(service, docId)
@@ -508,14 +510,17 @@ def get_remote_txt_content(data_folder, data_file):
 def get_local_txt_content(cwd, data_folder, data_file):
 #def get_flow_local(cwd, flow_local_folder, flow_file_name):
     try:
-        with open(cwd+"/merge/"+data_folder+data_file, "r") as file:
+        print(cwd+"/merge/"+data_folder+"/"+data_file)
+        with open(cwd+"/merge/"+data_folder+"/"+data_file, "r") as file:
             return  file.read()
     except FileNotFoundError:
         return None
 
 def get_txt_content(local_data_folder, remote_data_folder, data_file):
+    print("looking locally")
     content = get_local_txt_content(get_working_dir(), local_data_folder, data_file)
     if content == None:
+        print("looking remotely")
         content = get_remote_txt_content(remote_data_folder, data_file)
     return content
 

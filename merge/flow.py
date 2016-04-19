@@ -53,6 +53,7 @@ def process_merge(step, localTemplateFileName, localMergedFileName, localMergedF
     else:
         outcome = substituteVariablesPlain(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
+        outcome["dict"] = str(subs)
 
     return outcome
 

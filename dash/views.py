@@ -45,9 +45,15 @@ def test(request):
 
     mergeForm = SimpleMergeForm(instance=mergeJob)
     advMergeForm = MergeForm(instance=mergeJob)
-    mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Test Data")]
-    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates"+template_subfolder)]
-    mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Flows")]
+    files = folder_files("/Doc Merge/Test Data")
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
+    mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
+    files = folder_files("/Doc Merge/Templates"+template_subfolder)
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
+    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in files]
+    files = folder_files("/Doc Merge/Flows")
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
+    mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
     return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm})
 
 def test_result(mergeForm, request, method="POST"):
@@ -72,9 +78,15 @@ def test_result(mergeForm, request, method="POST"):
     )
     mergeForm = SimpleMergeForm(instance=mergeJob)
     advMergeForm = MergeForm(instance=mergeJob)
-    mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Test Data")]
-    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates"+template_subfolder)]
-    mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in folder_files("/Doc Merge/Flows")]
+    files = folder_files("/Doc Merge/Test Data")
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
+    mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
+    files = folder_files("/Doc Merge/Templates"+template_subfolder)
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
+    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in files]
+    files = folder_files("/Doc Merge/Flows")
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
+    mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
     #print(mergeForm.instance.template_folder, mergeForm.instance.subfolder, mergeForm.instance.template)
     json_response = merge_raw_wrapped(request, method=method)
     return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response})
@@ -101,20 +113,26 @@ def library_folder(request):
         folder_name =lib_root+"/"+folder
         subfolder = folder_name[folder_name.find("/")+1:]
         files = folder_files("/Doc Merge/"+folder_name, fields="files(id, name, mimeType)")
+        files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
         widgets.append({"subfolder": subfolder, "title": folder_name, "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form(folder_name.replace("Templates", "templates"))})
     return render(request, 'dash/library.html', {"widgets":widgets})
 
 def library(request):
     widgets = []
     files = folder_files("/Doc Merge/Templates",fields="files(id, name, mimeType)")
+    files = sorted(files, key=lambda k: ('aa' if k['mimeType']=='application/vnd.google-apps.folder' else k['mimeType'])+k['name']) 
     widgets.append({"title":"Templates", "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form("templates")})
     files = folder_files("/Doc Merge/Test Data",fields="files(id, name, mimeType)")
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
     widgets.append({"title":"Test Data", "files":files, "glyph":"glyphicon glyphicon-tags", "refreshForm": refresh_form("test_data")})
     files = folder_files("/Doc Merge/Branding",fields="files(id, name, mimeType)")
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
     widgets.append({"title":"Branding", "files":files, "glyph":"glyphicon glyphicon-certificate", "refreshForm": refresh_form("branding")})
     files = folder_files("/Doc Merge/Flows",fields="files(id, name, mimeType)")
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
     widgets.append({"title":"Flows", "files":files, "glyph":"glyphicon glyphicon-tasks", "refreshForm": refresh_form("flows")})
     files = folder_files("/Doc Merge/Transforms",fields="files(id, name, mimeType)")
+    files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
     widgets.append({"title":"Transforms", "files":files, "glyph":"glyphicon glyphicon-transfer", "refreshForm": refresh_form("transforms")})
     return render(request, 'dash/library.html', {"widgets":widgets})
 

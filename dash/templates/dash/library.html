@@ -9,7 +9,9 @@
                     <form id = "quickTest" method="GET" class="query-form" action="/refresh/" target="_blank">
                             {{ widget.refreshForm.as_p }}
                     <button id="quickTestButton" type="submit" class="save btn btn-warning">Refresh</button>
+                    {% if "Template" in widget.title %}
                     <a href="../test/?template_subfolder={{ widget.subfolder }}" target="_blank">Test</a>
+                    {% endif %}
                     </form>
                         {% for file in widget.files %}
                             {% if file.mimeType = "application/vnd.google-apps.folder" %}
