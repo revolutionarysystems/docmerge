@@ -10,6 +10,16 @@ from .merge_utils import (substituteVariablesDocx, substituteVariablesPlain,
     convert_markdown, folder_file, folder, email_file, uploadAsGoogleDoc, uploadFile, 
     exportFile, getFile, file_content_as, local_textfile_content, push_local_txt)
 
+from datetime import datetime
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, datetime):
+        serial = obj.isoformat()
+        return serial
+    raise TypeError ("Type not serializable")
+
 # retrieve flow definition from library
 def get_flow_resource(flow_folder, flow_file_name):
     flow_doc_id = folder_file(flow_folder, flow_file_name)["id"]
@@ -53,7 +63,6 @@ def process_merge(step, localTemplateFileName, localMergedFileName, localMergedF
     else:
         outcome = substituteVariablesPlain(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
-        outcome["dict"] = str(subs)
 
     return outcome
 
@@ -82,6 +91,14 @@ def process_email(step, localFileName, you, credentials):
 def process_push(cwd, step, localFileName, template_local_folder, subs, payload=""):
     file_name = push_local_txt(cwd, step["folder"], localFileName+step["local_ext"], payload)  
     return {"file":file_name, "link":subs["site"]+"file/?name="+file_name.split("/")[-1]+"&path="+template_local_folder}
+    #return {"file":file_name}
+
+# push file to local
+def process_payload_dump(cwd, step, localFileName, subs, payload=""):
+    if step["type"]=="json":
+        payload = json.dumps(subs, default = json_serial, indent=4, sort_keys=True)
+    file_name = push_local_txt(cwd, step["folder"], localFileName.replace("output", step["folder"])+step["local_ext"], payload)  
+    return {"file":file_name, "link":subs["site"]+"file/?name="+file_name.split("/")[-1]+"&path="+step["folder"]}
     #return {"file":file_name}
 
 # Process all steps in the flow: grab the template document, construct local path names and then invoke steps in turn
@@ -131,6 +148,8 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
             outcome = process_email(step, localMergedFileName, you, email_credentials)
         if step["step"]=="push":
             outcome = process_push(cwd, step, localTemplateFileName, "templates/"+template_subfolder+"/", subs, payload=payload)
+        if step["step"]=="payload":
+            outcome = process_payload_dump(cwd, step, localMergedFileName, subs, payload=payload)
         outcomes.append({"step":step["name"], "outcome":outcome})
         for key in outcome.keys():
             if key in ["link","id", "mimeType"]:

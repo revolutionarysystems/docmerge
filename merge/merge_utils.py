@@ -550,6 +550,8 @@ def push_local_txt(cwd, data_folder, data_file, payload):
 
 SCOPES = 'https://www.googleapis.com/auth/drive'
 CLIENT_SECRET_FILE = 'client_secret.json'
+if (os.getcwd().find("home")>=0):  #pythonanywhere deployment
+    CLIENT_SECRET_FILE = '/home/docmerge/docmerge/client_secret.json'
 APPLICATION_NAME = 'Echo Publish'
 
 
