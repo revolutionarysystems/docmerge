@@ -423,7 +423,9 @@ def refresh_files(path, local_dir, parent='root', mimeType='*', fields="nextPage
         doc_id =file["id"]
         cwd = get_working_dir()
         localFileName = cwd+"/merge/"+local_dir+"/"+file["name"]
-        if file["mimeType"] == 'application/vnd.google-apps.document':
+        if file["mimeType"] == 'application/vnd.google-apps.folder':
+            pass
+        elif file["mimeType"] == 'application/vnd.google-apps.document':
             if localFileName.find(".") < 0: # no extension
                 files_info.append(exportFile(doc_id, localFileName+".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
             else:
