@@ -74,6 +74,7 @@ def process_markdown(step, localMergedFileName):
 # upload to Google drive, optionally converting to Google Drive format
 def process_upload(step, localFileName, subfolder, upload_id):
     localFileName = localFileName
+    #print("upload:",localFileName,subfolder)
     if subfolder:
         upload_folder = folder(subfolder, upload_id, create_if_absent=True)
         upload_id=upload_folder["id"]
@@ -103,21 +104,24 @@ def process_payload_dump(cwd, step, localFileName, subs, payload=""):
 
 # Process all steps in the flow: grab the template document, construct local path names and then invoke steps in turn
 def process_flow(cwd, flow, template_remote_folder, template_subfolder, template_name, uniq, subs, output_folder, output_subfolder, you, email_credentials, payload=None, require_template=True):
-    output_id = folder(output_folder)["id"]
-    template_id = folder(template_remote_folder)["id"]
     template_local_folder = cwd+"/merge/templates/"
     if template_subfolder:
         template_local_folder+=template_subfolder+"/"
         if not os.path.exists(template_local_folder):
             os.makedirs(template_local_folder)
     localTemplateFileName = template_local_folder+template_name.split(".")[0]
-    localMergedFileNameOnly = (template_name.split(".")[0]+'_'+uniq).replace(" ","_").replace("/","-")
-    output_folder = "output"
+    localMergedFileNameOnly = (template_name.split(".")[0]+'_'+uniq)
+    if template_subfolder:
+        localMergedFileNameOnly = template_subfolder[1:]+"/"+localMergedFileNameOnly
+    localMergedFileNameOnly = localMergedFileNameOnly.replace(" ","_").replace("/","-")
+    local_output_folder = "output"
     if output_subfolder:
-        output_folder+=output_subfolder+"/"
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-    localMergedFileName = cwd+"/merge/"+output_folder+"/"+localMergedFileNameOnly #for now, avoid creating output folders
+        local_output_folder+=output_subfolder+"/"
+        if not os.path.exists(local_output_folder):
+            os.makedirs(local_output_folder)
+    print("output_subfolder", output_subfolder)
+    localMergedFileName = cwd+"/merge/"+local_output_folder+"/"+localMergedFileNameOnly #for now, avoid creating output folders
+    print("localMergedFileName", localMergedFileName)
     outcomes = []
     overall_outcome = {}
     for step in flow:
@@ -125,12 +129,6 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
             local_folder = step["folder"]
         except:
             local_folder = output_folder
-        if local_folder=="templates":
-            localFileName = localTemplateFileName
-            upload_id = template_id
-        else:
-            localFileName = localMergedFileName
-            upload_id = output_id
         if step["step"]=="download":
             if require_template:
                 doc = folder_file(template_remote_folder, template_name)
@@ -142,7 +140,15 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
         if step["step"]=="markdown":
             outcome = process_markdown(step, localMergedFileName)
         if step["step"]=="upload":
-            outcome = process_upload(step, localFileName, template_subfolder, upload_id)
+            if local_folder=="templates":
+                localFileName = localTemplateFileName
+                upload_id = folder(template_remote_folder)["id"]
+                upload_subfolder = template_subfolder
+            else:
+                localFileName = localMergedFileName
+                upload_id = folder(output_folder)["id"]
+                upload_subfolder = None
+            outcome = process_upload(step, localFileName, upload_subfolder, upload_id)
             doc_id = outcome["id"]
         if step["step"]=="email":
             outcome = process_email(step, localMergedFileName, you, email_credentials)

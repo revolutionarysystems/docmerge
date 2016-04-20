@@ -88,6 +88,7 @@ def test_result(mergeForm, request, method="POST"):
     files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
     mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
     #print(mergeForm.instance.template_folder, mergeForm.instance.subfolder, mergeForm.instance.template)
+    print("output_folder", request.GET)
     json_response = merge_raw_wrapped(request, method=method)
     return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response})
 

@@ -69,6 +69,7 @@ def merge_raw(request, method="POST"):
     subs["site"]= site
 #    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload)    
     print("template name:", templateName)
+    print("remoteOutputFolder", remoteOutputFolder)
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
                         remoteOutputFolder, output_subfolder, email=email, payload=payload)    
 

@@ -392,6 +392,7 @@ def ls_list(pathlist, parent='root', create_if_absent=False):
         return ls_list(pathlist[1:], parent = next_level['id'], create_if_absent=create_if_absent)
 
 def folder(path, parent='root', create_if_absent=False):
+    print("path=",path)
     path_parts = path.split("/")
     if parent == 'root':
         path_parts = path_parts[1:]
