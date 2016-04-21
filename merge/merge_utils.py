@@ -1,5 +1,6 @@
 import httplib2
 import os
+import ssl
 from subprocess import check_output
 
 from apiclient import discovery
@@ -165,7 +166,7 @@ def substituteVariablesPlain(fileNameIn, fileNameOut, subs):
     
 def preprocess(text):
     text = text.replace("{% #A %}", "{% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'%}")    
-    text = text.replace("{% #9 %}", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' as level1 %}")    
+    text = text.replace("{% #9 %}", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' '23' '24' '25' '26' '27' '28' '29' '30' as level1 %}")    
     text = text.replace("{% #9= %}", "{{ level1 }}")    
     return text
 
@@ -402,11 +403,11 @@ def folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files
     try:
         foldr = folder(path, parent)
         contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
-    except (errors.HttpError, errors.SSLError, errors.BrokenPipeError) as ex:
-        try: #1 f
+    except (errors.HttpError, ssl.SSLError) as ex:
+        try:
             foldr = folder(path, parent)
             contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
-        except (errors.HttpError, errors.SSLError, errors.BrokenPipeError) as ex:
+        except (errors.HttpError, ssl.SSLError) as ex:
             contents = []
     return contents
 
@@ -500,6 +501,7 @@ def get_local_dir(local):
     else:  
         opd = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\"+local
     return opd
+
 
 def local_textfile_content(filename, filepath=get_output_dir()):
     file_content=""

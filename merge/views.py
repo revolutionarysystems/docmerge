@@ -153,10 +153,17 @@ def file_raw(request):
     #    for line in file:
     #        file_content+=(line+"\n")
     print(filepath,filename)
-    return local_textfile_content(filename, filepath=filepath)
+    if filename.find(".pdf")>=0:
+        print("pdf")
+        file = open(filepath+"/"+filename, 'rb')
+        response = HttpResponse(file, content_type='application/pdf')
+        response['Content-Disposition'] = "attachment; filename={}".format(filename)
+        return response
+    else:
+        return HttpResponse(local_textfile_content(filename, filepath=filepath))
 
 def file(request):
-    return HttpResponse(file_raw(request))
+    return file_raw(request)
 
 def refresh(request):
     try:
