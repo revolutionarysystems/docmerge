@@ -402,11 +402,11 @@ def folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files
     try:
         foldr = folder(path, parent)
         contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
-    except (errors.HttpError, SSLError, BrokenPipeError) as ex:
+    except (errors.HttpError, errors.SSLError, errors.BrokenPipeError) as ex:
         try: #1 f
             foldr = folder(path, parent)
             contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
-        except (errors.HttpError, SSLError, BrokenPipeError) as ex:
+        except (errors.HttpError, errors.SSLError, errors.BrokenPipeError) as ex:
             contents = []
     return contents
 
