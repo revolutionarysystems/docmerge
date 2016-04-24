@@ -115,7 +115,7 @@ def error_response(ex):
     overall_outcome["success"]=False
     overall_outcome["messages"]=[{"level":"error", "message": str(ex)}]
     overall_outcome["steps"]=[]
-    overall_outcome["traceback"]=format_exc(5)
+    overall_outcome["traceback"]=format_exc(8)
 
     return overall_outcome
 

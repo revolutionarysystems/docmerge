@@ -919,7 +919,7 @@ def strip_dashes(doc):
 
 
 def xform_xml(content, local_folder, remote_folder, xform_file):
-    print(type(content))
+#    print(type(content))
     if type(content) is bytes:
         content = content.decode("UTF-8")
     content = strip_xml_dec(content)

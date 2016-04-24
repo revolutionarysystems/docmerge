@@ -146,7 +146,6 @@ def replaceParams(txt, subs):
         old = "${"+key+"}"
         if (txt.find(old)>=0):
             txt = txt.replace(old, subs[key])
- #   print(txt)
     return txt
 
 def removePara(para):
@@ -163,6 +162,13 @@ def substituteVariablesPlain(fileNameIn, fileNameOut, subs):
     fileOut = open(fileNameOut, "w")
     fileOut.write(xtxt)
     return {"file":fileNameOut}
+    
+def substituteVariablesPlainString(stringIn, subs):
+    c = Context(subs)
+    fullText = stringIn
+    t = Template(fullText)
+    xtxt = t.render(c)
+    return xtxt
     
 def preprocess(text):
     text = text.replace("{% #A %}", "{% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'%}")    
@@ -182,6 +188,21 @@ def docx_copy_run_style_from(run1, run2):
     #imprint, math, name, no_proof, outline, rtl, shadow, small_caps, snap_to_grid, spec_vanish, 
     #strike, superscript, underline, web_hidden
 
+def docx_copy_para_format_from(para1, para2):
+    para1.paragraph_format.alignment = para2.paragraph_format.alignment
+    para1.paragraph_format.first_line_indent = para2.paragraph_format.first_line_indent
+    para1.paragraph_format.keep_together = para2.paragraph_format.keep_together
+    para1.paragraph_format.keep_with_next = para2.paragraph_format.keep_with_next
+    para1.paragraph_format.left_indent = para2.paragraph_format.left_indent
+    para1.paragraph_format.line_spacing = para2.paragraph_format.line_spacing
+    para1.paragraph_format.line_spacing_rule = para2.paragraph_format.line_spacing_rule
+    para1.paragraph_format.page_break_before = para2.paragraph_format.page_break_before
+    para1.paragraph_format.right_indent = para2.paragraph_format.right_indent
+    para1.paragraph_format.space_after = para2.paragraph_format.space_after
+    para1.paragraph_format.space_before = para2.paragraph_format.space_before
+    para1.paragraph_format.widow_control = para2.paragraph_format.widow_control
+
+
 def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
     c = Context(subs)
     doc = Document(docx=fileNameIn)
@@ -194,12 +215,10 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
         runs = para.runs
         j = 0
         for run in runs:
-            print(run.text, run.font)
 
             txt = run.text
             paraText+= txt+"+"+str(j)+"+run+"
             j+=1
-#        print(paraText)
         if paraText.find("{%")>=0:
 #            print(">>>",paraText[paraText.find("{%"):paraText.find("%}")+2])
             non_control_text=paraText[:paraText.find("{%")].strip()+paraText[paraText.find("%}")+2:].strip()
@@ -213,7 +232,6 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
     fullText = preprocess(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
-    print(xtxt)
     xParaTxts = xtxt.split("+para+")
     used = []
     unused = list(range(0,len(paras)))
@@ -222,13 +240,21 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
         runTxts = xParaTxt.split("+run+")
         if runTxts[-1]!='':
             para_n = int(runTxts[-1])
+            # fix?
+            while unused[0]<para_n:
+                p = paras[unused[0]]
+                removePara(p)
+                unused.remove(unused[0])
             reused = para_n in used
             if not(reused):
                 p = paras[para_n]
                 used.append(para_n)
-                unused.remove(para_n)
-                if para_n in control_paras:
-                    removePara(p)
+                try:
+                    unused.remove(para_n)
+                    if para_n in control_paras:
+                            removePara(p)
+                except ValueError: #already removed?
+                    pass
 #                else:
 #                    print(">> using", para_n, txt)
 #                    print(used)
@@ -239,20 +265,22 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
  #                   print(used)
  #                   print(unused)
  #                   print()
+
                     p = paras[unused[0]].insert_paragraph_before(text=txt, style=paras[para_n].style)
                     p.clear()
-                    p.paragraph_format.alignment = paras[para_n].paragraph_format.alignment
-                    p.paragraph_format.first_line_indent = paras[para_n].paragraph_format.first_line_indent
-                    p.paragraph_format.keep_together = paras[para_n].paragraph_format.keep_together
-                    p.paragraph_format.keep_with_next = paras[para_n].paragraph_format.keep_with_next
-                    p.paragraph_format.left_indent = paras[para_n].paragraph_format.left_indent
-                    p.paragraph_format.line_spacing = paras[para_n].paragraph_format.line_spacing
-                    p.paragraph_format.line_spacing_rule = paras[para_n].paragraph_format.line_spacing_rule
-                    p.paragraph_format.page_break_before = paras[para_n].paragraph_format.page_break_before
-                    p.paragraph_format.right_indent = paras[para_n].paragraph_format.right_indent
-                    p.paragraph_format.space_after = paras[para_n].paragraph_format.space_after
-                    p.paragraph_format.space_before = paras[para_n].paragraph_format.space_before
-                    p.paragraph_format.widow_control = paras[para_n].paragraph_format.widow_control
+                    docx_copy_para_format_from(p, paras[para_n])
+#                    p.paragraph_format.alignment = paras[para_n].paragraph_format.alignment
+#                    p.paragraph_format.first_line_indent = paras[para_n].paragraph_format.first_line_indent
+#                    p.paragraph_format.keep_together = paras[para_n].paragraph_format.keep_together
+#                    p.paragraph_format.keep_with_next = paras[para_n].paragraph_format.keep_with_next
+#                    p.paragraph_format.left_indent = paras[para_n].paragraph_format.left_indent
+#                    p.paragraph_format.line_spacing = paras[para_n].paragraph_format.line_spacing
+#                    p.paragraph_format.line_spacing_rule = paras[para_n].paragraph_format.line_spacing_rule
+#                    p.paragraph_format.page_break_before = paras[para_n].paragraph_format.page_break_before
+#                    p.paragraph_format.right_indent = paras[para_n].paragraph_format.right_indent
+#                    p.paragraph_format.space_after = paras[para_n].paragraph_format.space_after
+#                    p.paragraph_format.space_before = paras[para_n].paragraph_format.space_before
+#                    p.paragraph_format.widow_control = paras[para_n].paragraph_format.widow_control
 
 
             if reused or ('{' in p.text):   # replace para text
@@ -263,7 +291,7 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
                     except:
                         txt=""
                     run_n = int(runTxt.split("+")[-1])
-                    print(para_n, run_n, txt, paras[para_n].runs[run_n].font)
+#                    print(para_n, run_n, txt, paras[para_n].runs[run_n].font)
                     r = paras[para_n].runs[run_n]
                     if ('{' in r.text):
                         r.text = txt
@@ -277,6 +305,28 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
 
     doc.save(fileNameOut)
     return {"file":fileNameOut}
+
+def combine_docx(file_names, file_name_out):
+    combined_document = Document(file_names[0])
+    count, number_of_files = 0, len(file_names)
+    for file in file_names[1:]:
+        if file == "pagebreak":
+            combined_document.add_page_break()
+        else:    
+            sub_doc = Document(file)
+            for para in sub_doc.paragraphs:
+                pnew = combined_document.add_paragraph()
+                docx_copy_para_format_from(pnew, para)
+                runs = para.runs
+                for run in runs:
+#                    print(run.text)
+#                    print(run.style)
+                    rnew = pnew.add_run(text=run.text, style=run.style)
+                    docx_copy_run_style_from(rnew, run)
+
+    combined_document.save(file_name_out)
+    return {"file":file_name_out}
+
 
 
 def uploadAsGoogleDoc(fileName, folder, mimeType):
@@ -383,7 +433,7 @@ def ls_list(pathlist, parent='root', create_if_absent=False):
         next_level = folder_item(parent, pathlist[0])
     except FileNotFoundError as ex:
         if create_if_absent:
-            print(">>Try to create")
+#            print(">>Try to create")
             next_level = create_folder(parent, pathlist[0])
         else:
             raise ex   
@@ -393,7 +443,7 @@ def ls_list(pathlist, parent='root', create_if_absent=False):
         return ls_list(pathlist[1:], parent = next_level['id'], create_if_absent=create_if_absent)
 
 def folder(path, parent='root', create_if_absent=False):
-    print("path=",path)
+#    print("path=",path)
     path_parts = path.split("/")
     if parent == 'root':
         path_parts = path_parts[1:]
@@ -460,7 +510,7 @@ def email_file(baseFileName, me, you, subject, credentials):
         fp = open(file, 'r')
         content = fp.read()
         fp.close()
-        print(mime[0].split("/"))
+#        print(mime[0].split("/"))
         msg.attach(MIMEText(content, mime[0].split("/")[1]))    
     
     username = credentials["username"]
@@ -471,9 +521,9 @@ def email_file(baseFileName, me, you, subject, credentials):
     server.starttls()
     server.ehlo()
     server.login(username,password)
-    print(me)
-    print(you.replace(" ","+"))
-    print(msg.as_string())
+#    print(me)
+#    print(you.replace(" ","+"))
+#    print(msg.as_string())
     response = server.sendmail(me, [you.replace(" ","+")], msg.as_string())
     server.quit()
     return {"email":you.replace(" ","+")}
@@ -519,22 +569,22 @@ def get_remote_txt_content(data_folder, data_file):
 def get_local_txt_content(cwd, data_folder, data_file):
 #def get_flow_local(cwd, flow_local_folder, flow_file_name):
     try:
-        print(cwd+"/merge/"+data_folder+"/"+data_file)
+#        print(cwd+"/merge/"+data_folder+"/"+data_file)
         with open(cwd+"/merge/"+data_folder+"/"+data_file, "r") as file:
             return  file.read()
     except FileNotFoundError:
         return None
 
 def get_txt_content(local_data_folder, remote_data_folder, data_file):
-    print("looking locally")
+#    print("looking locally")
     content = get_local_txt_content(get_working_dir(), local_data_folder, data_file)
     if content == None:
-        print("looking remotely")
+#        print("looking remotely")
         content = get_remote_txt_content(remote_data_folder, data_file)
     return content
 
 def strip_xml_dec(content):
-    print(content[:20])
+#    print(content[:20])
     xml_dec_start = content.find("<?xml")
     if xml_dec_start>=0:
         return content[content.find(">")+1:]
