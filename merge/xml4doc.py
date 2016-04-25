@@ -858,7 +858,7 @@ xml = '''
 </ItpDocumentRequest>
 '''
 
-def parse_timestamp(str):
+def parse_special_values(str):
     try:
         dt = datetime.datetime.strptime(str, "%Y-%m-%dT%H:%M:%S.%f")
         return dt
@@ -875,17 +875,21 @@ def force_lists(doc):
         node = doc[key]
         force_list = False
         if isinstance(node, dict):
-            if ('@list' in node.keys()) and (node['@list']=='true'):
-                force_list = True
-            force_lists(node)
+            if "@xsi:nil" in node.keys() and node["@xsi:nil"] == "true":
+                doc[key]=None
+                node = None
+            else:
+                if ('@list' in node.keys()) and (node['@list']=='true'):
+                    force_list = True
+                force_lists(node)
         elif isinstance(node, list):
             for item in node:
                 force_lists(item)
         else:
-            ts=parse_timestamp(node)
-            if not(ts==None):
-                doc[key]=ts
-                node = ts
+            sv=parse_special_values(node)
+            if not(sv==None):
+                doc[key]=sv
+                node = sv
         if (key.find("_list"))>=0 or force_list: # force a list if the tag contains _list
             node_name = list(node.keys())[-1] #xmldict will force a single node with a common name -which is ugly
             sublist = node[node_name]
