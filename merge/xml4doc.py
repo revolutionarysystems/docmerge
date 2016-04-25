@@ -860,14 +860,15 @@ xml = '''
 
 def parse_timestamp(str):
     try:
-        dt = datetime.datetime.strptime(str, "%Y-%m-%dT%H:%M:%S")
-#        print(dt)
-#        print(dt.isoformat(" "))
-#        return dt.isoformat(" ")
+        dt = datetime.datetime.strptime(str, "%Y-%m-%dT%H:%M:%S.%f")
         return dt
     except:        
     #YYYY-MM-DDTHH:MM:SS.mmm
-        return None
+        try:
+            dt = datetime.datetime.strptime(str, "%Y-%m-%dT%H:%M:%S")
+            return dt
+        except:        
+            return None
 
 def force_lists(doc):
     for key in doc.keys():

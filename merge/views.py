@@ -154,9 +154,13 @@ def file_raw(request):
     #        file_content+=(line+"\n")
     print(filepath,filename)
     if filename.find(".pdf")>=0:
-        print("pdf")
         file = open(filepath+"/"+filename, 'rb')
         response = HttpResponse(file, content_type='application/pdf')
+        response['Content-Disposition'] = "attachment; filename={}".format(filename)
+        return response
+    elif filename.find(".docx")>=0:
+        file = open(filepath+"/"+filename, 'rb')
+        response = HttpResponse(file, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         response['Content-Disposition'] = "attachment; filename={}".format(filename)
         return response
     else:

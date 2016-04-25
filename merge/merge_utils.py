@@ -206,7 +206,7 @@ def docx_copy_para_format_from(para1, para2):
 def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
     c = Context(subs)
     doc = Document(docx=fileNameIn)
-    fullText=""
+    fullText="" 
     paras=doc.paragraphs
     control_paras = []  # starting and ending {%  %}
     i = 0
@@ -315,7 +315,7 @@ def combine_docx(file_names, file_name_out):
         else:    
             sub_doc = Document(file)
             for para in sub_doc.paragraphs:
-                pnew = combined_document.add_paragraph()
+                pnew = combined_document.add_paragraph(style=para.style)
                 docx_copy_para_format_from(pnew, para)
                 runs = para.runs
                 for run in runs:

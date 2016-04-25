@@ -82,36 +82,23 @@ def process_compound_merge(cwd, uniq, step, template_subfolder, template_list, o
         template_local_folder+=template_subfolder+"/"
     localTemplateListFileName = template_local_folder+template_list
     local_output_folder = "output"
-    localMergedFileNameOnly = template_subfolder[1:]+"/"+template_list.split(".")[0]
-    localMergedFileNameOnly = localMergedFileNameOnly.replace(" ","_").replace("/","-")
-    localCombinedFileName = cwd+"/merge/"+local_output_folder+"/"+localMergedFileNameOnly+"_"+uniq+step["local_ext"]
-#    print(">>Combined File")
-#    print(template_local_folder, template_list)
+    localCombinedFileNameOnly = template_subfolder[1:]+"/"+template_list.split(".")[0]
+    localCombinedFileNameOnly = localCombinedFileNameOnly.replace(" ","_").replace("/","-")
+    localCombinedFileName = cwd+"/merge/"+local_output_folder+"/"+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
     template_list = get_template_list_local(template_local_folder, template_list, subs=subs)
-#    print(template_list)
     files = template_list[0]["compound"]
-#    print(cwd, template_local_folder, template_list)
-#    print(localCombinedFileName)
-#    with open(localTemplateListFileName) as list_file:
-#        files = list_file.read().splitlines()
     output_files = []
     for file_name in files:
- #       print(file_name)
         if file_name[0]=="-":
             output_files.append("pagebreak")
         else:
             localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, uniq, template_subfolder, file_name, output_subfolder)
-#            print(localTemplateFileName, localMergedFileName, localMergedFileNameOnly)
             if step["local_ext"]==".docx":
                 outcome = substituteVariablesDocx(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
-#                print(outcome)
                 output_files.append(outcome["file"])
-    #print(output_files)
-    combine_docx(output_files, localCombinedFileName)
-#       else:
-#           outcome = substituteVariablesPlain(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
-#           outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
-    outcome ={}
+    outcome = combine_docx(output_files, localCombinedFileName)
+    
+    outcome["link"] = subs["site"]+"file/?name="+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
     return outcome
 
 # perform a merge operation, either using more complex docx logic, or as plain text
@@ -189,36 +176,11 @@ def localNames(cwd, uniq, template_subfolder, template_name, output_subfolder):
 
 # Process all steps in the flow: grab the template document, construct local path names and then invoke steps in turn
 def process_flow(cwd, flow, template_remote_folder, template_subfolder, template_name, uniq, subs, output_folder, output_subfolder, you, email_credentials, payload=None, require_template=True):
-    """
-    template_local_folder = cwd+"/merge/templates/"
-    if template_subfolder:
-        template_local_folder+=template_subfolder+"/"
-        if not os.path.exists(template_local_folder):
-            os.makedirs(template_local_folder)
-    localTemplateFileName = template_local_folder+template_name.split(".")[0]
-    localMergedFileNameOnly = (template_name.split(".")[0]+'_'+uniq)
-    if template_subfolder:
-        localMergedFileNameOnly = template_subfolder[1:]+"/"+localMergedFileNameOnly
-    localMergedFileNameOnly = localMergedFileNameOnly.replace(" ","_").replace("/","-")
-    local_output_folder = "output"
-    if output_subfolder:
-        local_output_folder+=output_subfolder+"/"
-        if not os.path.exists(local_output_folder):
-            os.makedirs(local_output_folder)
-    print("output_subfolder", output_subfolder)
-    localMergedFileName = cwd+"/merge/"+local_output_folder+"/"+localMergedFileNameOnly #for now, avoid creating output folders
-    print("localMergedFileName", localMergedFileName)
-    """
     localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, uniq, template_subfolder, template_name, output_subfolder)
     outcomes = []
     overall_outcome = {}
+    doc_id = None
     for step in flow:
-#        print(step["name"])
-        try:
-            print(doc_id)
-        except:
-            print("no doc_id")
-            doc_id=None
         try:
             local_folder = step["folder"]
         except:
