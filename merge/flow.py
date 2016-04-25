@@ -160,7 +160,7 @@ def localNames(cwd, uniq, template_subfolder, template_name, output_subfolder):
         template_local_folder+=template_subfolder+"/"
         if not os.path.exists(template_local_folder):
             os.makedirs(template_local_folder)
-    localTemplateFileName = template_local_folder+template_name.split(".")[0]
+    localTemplateFileName = (template_local_folder+template_name.split(".")[0]).replace("//", "/")
     localMergedFileNameOnly = (template_name.split(".")[0]+'_'+uniq)
     if template_subfolder:
         localMergedFileNameOnly = template_subfolder[1:]+"/"+localMergedFileNameOnly
@@ -170,7 +170,7 @@ def localNames(cwd, uniq, template_subfolder, template_name, output_subfolder):
         local_output_folder+=output_subfolder+"/"
         if not os.path.exists(local_output_folder):
             os.makedirs(local_output_folder)
-    localMergedFileName = cwd+"/merge/"+local_output_folder+"/"+localMergedFileNameOnly #for now, avoid creating output folders
+    localMergedFileName = (cwd+"/merge/"+local_output_folder+"/"+localMergedFileNameOnly).replace("//", "/") #for now, avoid creating output folders
     return localTemplateFileName, localMergedFileName, localMergedFileNameOnly
 
 

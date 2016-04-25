@@ -875,7 +875,10 @@ def force_lists(doc):
         node = doc[key]
         force_list = False
         if isinstance(node, dict):
-            if "@xsi:nil" in node.keys() and node["@xsi:nil"] == "true":
+            if "#text" in node.keys():
+                doc[key]=node["#text"]
+                node = node["#text"]
+            elif "@xsi:nil" in node.keys() and node["@xsi:nil"] == "true":
                 doc[key]=None
                 node = None
             else:
