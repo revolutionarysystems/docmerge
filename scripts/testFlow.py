@@ -5,7 +5,7 @@ from merge.xml4doc import *
 creds = {"username":"andrewcaelliott@gmail.com", "password":"napier", "server":"smtp.gmail.com:587"}
 
 compound_TA = {
-	"data_file":"testData25-1.xml",
+	"data_file":"testData7-3.xml",
 	"xform_file":"ITP_9yds_TA.xml",
 	"flow_file":"comp_docx.txt",
 	"template_subfolder":"/Sandbox",
@@ -64,7 +64,7 @@ def test_data(test_case):
 	subs = getData(remote_data_folder = "/Doc Merge/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
 	                   xform_file="ITP_9yds_email.xml")["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
-	print(subs["EMailUser"]["GuarantorRequired"])
+	print(subs["Property"]["PropertyAdverts"])
 
 
 def test_flow(test_case):
@@ -79,7 +79,8 @@ def test_flow(test_case):
 		test_case["template_file"], 
 		test_case["uniq"], subs, "/Doc Merge/Output", None, None, None, 
 		payload=test_case["payload"])
-	assert (outcomes["success"]==("@"+test_case["expected_outcomes"]["id"])), "fail"
+	assert (outcomes["success"]==(test_case["expected_outcomes"]["success"]))
+	assert (len(outcomes["steps"])==(len(test_case["expected_outcomes"]["steps"])))
 	#for step in outcomes["steps"]:
 	#	print(step["step"])
 	#	print(step["outcome"])

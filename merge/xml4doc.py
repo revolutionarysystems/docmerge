@@ -1,4 +1,5 @@
 import xmltodict
+import iso8601
 import json
 import datetime
 from .testData import xml0, xml1
@@ -858,8 +859,13 @@ xml = '''
 </ItpDocumentRequest>
 '''
 
-def parse_special_values(str):
-    try:
+def parse_as_datetime(str):
+            try:
+                dt = iso8601.parse_date(str)
+                return dt
+            except:        
+                return None
+'''    try:
         dt = datetime.datetime.strptime(str, "%Y-%m-%dT%H:%M:%S.%f")
         return dt
     except:        
@@ -868,7 +874,31 @@ def parse_special_values(str):
             dt = datetime.datetime.strptime(str, "%Y-%m-%dT%H:%M:%S")
             return dt
         except:        
-            return None
+            try:
+                dt = iso8601.parse_date(str)
+                return dt
+            except:        
+                return None
+'''
+
+def parse_as_boolean(str):
+    try:
+        if (str.lower()=="true"):
+            return True
+        if (str.lower()=="false"):
+            return False
+        return None
+    except:
+        return None
+
+
+def parse_special_values(str):
+    sv = parse_as_datetime(str)
+    if sv != None:
+        return sv
+#    sv = parse_as_boolean(str)  # suppress for now
+#        return sv
+
 
 def force_lists(doc):
     for key in doc.keys():
@@ -906,21 +936,25 @@ def force_lists(doc):
             doc[key]=goodlist
     return doc
 
-def strip_dashes(doc):
+def alternate_values(doc):
     newValues = {}
     for key in doc.keys():
         node = doc[key]
         if isinstance(node, dict):
-            strip_dashes(node)
+            alternate_values(node)
         elif isinstance(node, list):
             for item in node:
                 if isinstance(item, dict):
-                    strip_dashes(item)
+                    alternate_values(item)
         else:
             if key.find("UserId")>=0:
                 value = doc[key].replace("-","")
                 key_stripped = key+"_stripped"
                 newValues[key_stripped]=value
+            looks_like_boolean = parse_as_boolean(doc[key])
+            if looks_like_boolean != None:
+                key_bool = key+"_bool"
+                newValues[key_bool]=looks_like_boolean
     for newKey in newValues.keys():
         doc[newKey]=newValues[newKey]
     return doc
@@ -961,7 +995,7 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
     if data == None: #default
         data = xmltodict.parse(xml)
     data = force_lists(data)
-    data = strip_dashes(data)
+    data = alternate_values(data)
     return data
 
 #print(json.dumps(getData(), indent=2))
