@@ -145,15 +145,19 @@ def merge_get(request):
 def file_raw(request):
     params = request.GET
     filename = getParamDefault(params, "name", None)
+    download = getParamDefault(params, "download", "false")
     filepath = get_local_dir(getParamDefault(params, "path", "output"))
     #file_content=""
     #with open(filepath+filename) as file:
     #    for line in file:
     #        file_content+=(line+"\n")
-    if filename.find(".pdf")>=0:
+    if filename.find(".pdf")>=0: 
         file = open(filepath+"/"+filename, 'rb')
         response = HttpResponse(file, content_type='application/pdf')
-        response['Content-Disposition'] = "attachment; filename={}".format(filename)
+        if download =="true":
+            response['Content-Disposition'] = "attachment; filename={}".format(filename)
+        else:
+            response['Content-Disposition'] = "inline; filename={}".format(filename)
         return response
     elif filename.find(".docx")>=0:
         file = open(filepath+"/"+filename, 'rb')
