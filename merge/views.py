@@ -68,8 +68,6 @@ def merge_raw(request, method="POST"):
     ]    
     subs["site"]= site
 #    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload)    
-    print("template name:", templateName)
-    print("remoteOutputFolder", remoteOutputFolder)
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
                         remoteOutputFolder, output_subfolder, email=email, payload=payload)    
 
@@ -152,7 +150,6 @@ def file_raw(request):
     #with open(filepath+filename) as file:
     #    for line in file:
     #        file_content+=(line+"\n")
-    print(filepath,filename)
     if filename.find(".pdf")>=0:
         file = open(filepath+"/"+filename, 'rb')
         response = HttpResponse(file, content_type='application/pdf')

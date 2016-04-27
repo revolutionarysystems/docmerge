@@ -80,9 +80,13 @@ def process_compound_merge(cwd, uniq, step, template_subfolder, template_list, o
     template_local_folder = cwd+"/merge/templates/"
     if template_subfolder:
         template_local_folder+=template_subfolder+"/"
+    else:
+        template_subfolder = "/"+template_list[:template_list.rfind("/")+1]
+        template_local_folder+=template_subfolder
+        template_list =template_list[template_list.rfind("/")+1:]
     localTemplateListFileName = template_local_folder+template_list
     local_output_folder = "output"
-    localCombinedFileNameOnly = template_subfolder[1:]+"/"+template_list.split(".")[0]
+    localCombinedFileNameOnly = (template_subfolder[1:]+"/"+template_list.split(".")[0]).replace("//", "/")
     localCombinedFileNameOnly = localCombinedFileNameOnly.replace(" ","_").replace("/","-")
     localCombinedFileName = cwd+"/merge/"+local_output_folder+"/"+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
     template_list = get_template_list_local(template_local_folder, template_list, subs=subs)
@@ -97,7 +101,6 @@ def process_compound_merge(cwd, uniq, step, template_subfolder, template_list, o
                 outcome = substituteVariablesDocx(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
                 output_files.append(outcome["file"])
     outcome = combine_docx(output_files, localCombinedFileName)
-    
     outcome["link"] = subs["site"]+"file/?name="+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
     return outcome
 
@@ -164,7 +167,7 @@ def localNames(cwd, uniq, template_subfolder, template_name, output_subfolder):
     localMergedFileNameOnly = (template_name.split(".")[0]+'_'+uniq)
     if template_subfolder:
         localMergedFileNameOnly = template_subfolder[1:]+"/"+localMergedFileNameOnly
-    localMergedFileNameOnly = localMergedFileNameOnly.replace(" ","_").replace("/","-")
+    localMergedFileNameOnly = localMergedFileNameOnly.replace("//","/").replace(" ","_").replace("/","-")
     local_output_folder = "output"
     if output_subfolder:
         local_output_folder+=output_subfolder+"/"
@@ -196,7 +199,7 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
         if step["step"]=="merge":
             outcome = process_merge(cwd, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
 
-        if step["step"]=="compound_merge": #template_name is a list of template names in a text file
+        if step["step"]=="compound_merge": #template_name is a list of template names in a json file
             outcome = process_compound_merge(cwd, uniq, step, template_subfolder, template_name, output_subfolder, subs)
 
         if step["step"]=="markdown":
