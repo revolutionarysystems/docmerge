@@ -15,9 +15,17 @@
                     </form>
                         {% for file in widget.files %}
                             {% if file.mimeType = "application/vnd.google-apps.folder" %}
-                            <strong><p><a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" target="_blank">Open Folder</a> {{ file.name }}</p></strong>
+                                {% if file.name = ".." %}
+                                    {% if file.parent.folder %}
+                                        <strong><p><a href="../library_folder/?root={{ file.parent.root}}&folders={{ file.parent.folder }}" >Open Parent</a> {{ file.name }}</p></strong>
+                                    {% else %}
+                                        <strong><p><a href="../library/" >Open Parent</a> {{ file.name }}</p></strong>
+                                    {% endif %}
+                                {% else %}
+                                    <strong><p><a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" >Open Folder</a> {{ file.name }}</p></strong>
+                                {% endif %}
                             {% else %}
-                            <p><a href="https://drive.google.com/open?id={{ file.id}}" target="_blank">Edit</a> <a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">View</a> {{ file.name }} - {{ file.mimeType }}</p>
+                                <p><a href="https://drive.google.com/open?id={{ file.id}}" target="_blank">Edit</a> <a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">View</a> {{ file.name }} - {{ file.mimeType }}</p>
                             {% endif %}
                         {% endfor %}
                     </div>

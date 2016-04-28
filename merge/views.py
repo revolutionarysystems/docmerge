@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .merge_utils import get_local_dir, local_textfile_content, refresh_files
 from traceback import format_exc
 
-def getParamDefault(params, key, default):
+def getParamDefault(params, key, default, preserve_plus=False):
     try:
         result = params.get(key)
         if result == None:
@@ -16,7 +16,10 @@ def getParamDefault(params, key, default):
         elif result == "":
             return default
         else:
-            return result.replace("+"," ")
+            if preserve_plus:
+                return result
+            else:
+                return result.replace("+"," ")
     except:
         return default
 
@@ -35,7 +38,7 @@ def merge_raw(request, method="POST"):
     remoteOutputFolder = getParamDefault(params, "output_folder", "/Doc Merge/Output")
     template_subfolder = getParamDefault(params, "template_subfolder", None)
     output_subfolder = getParamDefault(params, "output_subfolder", None)
-    payload = getParamDefault(params, "payload", None)
+    payload = getParamDefault(params, "payload", None, preserve_plus=True)
     payload_type = getParamDefault(params, "payload_type", None)
     test_case = getParamDefault(params, "test_case", None)
     data_folder = getParamDefault(params, "data_folder", "/Doc Merge/Test Data")

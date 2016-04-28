@@ -859,12 +859,21 @@ xml = '''
 </ItpDocumentRequest>
 '''
 
-def parse_as_datetime(str):
-            try:
-                dt = iso8601.parse_date(str)
-                return dt
-            except:        
-                return None
+def parse_as_datetime(str_value):
+    try:
+        dt = iso8601.parse_date(str_value)
+        return dt
+    except:        
+        try:
+            if str_value.find("2016-")>=0:
+                print(str_value)
+                print(type(str_value))
+                str_value=str_value.replace(" ","+")
+                print(str_value)
+            dt = iso8601.parse_date(str_value)
+            return dt
+        except:        
+            return None
 '''    try:
         dt = datetime.datetime.strptime(str, "%Y-%m-%dT%H:%M:%S.%f")
         return dt

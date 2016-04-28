@@ -113,7 +113,14 @@ def library_folder(request):
         folder_name =lib_root+"/"+folder
         subfolder = folder_name[folder_name.find("/")+1:]
         files = folder_files("/Doc Merge/"+folder_name, fields="files(id, name, mimeType)")
-        files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
+        if lib_root.find("/")>=0:
+            parent_root = lib_root[:lib_root.rfind("/")]
+            parent_folder = lib_root[lib_root.rfind("/")+1:]
+        else:
+            parent_root = lib_root
+            parent_folder = ""
+        files.append({"mimeType":'application/vnd.google-apps.folder',"name":"..", "parent":{"root":parent_root, "folder":parent_folder}})
+        files = sorted(files, key=lambda k: ('aa' if k['mimeType']=='application/vnd.google-apps.folder' else k['mimeType'])+k['name']) 
         widgets.append({"subfolder": subfolder, "title": folder_name, "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form(folder_name.replace("Templates", "templates"))})
     return render(request, 'dash/library.html', {"widgets":widgets})
 
