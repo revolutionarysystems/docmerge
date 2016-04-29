@@ -196,9 +196,9 @@ def docx_copy_para_format_from(para1, para2):
     para1.paragraph_format.left_indent = para2.paragraph_format.left_indent
     try:
         para1.paragraph_format.line_spacing = para2.paragraph_format.line_spacing
+        para1.paragraph_format.line_spacing_rule = para2.paragraph_format.line_spacing_rule
     except ValueError:
         pass
-    para1.paragraph_format.line_spacing_rule = para2.paragraph_format.line_spacing_rule
     para1.paragraph_format.page_break_before = para2.paragraph_format.page_break_before
     para1.paragraph_format.right_indent = para2.paragraph_format.right_indent
     para1.paragraph_format.space_after = para2.paragraph_format.space_after
