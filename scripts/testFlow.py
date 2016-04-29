@@ -5,11 +5,11 @@ from merge.xml4doc import *
 creds = {"username":"andrewcaelliott@gmail.com", "password":"napier", "server":"smtp.gmail.com:587"}
 
 compound_TA = {
-	"data_file":"testData7-3.xml",
+	"data_file":"testData3.xml",
 	"xform_file":"ITP_9yds_TA.xml",
 	"flow_file":"comp_docx.txt",
-	"template_subfolder":"/Sandbox",
-	"template_file":"cmpnd_doc.json",
+	"template_subfolder":None,
+	"template_file":"Wizard Move in documents/Tenancy Agreements/AST/AST.json",
 	"payload":"<email>sample</email>",
 	"uniq":"10101",
 	"expected_outcomes": {
@@ -79,13 +79,13 @@ def test_flow(test_case):
 		test_case["template_file"], 
 		test_case["uniq"], subs, "/Doc Merge/Output", None, None, None, 
 		payload=test_case["payload"])
-	assert (outcomes["success"]==(test_case["expected_outcomes"]["success"]))
-	assert (len(outcomes["steps"])==(len(test_case["expected_outcomes"]["steps"])))
-	#for step in outcomes["steps"]:
-	#	print(step["step"])
-	#	print(step["outcome"])
+	#assert (outcomes["success"]==(test_case["expected_outcomes"]["success"]))
+	#assert (len(outcomes["steps"])==(len(test_case["expected_outcomes"]["steps"])))
+	for step in outcomes["steps"]:
+		print(step["step"])
+		print(step["outcome"])
 
 def run():
-#	test_flow(compound_TA)
-	test_data(compound_TA)
+	test_flow(compound_TA)
+#	test_data(compound_TA)
 

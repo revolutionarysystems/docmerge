@@ -194,7 +194,10 @@ def docx_copy_para_format_from(para1, para2):
     para1.paragraph_format.keep_together = para2.paragraph_format.keep_together
     para1.paragraph_format.keep_with_next = para2.paragraph_format.keep_with_next
     para1.paragraph_format.left_indent = para2.paragraph_format.left_indent
-    para1.paragraph_format.line_spacing = para2.paragraph_format.line_spacing
+    try:
+        para1.paragraph_format.line_spacing = para2.paragraph_format.line_spacing
+    except ValueError:
+        pass
     para1.paragraph_format.line_spacing_rule = para2.paragraph_format.line_spacing_rule
     para1.paragraph_format.page_break_before = para2.paragraph_format.page_break_before
     para1.paragraph_format.right_indent = para2.paragraph_format.right_indent
@@ -232,6 +235,7 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
     fullText = preprocess(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
+    print(xtxt)
     xParaTxts = xtxt.split("+para+")
     used = []
     unused = list(range(0,len(paras)))
