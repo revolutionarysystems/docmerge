@@ -1,5 +1,6 @@
 import httplib2
 import os
+import string
 import ssl
 from subprocess import check_output
 
@@ -177,6 +178,21 @@ def preprocess(text):
     return text
 
 
+def apply_sequence(text):
+    alf = string.ascii_uppercase
+    target = '[% #A %]'
+    sub = text.find(target)
+    n= 0
+    while sub>=1:
+        text = text[:sub]+alf[n]+text[sub+len(target):]
+        n+=1
+        sub = text.find(target)
+    return text
+
+
+
+
+
 def docx_copy_run_style_from(run1, run2):
     run1.font.color.rgb = run2.font.color.rgb
     run1.font.all_caps = run2.font.all_caps
@@ -205,6 +221,17 @@ def docx_copy_para_format_from(para1, para2):
     para1.paragraph_format.space_before = para2.paragraph_format.space_before
     para1.paragraph_format.widow_control = para2.paragraph_format.widow_control
 
+def isControlLine(s):
+    s = s.split("+")[0]
+    s = s.strip()
+    if s[:2]=="{%" and s[-2:]=="%}":
+        print("control")
+        return True
+    else:
+        print("not control")
+        return False
+
+
 
 def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
     c = Context(subs)
@@ -222,7 +249,7 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
             txt = run.text
             paraText+= txt+"+"+str(j)+"+run+"
             j+=1
-        if paraText.find("{%")>=0:
+        if isControlLine(paraText):
 #            print(">>>",paraText[paraText.find("{%"):paraText.find("%}")+2])
             non_control_text=paraText[:paraText.find("{%")].strip()+paraText[paraText.find("%}")+2:].strip()
 #            print(">>>",non_control_text)
@@ -232,31 +259,59 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
         fullText+= paraText+str(i)+"+para+"
         i+=1
 #   print(fullText)
+    print("control", control_paras)
     fullText = preprocess(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
-    print(xtxt)
+    xtxt = apply_sequence(xtxt)
     xParaTxts = xtxt.split("+para+")
     used = []
-    unused = list(range(0,len(paras)))
+    unused = []
+    for p in paras:
+        unused.append(p)
+    highest_used=0
+    para_o = 0# output para
+    o_control = []
+    o_type = []
+    o_buffer = []
     for xParaTxt in xParaTxts:
         #print(used, unused)
         runTxts = xParaTxt.split("+run+")
+        if runTxts[-1]=='':
+            print("****", xParaTxt)
         if runTxts[-1]!='':
             para_n = int(runTxts[-1])
+            for item in o_buffer:
+                if para_n >= item[1]:
+                    o_type.append(str(para_o)+"}"+item[3] + "=" +str(item[1])+item[2])
+                    para_o+=1
+                    o_control=[item[0]]+o_control
+                    o_buffer.remove(item)
+
+            if isControlLine(paras[para_n].text):
+                if para_n > para_o:
+                    print("should buffer")
+                    para_o+=-1
+                    o_buffer.append((para_o,para_n, paras[para_n].text, xParaTxt))
+                else:# (not paras[para_n] in used):
+                    o_type.append(str(para_o)+"}"+xParaTxt + "=" +str(para_n)+paras[para_n].text)
+                    o_control=[para_o]+o_control
+            else:
+                o_type.append(str(para_o)+"."+xParaTxt + "=" +str(para_n)+paras[para_n].text)
+            highest_used = max(highest_used, para_n)
             # fix?
-            while unused[0]<para_n:
-                p = paras[unused[0]]
-                removePara(p)
-                unused.remove(unused[0])
-            reused = para_n in used
+#            while unused[0]<para_n:
+#                p = paras[unused[0]]
+#                removePara(p)
+#                unused.remove(unused[0])
+            reused = paras[para_n] in used
             if not(reused):
+                print("++ reusing", para_n, paras[para_n].text)
+                highest_used = para_n
                 p = paras[para_n]
-                used.append(para_n)
+                used.append(paras[para_n])
                 try:
-                    unused.remove(para_n)
-                    if para_n in control_paras:
-                            removePara(p)
+                    unused.remove(paras[para_n])
                 except ValueError: #already removed?
                     pass
 #                else:
@@ -264,14 +319,15 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
 #                    print(used)
 #                    print(unused)
             else:   
-                if not(para_n in control_paras):
- #                   print(">> inserting", para_n, unused[0], txt)
+                if True:
+#                if not(para_n in control_paras):
+                    print("++ inserting @", highest_used+1, unused[0], txt)
  #                   print(used)
- #                   print(unused)
- #                   print()
 
-                    p = paras[unused[0]].insert_paragraph_before(text=txt, style=paras[para_n].style)
-                    p.clear()
+ #                   print()
+                    p = paras[highest_used+1].insert_paragraph_before(style=paras[para_n].style)
+                    if not(para_n in control_paras):
+                        p.clear()
                     docx_copy_para_format_from(p, paras[para_n])
 #                    p.paragraph_format.alignment = paras[para_n].paragraph_format.alignment
 #                    p.paragraph_format.first_line_indent = paras[para_n].paragraph_format.first_line_indent
@@ -288,27 +344,77 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
 
 
             if reused or ('{' in p.text):   # replace para text
- #               print(p.text)
-                for runTxt in runTxts[:-1]:
-                    try:
-                        txt = runTxt.split("+")[-2]
-                    except:
-                        txt=""
-                    run_n = int(runTxt.split("+")[-1])
-#                    print(para_n, run_n, txt, paras[para_n].runs[run_n].font)
-                    r = paras[para_n].runs[run_n]
-                    if ('{' in r.text):
-                        r.text = txt
-                    elif reused:
-                        run = p.add_run(text=txt, style=paras[para_n].runs[run_n].style)
-                        docx_copy_run_style_from(run, paras[para_n].runs[run_n])
+                control = False
+                print(">>",p.text)
+                if para_n in control_paras:
+#                if isControlLine(p.text):
+                    control = True
+                    print("}}", para_n)
+                    paras[para_n].text = "}}"                    
+                else:    
+                    for runTxt in runTxts[:-1]:
+                        try:
+                            txt = runTxt.split("+")[-2]
+                        except:
+                            txt=""
+                        run_n = int(runTxt.split("+")[-1])
+    #                    print(para_n, run_n, txt, paras[para_n].runs[run_n].font)
+                        r = paras[para_n].runs[run_n]
+                        if ('{' in r.text):
+                            r.text = txt
 
+                        elif reused:
+                            run = p.add_run(text=txt, style=paras[para_n].runs[run_n].style)
+                            docx_copy_run_style_from(run, paras[para_n].runs[run_n])
+                #if control:
+                #   p.text = "{%%}"
+                print("<<",p.text)
+            print(para_o, p.text)
+
+
+        para_o +=1
+        print("inc>",str(para_o))
+    print(unused)
+    print(control_paras) 
+    print(o_control) 
+    print(o_buffer)
+    for ot in o_type:
+        print(ot)
     for unused_p in unused:
         p = paras[unused_p]
         removePara(p)
+    #for control_p in control_paras:
+    #    p = paras[control_p]
+    #   removePara(p)
+
+    print_doc(doc)
+
+    paras=doc.paragraphs
+    print("++++")
+    for o in range(0,35):
+        print(o_type[o])
+        if o_type[o].find("}")<=5 and o_type[o].find("}")>1:
+            c = "{"
+        else:
+            c = ""
+        print(">"+paras[o].text+"<", c)
+    print("++++")
+
+    print(o_control)
+    print("*****")
+    for p in o_control:
+        print(">"+paras[p].text+"<")
+    print("*****")
 
     doc.save(fileNameOut)
     return {"file":fileNameOut}
+
+def print_doc(doc):
+    paras=doc.paragraphs
+    print("...")
+    for para in paras[14:20]:
+        print(para.text)
+    print("...")
 
 def combine_docx(file_names, file_name_out):
     combined_document = Document(file_names[0])

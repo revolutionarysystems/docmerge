@@ -1,17 +1,18 @@
 from merge.flow import *
 from merge.merge_utils import *
 from merge.xml4doc import *
+import string
 
 creds = {"username":"andrewcaelliott@gmail.com", "password":"napier", "server":"smtp.gmail.com:587"}
 
 compound_TA = {
 	"data_file":"testData3.xml",
-	"xform_file":"ITP_9yds_TA.xml",
-	"flow_file":"comp_docx.txt",
+	"xform_file":"ITP_9yds_email.xml",
+	"flow_file":"docx.txt",
 	"template_subfolder":None,
-	"template_file":"Wizard Move in documents/Tenancy Agreements/AST/AST.json",
+	"template_file":"Wizard Move in documents/Tenancy Agreements/AST/Copy of Tenancy_Agreement_v1_LL_AL_TT_AT_GG",
 	"payload":"<email>sample</email>",
-	"uniq":"10101",
+	"uniq":"111",
 	"expected_outcomes": {
 		'link_Generate_pdf': 'localhost:8001file/?name=Sandbox-cmpnd_doc_10101.pdf', 
 		'id_Upload_pdf': '0B-R1VJ7CNz2Zc1pRX0JSbnBNOFE', 
@@ -63,14 +64,14 @@ compound_TA = {
 def test_data(test_case):
 	subs = getData(remote_data_folder = "/Doc Merge/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
-	                   xform_file="ITP_9yds_email.xml")["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
-	print(subs["Property"]["PropertyAdverts"])
+	                   xform_file="Copy of ITP_9yds_email.xml")["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
+	print(subs["Roles"])
 
 
 def test_flow(test_case):
 	subs = getData(remote_data_folder = "/Doc Merge/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
-	                   xform_file="ITP_9yds_email.xml")["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
+	                   xform_file=test_case["xform_file"])["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
 	subs["site"]="localhost:8001"
 	cwd = get_working_dir()
 	flow = get_flow(cwd,"flows", "/Doc Merge/Flows", test_case["flow_file"])

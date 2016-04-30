@@ -982,7 +982,6 @@ def xform_xml(content, local_folder, remote_folder, xform_file):
 
 def getData(test_case = None, payload=None, payload_type="xml", data_file=None, remote_data_folder = None, local_data_folder = None, xform_folder = None, xform_file = None):
     data = None
-    #print(xform_file, payload[:10], payload_type)
     if payload and payload_type.lower()=="xml":
         if xform_file:
                 payload = xform_xml(payload, "transforms", xform_folder, xform_file)

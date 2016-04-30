@@ -1,44 +1,105 @@
-<xsl:stylesheet version="1.0"
-xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="#default,#all">
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="#default,#all">
 
-<xsl:template match="/">
+  <xsl:template match="/">
     <docroot>
-        <xsl:for-each select = "ItpDocumentRequest/*">
+      <!--<xsl:for-each select = "ItpDocumentRequest/*">
             <xsl:copy-of select = "."/>
-        </xsl:for-each>
-        <userRegisteringDeposit>
-            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[IsRegisteringDeposit='true']/*">
-                <xsl:copy-of select = "."/>
+        </xsl:for-each>-->
+      <actionLink>
+        <xsl:value-of select ="ItpDocumentRequest/UrlLinks/*[LinkType='ActionLink']/LinkUrl"/>
+      </actionLink>
+      <!--<nBedrooms>
+            <xsl:value-of select ="ItpDocumentRequest/Property/PropertyRooms/*[RoomTypeId/Value='Bedroom']/Quantity"/>
+        </nBedrooms>-->
+      <Request>
+        <AppUrl>
+          <xsl:value-of select = "ItpDocumentRequest/AppUrl"/>
+        </AppUrl>
+        <xsl:copy-of select = "ItpDocumentRequest/Property"/>
+        <Tenancy>
+          <xsl:apply-templates select = "ItpDocumentRequest/Tenancy/*"/>
+        </Tenancy>
+        <xsl:copy-of select = "ItpDocumentRequest/EMailUser"/>
+        <xsl:copy-of select = "ItpDocumentRequest/SubjectDocument"/>
+        <PropertyUsers list="true">
+          <xsl:for-each select = "ItpDocumentRequest/PropertyUsers/*">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+        </PropertyUsers>
+        <PropertyAdverts list="true">
+          <xsl:for-each select = "ItpDocumentRequest/Property/PropertyAdverts/*">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+        </PropertyAdverts>
+        <UrlLinks list="true">
+          <xsl:for-each select = "ItpDocumentRequest/UrlLinks/*">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+        </UrlLinks>
+        <Tenants list="true">
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='ManuallyInvitedTenant']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='AdditionalTenant']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+        </Tenants>
+        <PurchaseInfo>
+          <xsl:copy-of select = "ItpDocumentRequest/PurchaseInfo/*"/>
+          <Items list="true">
+            <xsl:for-each select = "ItpDocumentRequest/PurchaseInfo/PaymentItems/*">
+              <xsl:copy-of select = "."/>
             </xsl:for-each>
-        </userRegisteringDeposit>
-        <landlords list="true">
-            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='PropertyOwner']">
-                <xsl:copy-of select = "."/>
-            </xsl:for-each>
-            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='AdditionalLandlord']">
-                <xsl:copy-of select = "."/>
-            </xsl:for-each>
-        </landlords>
-        <tenants list="true">
-            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='ManuallyInvitedTenant']">
-                <xsl:copy-of select = "."/>
-            </xsl:for-each>
-            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='AdditionalTenant']">
-                <xsl:copy-of select = "."/>
-            </xsl:for-each>
-        </tenants>
-        <guarantors list="true">
-            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='Guarantor']">
-                <xsl:copy-of select = "."/>
-            </xsl:for-each>
-        </guarantors>
-        <agentSignatory>
-            <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='PropertyOwner' and AgencyStaff='true' and SigningUser='true']">
-                <xsl:copy-of select = "."/>
-            </xsl:for-each>
-        </agentSignatory>
+          </Items>
+        </PurchaseInfo>
+
+        <UsersRegisteringDeposit>
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[IsRegisteringDeposit='true']/*">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+        </UsersRegisteringDeposit>
+        <Landlords list="true">
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='PropertyOwner']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='AdditionalLandlord']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+        </Landlords>
+        <Guarantors list="true">
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='Guarantor']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+        </Guarantors>
+        <AgentSignatory>
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='PropertyOwner' and AgencyStaff='true' and SigningUser='true']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+        </AgentSignatory>
+      </Request>
+      <SystemParameter>
+        <xsl:copy-of select = "ItpDocumentRequest/EMailUser/ControllingOrganisation"/>
+        <CompanyName>
+          <xsl:value-of select ="ItpDocumentRequest/EMailUser/ControllingOrganisation/TradingName"/>
+        </CompanyName>
+      </SystemParameter>
     </docroot>
     <xsl:copy-of select="/"/>
-</xsl:template>
-
+  </xsl:template>
+  <xsl:template match="Tenancy/TenancyDocuments">
+    <TenancyDocuments list="true">
+      <xsl:copy-of select = "./*"/>
+    </TenancyDocuments>
+  </xsl:template>
+  <xsl:template match="Tenancy/*">
+    <xsl:apply-templates mode="copy" select = "."/>
+  </xsl:template>
+  <xsl:template match="*" mode="copy">
+    <xsl:element name="{name()}" namespace="{namespace-uri()}">
+      <xsl:apply-templates select="@*|node()" mode="copy" />
+    </xsl:element>
+  </xsl:template>
+  <xsl:template match="@*|text()|comment()" mode="copy">
+    <xsl:copy/>
+  </xsl:template>
 </xsl:stylesheet>

@@ -64,11 +64,11 @@ def merge_raw(request, method="POST"):
         subs["branding"]= branding_subs
         subs["AgreementDate"]=datetime.now()
     subs["docs"]=[templateName]
-    subs["roles"]=[
-        {"called":"Landlord", "values":["PropertyOwner", "AdditionalLandlord"]},
-        {"called":"Tenant", "values":["ManuallyInvitedTenant", "AdditionalTenant"]},
-        {"called":"Guarantor", "values":["Guarantor"]},
-    ]    
+    #subs["roles"]=[
+    #    {"called":"Landlord", "values":["PropertyOwner", "AdditionalLandlord"]},
+    #    {"called":"Tenant", "values":["ManuallyInvitedTenant", "AdditionalTenant"]},
+    #    {"called":"Guarantor", "values":["Guarantor"]},
+    #]    
     subs["site"]= site
 #    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload)    
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
