@@ -3,6 +3,9 @@ import os
 import string
 import ssl
 from subprocess import check_output
+import zipfile
+import tempfile
+import shutil
 
 from apiclient import discovery
 from apiclient.http import MediaFileUpload
@@ -27,6 +30,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from .resource_utils import get_working_dir, strip_xml_dec
 
 #try:
 #    import argparse
@@ -225,15 +229,11 @@ def isControlLine(s):
     s = s.split("+")[0]
     s = s.strip()
     if s[:2]=="{%" and s[-2:]=="%}":
-        print("control")
         return True
     else:
-        print("not control")
         return False
 
-
-
-def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
+def substituteVariablesDocx_x(fileNameIn, fileNameOut, subs):
     c = Context(subs)
     doc = Document(docx=fileNameIn)
     fullText="" 
@@ -408,6 +408,65 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
 
     doc.save(fileNameOut)
     return {"file":fileNameOut}
+
+def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
+    c = Context(subs)
+    doc_in = Document(docx=fileNameIn)
+    doc_temp = Document()
+    paras=doc_in.paragraphs
+    fullText="" 
+    i = 0
+    styles = {}
+    for para in paras:
+        paraText=""
+        p = doc_temp.add_paragraph(style = para.style)
+        docx_copy_para_format_from(p, para)
+        j = 0
+        runs = para.runs
+        for run in runs:
+            txt = run.text
+            paraText+= txt+"+"+str(j)+"+run+"
+            r = p.add_run(text = txt, style=run.style)
+            docx_copy_run_style_from(r, run)
+            j+=1
+        fullText+= paraText+str(i)+"+para+"
+        i+=1
+#   print(fullText)
+    fullText = preprocess(fullText)
+    t = Template(fullText)
+    xtxt = t.render(c)
+    xtxt = apply_sequence(xtxt)
+    xParaTxts = xtxt.split("+para+")
+    for p in paras:
+        removePara(p)
+
+    doc_in.paragraphs.clear()
+    paras=doc_temp.paragraphs
+    for xParaTxt in xParaTxts:
+        runTxts = xParaTxt.split("+run+")
+        if runTxts[-1]!='':
+            para_n = int(runTxts[-1])
+#            print("++ inserting", paras[para_n].text)
+            p = doc_in.add_paragraph(style=paras[para_n].style)
+            #p = paras[highest_used+1].insert_paragraph_before(style=paras[para_n].style)
+            docx_copy_para_format_from(p, paras[para_n])
+            for runTxt in runTxts[:-1]:
+                try:
+                    txt = runTxt.split("+")[-2]
+                except:
+                    txt=""
+                run_n = int(runTxt.split("+")[-1])
+                r = p.add_run(text=txt, style=paras[para_n].runs[run_n].style)
+                docx_copy_run_style_from(r, paras[para_n].runs[run_n])
+            if isControlLine(paras[para_n].text):
+                p.text="{}"
+
+    for p in doc_in.paragraphs:
+        if p.text=="{}":
+            removePara(p)
+    doc_in.save(fileNameOut)
+    return {"file":fileNameOut}
+
 
 def print_doc(doc):
     paras=doc.paragraphs
@@ -638,14 +697,6 @@ def email_file(baseFileName, me, you, subject, credentials):
     server.quit()
     return {"email":you.replace(" ","+")}
 
-def get_working_dir():
-    cwd = os.getcwd()
-    if (cwd.find("home")>=0):  
-        cwd = cwd+"/docmerge"
-    if (cwd.find("scripts")>=0):  
-        cwd = cwd.replace("\scripts","")
-    return cwd
-
 def get_output_dir():
     cwd = os.getcwd()
     if (cwd.find("home")>=0):  
@@ -693,15 +744,6 @@ def get_txt_content(local_data_folder, remote_data_folder, data_file):
         content = get_remote_txt_content(remote_data_folder, data_file)
     return content
 
-def strip_xml_dec(content):
-#    print(content[:20])
-    xml_dec_start = content.find("<?xml")
-    if xml_dec_start>=0:
-        return content[content.find(">")+1:]
-    else:
-        return content
-
-
 
 def get_xml_content(local_data_folder, remote_data_folder, data_file):
     content = get_txt_content(local_data_folder, remote_data_folder, data_file)
@@ -715,6 +757,28 @@ def push_local_txt(cwd, data_folder, data_file, payload):
         file.write(payload)
         file.close()
     return full_file_path
+
+#def merge_docx_footer(cwd, local_subfolder, filename, subs):
+def merge_docx_footer(full_local_filename, subs):
+    docx_filename = full_local_filename
+    #print(subs)
+    f = open(docx_filename, 'rb')
+    zip = zipfile.ZipFile(f)
+    xml_content = zip.read('word/footer1.xml')
+    xml_content = substituteVariablesPlainString(xml_content, subs)
+    tmp_dir = tempfile.mkdtemp()
+    zip.extractall(tmp_dir)
+
+    with open(os.path.join(tmp_dir,'word/footer1.xml'), 'w') as f:
+        f.write(xml_content)
+    filenames = zip.namelist()
+    zip_copy_filename = docx_filename
+    with zipfile.ZipFile(zip_copy_filename, "w") as docx:
+        for filename in filenames:
+            docx.write(os.path.join(tmp_dir,filename), filename)
+    shutil.rmtree(tmp_dir)
+    return({"file":docx_filename})
+
 
 
 SCOPES = 'https://www.googleapis.com/auth/drive'

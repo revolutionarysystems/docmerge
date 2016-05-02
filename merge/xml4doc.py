@@ -3,8 +3,11 @@ import iso8601
 import json
 import datetime
 from .testData import xml0, xml1
-from .merge_utils import folder_file,file_content_as,get_xml_content,strip_xml_dec
+from .merge_utils import folder_file,file_content_as,get_xml_content
+from .resource_utils import strip_xml_dec
 import lxml.etree as etree
+import re
+
 xml = '''
 <ItpDocumentRequest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <DocumentCode>AgreementTimerExtended</DocumentCode>
@@ -860,35 +863,15 @@ xml = '''
 '''
 
 def parse_as_datetime(str_value):
+
     try:
-        dt = iso8601.parse_date(str_value)
-        return dt
+        return iso8601.parse_date(str_value)
     except:        
         try:
-            if str_value.find("2016-")>=0:
-                print(str_value)
-                print(type(str_value))
-                str_value=str_value.replace(" ","+")
-                print(str_value)
-            dt = iso8601.parse_date(str_value)
-            return dt
+            str_value=str_value.replace(" ","+")
+            return iso8601.parse_date(str_value)
         except:        
             return None
-'''    try:
-        dt = datetime.datetime.strptime(str, "%Y-%m-%dT%H:%M:%S.%f")
-        return dt
-    except:        
-    #YYYY-MM-DDTHH:MM:SS.mmm
-        try:
-            dt = datetime.datetime.strptime(str, "%Y-%m-%dT%H:%M:%S")
-            return dt
-        except:        
-            try:
-                dt = iso8601.parse_date(str)
-                return dt
-            except:        
-                return None
-'''
 
 def parse_as_boolean(str):
     try:
@@ -902,9 +885,17 @@ def parse_as_boolean(str):
 
 
 def parse_special_values(str):
-    sv = parse_as_datetime(str)
-    if sv != None:
-        return sv
+    if str==None:
+        return str
+    dt_regex = "\d{4}-[01]\d-[0-3]\d[T\s][0-2]\d:[0-5]\d:[0-5]\d.*" 
+    p = re.compile(dt_regex)
+    m=p.match(str)
+    if (m==None):
+        return str 
+    else:
+        sv = parse_as_datetime(str)
+        if sv != None:
+            return sv
 #    sv = parse_as_boolean(str)  # suppress for now
 #        return sv
 
@@ -929,6 +920,8 @@ def force_lists(doc):
                 force_lists(item)
         else:
             sv=parse_special_values(node)
+#            if (key.find("Date")>=0):
+#                print(key, node, sv)
             if not(sv==None):
                 doc[key]=sv
                 node = sv

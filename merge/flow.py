@@ -8,7 +8,8 @@ import os
 import json
 from .merge_utils import (substituteVariablesDocx, substituteVariablesPlain,
     convert_markdown, folder_file, folder, email_file, uploadAsGoogleDoc, uploadFile, 
-    exportFile, getFile, file_content_as, local_textfile_content, push_local_txt, combine_docx, substituteVariablesPlainString)
+    exportFile, getFile, file_content_as, local_textfile_content, push_local_txt, combine_docx, 
+    substituteVariablesPlainString, merge_docx_footer)
 
 from datetime import datetime
 
@@ -101,7 +102,14 @@ def process_compound_merge(cwd, uniq, step, template_subfolder, template_list, o
                 outcome = substituteVariablesDocx(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
                 output_files.append(outcome["file"])
     outcome = combine_docx(output_files, localCombinedFileName)
-    outcome["link"] = subs["site"]+"file/?name="+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
+    outcome["link"] = subs["site"]+"/file/?name="+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
+
+    try:
+        if step["footer"]=="true":
+            merge_docx_footer(localCombinedFileName, subs)
+    except KeyError:
+        pass
+
     return outcome
 
 # perform a merge operation, either using more complex docx logic, or as plain text
@@ -116,6 +124,11 @@ def process_merge(cwd, uniq, step, localTemplateFileName, template_subfolder, lo
     else:
         outcome = substituteVariablesPlain(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
+    try:
+        if step["footer"]=="true":
+            merge_docx_footer(localMergedFileName+step["local_ext"], subs)
+    except KeyError:
+        pass
 
     return outcome
 
@@ -128,15 +141,15 @@ def process_markdown(step, localMergedFileName):
 
 # upload to Google drive, optionally converting to Google Drive format
 def process_upload(step, localFileName, subfolder, upload_id):
-    localFileName = localFileName
-    #print("upload:",localFileName,subfolder)
     if subfolder:
         upload_folder = folder(subfolder, upload_id, create_if_absent=True)
         upload_id=upload_folder["id"]
 
     if step["convert"]=="gdoc":
+        print("converting")
         return uploadAsGoogleDoc(localFileName+step["local_ext"], upload_id, step["mimetype"])
     else:
+        print("not converting")
         return uploadFile(localFileName+step["local_ext"], upload_id, step["mimetype"])
 
 # send email
@@ -185,53 +198,57 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
     doc_id = None
     for step in flow:
         try:
-            local_folder = step["folder"]
-        except:
-            local_folder = output_folder
+            try:
+                local_folder = step["folder"]
+            except:
+                local_folder = output_folder
 
-        if step["step"]=="download":
-            if doc_id ==None and require_template:
-                doc = folder_file(template_remote_folder, template_name)
-                doc_id = doc["id"]
-                doc_mimetype = doc["mimeType"]
-            outcome = process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
+            if step["step"]=="download":
+                if doc_id ==None and require_template:
+                    doc = folder_file(template_remote_folder, template_name)
+                    doc_id = doc["id"]
+                    doc_mimetype = doc["mimeType"]
+                outcome = process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
 
-        if step["step"]=="merge":
-            outcome = process_merge(cwd, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
+            if step["step"]=="merge":
+                outcome = process_merge(cwd, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
 
-        if step["step"]=="compound_merge": #template_name is a list of template names in a json file
-            outcome = process_compound_merge(cwd, uniq, step, template_subfolder, template_name, output_subfolder, subs)
+            if step["step"]=="compound_merge": #template_name is a list of template names in a json file
+                outcome = process_compound_merge(cwd, uniq, step, template_subfolder, template_name, output_subfolder, subs)
 
-        if step["step"]=="markdown":
-            outcome = process_markdown(step, localMergedFileName)
+            if step["step"]=="markdown":
+                outcome = process_markdown(step, localMergedFileName)
 
-        if step["step"]=="upload":
-            if local_folder=="templates":
-                localFileName = localTemplateFileName
-                upload_id = folder(template_remote_folder)["id"]
-                upload_subfolder = template_subfolder
-            else:
-                localFileName = localMergedFileName
-                upload_id = folder(output_folder)["id"]
-                upload_subfolder = None
-            outcome = process_upload(step, localFileName, upload_subfolder, upload_id)
-            doc_id = outcome["id"]
-            doc_mimetype = outcome["mimeType"]
+            if step["step"]=="upload":
+                if local_folder=="templates":
+                    localFileName = localTemplateFileName
+                    upload_id = folder(template_remote_folder)["id"]
+                    upload_subfolder = template_subfolder
+                else:
+                    localFileName = localMergedFileName
+                    upload_id = folder(output_folder)["id"]
+                    upload_subfolder = None
+                outcome = process_upload(step, localFileName, upload_subfolder, upload_id)
+                doc_id = outcome["id"]
+                doc_mimetype = outcome["mimeType"]
 
-        if step["step"]=="email":
-            outcome = process_email(step, localMergedFileName, you, email_credentials)
+            if step["step"]=="email":
+                outcome = process_email(step, localMergedFileName, you, email_credentials)
 
-        if step["step"]=="push":
-            outcome = process_push(cwd, step, localTemplateFileName, "templates/"+template_subfolder+"/", subs, payload=payload)
+            if step["step"]=="push":
+                outcome = process_push(cwd, step, localTemplateFileName, "templates/"+template_subfolder+"/", subs, payload=payload)
 
-        if step["step"]=="payload":
-            outcome = process_payload_dump(cwd, step, localMergedFileName, subs, payload=payload)
+            if step["step"]=="payload":
+                outcome = process_payload_dump(cwd, step, localMergedFileName, subs, payload=payload)
 
-        outcomes.append({"step":step["name"], "outcome":outcome})
-        for key in outcome.keys():
-            if key in ["link", "id", "mimeType"]:
-                overall_outcome[key]=outcome[key]
-                overall_outcome[key+"_"+step["name"].replace(" ","_")]=outcome[key]
+            outcomes.append({"step":step["name"], "success": True, "outcome":outcome})
+            for key in outcome.keys():
+                if key in ["link", "id", "mimeType"]:
+                    overall_outcome[key]=outcome[key]
+                    overall_outcome[key+"_"+step["name"].replace(" ","_")]=outcome[key]
+        except Exception as ex:
+            outcomes.append({"step":step["name"], "success": False, "outcome": {"exception":str(ex)}})
+
     overall_outcome["success"]=True
     overall_outcome["messages"]=[]
     overall_outcome["steps"]=outcomes
