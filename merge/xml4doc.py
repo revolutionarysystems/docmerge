@@ -900,6 +900,7 @@ def parse_special_values(str):
 #        return sv
 
 
+
 def force_lists(doc):
     for key in doc.keys():
         node = doc[key]
@@ -920,8 +921,6 @@ def force_lists(doc):
                 force_lists(item)
         else:
             sv=parse_special_values(node)
-#            if (key.find("Date")>=0):
-#                print(key, node, sv)
             if not(sv==None):
                 doc[key]=sv
                 node = sv
@@ -929,12 +928,13 @@ def force_lists(doc):
             node_name = list(node.keys())[-1] #xmldict will force a single node with a common name -which is ugly
             sublist = node[node_name]
             goodlist = []
-            if isinstance(sublist, list):
-                for item in sublist:
-                    goodlist.append(item)
-            else:
-                goodlist.append(sublist)
-                #node[node_name]=[sublist,]
+            if not node_name=="@list": #exclude the @list attribute
+                if isinstance(sublist, list):
+                    for item in sublist:
+                        goodlist.append(item)
+                else:
+                    goodlist.append(sublist)
+                    #node[node_name]=[sublist,]
             doc[key]=goodlist
     return doc
 

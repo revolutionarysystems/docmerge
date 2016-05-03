@@ -122,8 +122,9 @@ def test_data(test_case):
 	subs = getData(remote_data_folder = "/Doc Merge/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
 	                   xform_file="Copy of ITP_9yds_email.xml")["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
-	print(subs)
-#	print(subs["Roles"])
+#	print(subs)
+	print(subs["Request"]["Guarantors"])
+	print(subs["Request"]["Landlords"])
 
 
 def test_flow(test_case):
@@ -143,6 +144,8 @@ def test_flow(test_case):
 	for step in outcomes["steps"]:
 		print(step["step"])
 		print(step["outcome"])
+	print(outcomes["success"])
+	print(outcomes["messages"])
 
 def run():
 	test_flow(compound_TA)

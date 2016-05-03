@@ -146,10 +146,8 @@ def process_upload(step, localFileName, subfolder, upload_id):
         upload_id=upload_folder["id"]
 
     if step["convert"]=="gdoc":
-        print("converting")
         return uploadAsGoogleDoc(localFileName+step["local_ext"], upload_id, step["mimetype"])
     else:
-        print("not converting")
         return uploadFile(localFileName+step["local_ext"], upload_id, step["mimetype"])
 
 # send email
@@ -196,6 +194,8 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
     outcomes = []
     overall_outcome = {}
     doc_id = None
+    overall_outcome["success"]=True
+    overall_outcome["messages"]=[]
     for step in flow:
         try:
             try:
@@ -248,9 +248,12 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
                     overall_outcome[key+"_"+step["name"].replace(" ","_")]=outcome[key]
         except Exception as ex:
             outcomes.append({"step":step["name"], "success": False, "outcome": {"exception":str(ex)}})
-
-    overall_outcome["success"]=True
-    overall_outcome["messages"]=[]
+            overall_outcome["success"]=False
+            overall_outcome["messages"].append("Exception in step: "+step["name"]+".  "+str(ex))
+            if not("critical" in step.keys() and step["critical"]=="false"):
+                raise ex
+ 
+#    overall_outcome["success"]=True
     overall_outcome["steps"]=outcomes
 
     return overall_outcome
