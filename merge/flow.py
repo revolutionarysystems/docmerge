@@ -8,8 +8,9 @@ import os
 import json
 from .merge_utils import (substituteVariablesDocx, substituteVariablesPlain,
     convert_markdown, folder_file, folder, email_file, uploadAsGoogleDoc, uploadFile, 
-    exportFile, getFile, file_content_as, local_textfile_content, push_local_txt, combine_docx, 
+    exportFile, getFile, file_content_as, combine_docx, 
     substituteVariablesPlainString, merge_docx_footer)
+from .resource_utils import (push_local_txt)
 
 from datetime import datetime
 

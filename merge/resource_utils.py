@@ -29,6 +29,7 @@ import smtplib
 # Import the email modules we'll need
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from .config import install_name
 
 
 #try:
@@ -52,33 +53,40 @@ def strip_xml_dec(content):
     else:
         return content
 
+def get_local_dir(local):
+    cwd = os.getcwd()
+    if (cwd.find("home")>=0):  
+        local_d = "/home/docmerge/"+install_name+"/merge/"+local
+    else:  
+        local_d = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\"+local
+    return local_d
+
+def get_output_dir():
+    return get_local_dir("output")
+
+def get_local_txt_content(cwd, data_folder, data_file):
+    try:
+        full_file_path = os.path.join(cwd, "merge", data_folder, data_file)
+        print(full_file_path)
+        with open(cwd+"/merge/"+data_folder+"/"+data_file, "r") as file:
+            return  file.read()
+    except FileNotFoundError:
+        return None
+
+def push_local_txt(cwd, data_folder, data_file, payload):
+    full_file_path = os.path.join(cwd, "merge", data_folder, data_file)
+#    full_file_path = data_file
+    with open(full_file_path, "w") as file:
+        file.write(payload)
+        file.close()
+    return full_file_path
+
+def del_local(cwd, data_folder, data_file):
+    full_file_path = os.path.join(cwd, "merge", data_folder, data_file)
+    os.remove(full_file_path)
 
 
-def get_credentials():
-    """Gets valid user credentials from storage.
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-    Returns:
-        Credentials, the obtained credential.
-    """
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
-    if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir, 
-                                   'drive-python-quickstart.json')
 
-    store = oauth2client.file.Storage(credential_path)
-    credentials = store.get()
-    if not credentials or credentials.invalid:
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        if flags:
-            credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
-    return credentials
 
 def file_content(service, file_id):
   """Return a file's content.
@@ -318,44 +326,19 @@ def folder_file(path, name, parent='root', mimeType='*'):
     foldr = folder(path, parent)
     return folder_item(foldr["id"], name, mimeType=mimeType)
     
-def get_output_dir():
-    cwd = os.getcwd()
-    if (cwd.find("home")>=0):  
-        opd = "/home/docmerge/docmerge/merge/output"
-    else:  
-        opd = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\output"
-    return opd
 
-def get_local_dir(local):
-    cwd = os.getcwd()
-    if (cwd.find("home")>=0):  
-        opd = "/home/docmerge/docmerge/merge/"+local
-    else:  
-        opd = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\"+local
-    return opd
-
-
-def local_textfile_content(filename, filepath=get_output_dir()):
-    file_content=""
-    with open(filepath+"/"+filename) as file:
-        for line in file:
-            file_content+=(line+"\n")
-    #return {"content":file_content}
-    return file_content
+#def local_textfile_content(filename, filepath=get_output_dir()):
+#    file_content=""
+#    with open(filepath+"/"+filename) as file:
+#        for line in file:
+#            file_content+=(line+"\n")
+#    #return {"content":file_content}
+#    return file_content
 
 def get_remote_txt_content(data_folder, data_file):
     data_doc_id = folder_file(data_folder, data_file)["id"]
     doc_txt = file_content_as(data_doc_id)
     return doc_txt
-
-def get_local_txt_content(cwd, data_folder, data_file):
-#def get_flow_local(cwd, flow_local_folder, flow_file_name):
-    try:
-#        print(cwd+"/merge/"+data_folder+"/"+data_file)
-        with open(cwd+"/merge/"+data_folder+"/"+data_file, "r") as file:
-            return  file.read()
-    except FileNotFoundError:
-        return None
 
 def get_txt_content(local_data_folder, remote_data_folder, data_file):
 #    print("looking locally")
@@ -365,32 +348,9 @@ def get_txt_content(local_data_folder, remote_data_folder, data_file):
         content = get_remote_txt_content(remote_data_folder, data_file)
     return content
 
-
 def get_xml_content(local_data_folder, remote_data_folder, data_file):
     content = get_txt_content(local_data_folder, remote_data_folder, data_file)
     if type(content) is bytes:
         content = content.decode("UTF-8")
     return strip_xml_dec(content)
 
-def push_local_txt(cwd, data_folder, data_file, payload):
-    full_file_path = data_file
-    with open(full_file_path, "w") as file:
-        file.write(payload)
-        file.close()
-    return full_file_path
-
-
-SCOPES = 'https://www.googleapis.com/auth/drive'
-CLIENT_SECRET_FILE = 'client_secret.json'
-if (os.getcwd().find("home")>=0):  #pythonanywhere deployment
-    CLIENT_SECRET_FILE = '/home/docmerge/docmerge/client_secret.json'
-APPLICATION_NAME = 'Echo Publish'
-
-
-service = initialiseService()
-
-
-
-#docs = folder_files("/Doc Merge/Templates")
-#print([file["name"] for file in docs])
-#print([(file["name"],file["name"]) for file in folder_files("/Doc Merge/Templates")])

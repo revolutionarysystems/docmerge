@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from .docMerge import mergeDocument
@@ -5,7 +6,8 @@ from .xml4doc import getData
 from random import randint
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
-from .merge_utils import get_local_dir, local_textfile_content, refresh_files
+from .merge_utils import get_local_dir, refresh_files
+from .resource_utils import get_working_dir, get_local_txt_content
 from traceback import format_exc
 
 def getParamDefault(params, key, default, preserve_plus=False):
@@ -149,7 +151,8 @@ def file_raw(request):
     params = request.GET
     filename = getParamDefault(params, "name", None)
     download = getParamDefault(params, "download", "false")
-    filepath = get_local_dir(getParamDefault(params, "path", "output"))
+    subfolder = getParamDefault(params, "path", "output")
+    filepath = get_local_dir(subfolder)
     #file_content=""
     #with open(filepath+filename) as file:
     #    for line in file:
@@ -168,7 +171,8 @@ def file_raw(request):
         response['Content-Disposition'] = "attachment; filename={}".format(filename)
         return response
     else:
-        return HttpResponse(local_textfile_content(filename, filepath=filepath))
+        cwd = get_working_dir()
+        return HttpResponse(get_local_txt_content(cwd, subfolder, filename))
 
 def file(request):
     return file_raw(request)

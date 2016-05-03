@@ -1,0 +1,1501 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ItpDocumentRequest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<DocumentCode>TenancyAgreement</DocumentCode>
+	<UrlLinks/>
+	<Property>
+		<PropertyId>f5b67cb5-e2f0-e511-8202-06ab496445e9</PropertyId>
+		<HeatingTypes>
+			<ItemOfHeatingType>
+				<Value>Gas</Value>
+				<Description>Gas</Description>
+				<Id>1</Id>
+			</ItemOfHeatingType>
+			<ItemOfHeatingType>
+				<Value>Oil</Value>
+				<Description>Oil</Description>
+				<Id>4</Id>
+			</ItemOfHeatingType>
+		</HeatingTypes>
+		<Postcode>UB3 4RB</Postcode>
+		<Description>Description</Description>
+		<PropertyTypeId>
+			<Value>House</Value>
+			<Description>House</Description>
+			<Id>1</Id>
+		</PropertyTypeId>
+		<ServiceType>
+			<Value>FullyManaged</Value>
+			<Description>Fully Managed</Description>
+			<Id>1</Id>
+		</ServiceType>
+		<PropertyStyleId>
+			<Value>Detached</Value>
+			<Description>Detached</Description>
+			<Id>1</Id>
+		</PropertyStyleId>
+		<DateAvailable>2016-04-23T00:00:00</DateAvailable>
+		<FurnishedId>
+			<Value>Partfurnished</Value>
+			<Description>Part Furnished</Description>
+			<Id>2</Id>
+		</FurnishedId>
+		<ParkingTypes>
+			<ItemOfParkingType>
+				<Value>AllocatedParking</Value>
+				<Description>Allocated Parking</Description>
+				<Id>2</Id>
+			</ItemOfParkingType>
+			<ItemOfParkingType>
+				<Value>Garage</Value>
+				<Description>Garage</Description>
+				<Id>8</Id>
+			</ItemOfParkingType>
+		</ParkingTypes>
+		<OutsideSpaces>
+			<ItemOfOutsideSpaceType>
+				<Value>CommunalGarden</Value>
+				<Description>Communal Garden</Description>
+				<Id>1</Id>
+			</ItemOfOutsideSpaceType>
+			<ItemOfOutsideSpaceType>
+				<Value>FrontGarden</Value>
+				<Description>Front Garden</Description>
+				<Id>4</Id>
+			</ItemOfOutsideSpaceType>
+		</OutsideSpaces>
+		<StudentsAllowed>true</StudentsAllowed>
+		<ContractMonths>12</ContractMonths>
+		<TenureId>
+			<Value>Freehold</Value>
+			<Description>Freehold</Description>
+			<Id>1</Id>
+		</TenureId>
+		<AddressLine1>6 Carfax Road</AddressLine1>
+		<City>Hayes</City>
+		<County>Middlesex</County>
+		<Country>UK</Country>
+		<GasSupplied>true</GasSupplied>
+		<Balcony>false</Balcony>
+		<HasBuildingsInsurance>false</HasBuildingsInsurance>
+		<HasContentsInsurance>false</HasContentsInsurance>
+		<PropertyImages>
+			<ItpPropertyImage>
+				<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/f5b67cb5-e2f0-e511-8202-06ab496445e9/Photos/20160323103342310.jpg</Url>
+			</ItpPropertyImage>
+		</PropertyImages>
+		<PropertyDocuments>
+			<ItpDocument>
+				<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/f5b67cb5-e2f0-e511-8202-06ab496445e9/Documents/20160323103731758.pdf</Url>
+				<DocumentType>Epc</DocumentType>
+				<DocumentReference>ref-Epc</DocumentReference>
+				<DocumentDate xsi:nil="true"/>
+				<StartDate>2015-03-23T10:37:32.09</StartDate>
+				<EndDate>2017-03-23T10:37:32.09</EndDate>
+				<Verified>true</Verified>
+			</ItpDocument>
+			<ItpDocument>
+				<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/f5b67cb5-e2f0-e511-8202-06ab496445e9/Documents/20160323103732117.pdf</Url>
+				<DocumentType>GasSafety</DocumentType>
+				<DocumentReference>ref-GasSafety</DocumentReference>
+				<DocumentDate xsi:nil="true"/>
+				<StartDate>2015-03-23T10:37:32.463</StartDate>
+				<EndDate>2017-03-23T10:37:32.463</EndDate>
+				<Verified>true</Verified>
+			</ItpDocument>
+			<ItpDocument>
+				<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/f5b67cb5-e2f0-e511-8202-06ab496445e9/Documents/20160323103732445.pdf</Url>
+				<DocumentType>ProofOfOwnership</DocumentType>
+				<DocumentReference>ref-ProofOfOwnership</DocumentReference>
+				<DocumentDate>2015-03-23T10:37:32.793</DocumentDate>
+				<StartDate xsi:nil="true"/>
+				<EndDate xsi:nil="true"/>
+				<Verified>true</Verified>
+			</ItpDocument>
+		</PropertyDocuments>
+		<PropertyRooms>
+			<ItpPropertyRoom>
+				<RoomTypeId>
+					<Value>Kitchen</Value>
+					<Description>Kitchen</Description>
+					<Id>7</Id>
+				</RoomTypeId>
+				<Quantity>1</Quantity>
+				<Name>Kitchen</Name>
+			</ItpPropertyRoom>
+			<ItpPropertyRoom>
+				<RoomTypeId>
+					<Value>Bedroom</Value>
+					<Description>Bedroom</Description>
+					<Id>1</Id>
+				</RoomTypeId>
+				<Quantity>3</Quantity>
+				<Name>Bedroom</Name>
+			</ItpPropertyRoom>
+			<ItpPropertyRoom>
+				<RoomTypeId>
+					<Value>Cloakroom</Value>
+					<Description>Cloakroom</Description>
+					<Id>4</Id>
+				</RoomTypeId>
+				<Quantity>2</Quantity>
+				<Name>Cloakroom</Name>
+			</ItpPropertyRoom>
+		</PropertyRooms>
+		<PropertyAdverts>
+			<ItpPropertyAdvert>
+				<ProviderType>
+					<Value>Rightmove</Value>
+					<Description>Rightmove</Description>
+					<Id>1</Id>
+				</ProviderType>
+				<AdvertUrl>http://www.adftest.rightmove.com/property-to-rent/property-56932607.html</AdvertUrl>
+				<AgentRef>70dcea27-0ffd-417e-bda8-01dd6285d395__Test1__</AgentRef>
+				<AdvertListingStatus>Available</AdvertListingStatus>
+				<FirstListedDate>2016-03-23T10:35:18.84</FirstListedDate>
+				<TotalSummaryViews>0</TotalSummaryViews>
+				<TotalDesktopSummaryViews>0</TotalDesktopSummaryViews>
+				<TotalMobileSummaryViews>0</TotalMobileSummaryViews>
+				<TotalDetailViews>0</TotalDetailViews>
+				<TotalDesktopDetailViews>0</TotalDesktopDetailViews>
+				<TotalMobileDetailViews>0</TotalMobileDetailViews>
+			</ItpPropertyAdvert>
+		</PropertyAdverts>
+		<RightMoveUrl>http://www.adftest.rightmove.com/property-to-rent/property-56932607.html</RightMoveUrl>
+		<RightMoveRef>70dcea27-0ffd-417e-bda8-01dd6285d395__Test1__</RightMoveRef>
+		<KeyFeatures>
+			<ItpPropertyKeyFeature>
+				<Value>We accept DSS applicants, families with children, pets and students.</Value>
+			</ItpPropertyKeyFeature>
+			<ItpPropertyKeyFeature>
+				<Value>Property has communal and front gardens.</Value>
+			</ItpPropertyKeyFeature>
+			<ItpPropertyKeyFeature>
+				<Value>Property has gas and oil heating.</Value>
+			</ItpPropertyKeyFeature>
+			<ItpPropertyKeyFeature>
+				<Value>Parking - allocated and garage.</Value>
+			</ItpPropertyKeyFeature>
+			<ItpPropertyKeyFeature>
+				<Value>12 months term.</Value>
+			</ItpPropertyKeyFeature>
+		</KeyFeatures>
+		<DisplayAddress>Carfax Road, Hayes, Middlesex</DisplayAddress>
+		<WorkOrders/>
+		<ExternalPayments/>
+	</Property>
+	<Tenancy>
+		<TenancyId>da5f6d05-9b44-4094-89d6-13f538581b16</TenancyId>
+		<RentAmount>1000.00</RentAmount>
+		<RentAmountInAdvance>1000.00</RentAmountInAdvance>
+		<RentDueDate>2016-06-23T00:00:00</RentDueDate>
+		<OccupancyLength>12</OccupancyLength>
+		<StartDate>2016-05-23T00:00:00</StartDate>
+		<EndDate>2017-05-22T23:59:59</EndDate>
+		<GuarantorAccept>true</GuarantorAccept>
+		<DepositAmount>1000.00</DepositAmount>
+		<RentRemainingAmount>0.00</RentRemainingAmount>
+		<RentRecievedAmount>0.00</RentRecievedAmount>
+		<UtilitiesRecievedAmount>0.00</UtilitiesRecievedAmount>
+		<DepositSchemeType>
+			<Value>MyDeposits</Value>
+			<Description>My Deposits</Description>
+			<Id>5</Id>
+		</DepositSchemeType>
+		<TotalMoveInMonies>2000.00</TotalMoveInMonies>
+		<MoveInMoniesPaid>false</MoveInMoniesPaid>
+		<SpecialTerms>
+			<ItpSpecialTerm>
+				<SpecialTermType>
+					<Value>NoSmokingAllowed</Value>
+					<Description>No smoking inside the building(s)</Description>
+					<Id>5</Id>
+				</SpecialTermType>
+				<Description>No smoking inside the building(s)</Description>
+			</ItpSpecialTerm>
+			<ItpSpecialTerm>
+				<SpecialTermType>
+					<Value>Other</Value>
+					<Description>Other (See Text)</Description>
+					<Id>1</Id>
+				</SpecialTermType>
+				<Description>Access to Loft</Description>
+			</ItpSpecialTerm>
+		</SpecialTerms>
+		<BankAccountForPayments>
+			<AccountName>My Account</AccountName>
+			<AccountNumber>12345678</AccountNumber>
+			<BankName>Barclays</BankName>
+			<SortCode>10-11-12</SortCode>
+		</BankAccountForPayments>
+		<WallMessages/>
+		<Occupants>
+			<ItpOccupant>
+				<FirstName>Caleb</FirstName>
+				<LastName>Davis</LastName>
+				<DateOfBirth>1999-03-23T00:00:00</DateOfBirth>
+			</ItpOccupant>
+			<ItpOccupant>
+				<FirstName>Savannah</FirstName>
+				<LastName>Sanders</LastName>
+				<DateOfBirth>1999-03-23T00:00:00</DateOfBirth>
+			</ItpOccupant>
+		</Occupants>
+		<AwaitingAgreementCreation>true</AwaitingAgreementCreation>
+		<ReferencePaymentHoursRemaining>0</ReferencePaymentHoursRemaining>
+		<AgreementHoursRemaining>127</AgreementHoursRemaining>
+		<TenancyDocuments>
+			<ItpTenancyDocument>
+				<DocumentName>CreditReport-6 Carfax Road-20160323103613463.html</DocumentName>
+				<DocumentUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/5e2bd473-69c1-4413-a701-9bc67ed4875e/Documents/CreditReport-6CarfaxRoad-20160323103613463.html</DocumentUrl>
+				<DocumentType>CreditCheckReport</DocumentType>
+				<DocumentDate>2016-03-23T10:36:13.463</DocumentDate>
+			</ItpTenancyDocument>
+			<ItpTenancyDocument>
+				<DocumentName>CreditReport-6 Carfax Road-20160323103646134.html</DocumentName>
+				<DocumentUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/3e2606f6-71d3-4d5c-a2bb-e7fcc860c59f/Documents/CreditReport-6CarfaxRoad-20160323103646134.html</DocumentUrl>
+				<DocumentType>CreditCheckReport</DocumentType>
+				<DocumentDate>2016-03-23T10:36:46.133</DocumentDate>
+			</ItpTenancyDocument>
+			<ItpTenancyDocument>
+				<DocumentName>CreditReport-6 Carfax Road-20160323103657383.html</DocumentName>
+				<DocumentUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/d9d81f89-533c-40a7-b2db-57f01c5658a3/Documents/CreditReport-6CarfaxRoad-20160323103657383.html</DocumentUrl>
+				<DocumentType>CreditCheckReport</DocumentType>
+				<DocumentDate>2016-03-23T10:36:57.383</DocumentDate>
+			</ItpTenancyDocument>
+			<ItpTenancyDocument>
+				<DocumentName>CreditReport-6 Carfax Road-20160323103709805.html</DocumentName>
+				<DocumentUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/cdb50db0-6a8d-4357-8b96-0138bb4f356d/Documents/CreditReport-6CarfaxRoad-20160323103709805.html</DocumentUrl>
+				<DocumentType>CreditCheckReport</DocumentType>
+				<DocumentDate>2016-03-23T10:37:09.807</DocumentDate>
+			</ItpTenancyDocument>
+			<ItpTenancyDocument>
+				<DocumentName>ref-Inventory</DocumentName>
+				<DocumentUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/da5f6d05-9b44-4094-89d6-13f538581b16/Documents/20160323103732867.pdf</DocumentUrl>
+				<DocumentType>Inventory</DocumentType>
+				<DocumentDate>2015-03-23T10:37:33.2</DocumentDate>
+			</ItpTenancyDocument>
+		</TenancyDocuments>
+	</Tenancy>
+	<PropertyUsers>
+		<ItpUser>
+			<UserId>cdb50db0-6a8d-4357-8b96-0138bb4f356d</UserId>
+			<Title>Dr</Title>
+			<FirstName>Harold</FirstName>
+			<LastName>Chrysler</LastName>
+			<Email>TT9_9ydsStaff@9yds-testing.co.uk</Email>
+			<HomeTel>1249764780</HomeTel>
+			<WorkTel>783035448</WorkTel>
+			<Mobile>2125041897</Mobile>
+			<PropertyUserType>
+				<Value>ManuallyInvitedTenant</Value>
+				<Description>Tenant</Description>
+				<Id>4</Id>
+			</PropertyUserType>
+			<Addresses>
+				<ItpAddress>
+					<AddressId>b40ea0d0-e2f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>18, Top Gear Lane</AddressLine1>
+					<City>Test Town</City>
+					<Postcode>X9 9LF</Postcode>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>PrivateRented</ResidencyStatus>
+					<ResidencyStatusDesc>Private Rented</ResidencyStatusDesc>
+				</ItpAddress>
+			</Addresses>
+			<IdCheckStatus>
+				<Value>Passed</Value>
+				<Description>ID matched and ID Check Passed</Description>
+				<Id>1</Id>
+			</IdCheckStatus>
+			<NextOfKin>
+				<Name>Ted Accountant</Name>
+				<TelephoneNumber>01234 567891</TelephoneNumber>
+				<Email>test@test.com</Email>
+				<ContactAddress>
+					<AddressId>d446702d-e3f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>UserAddress 1</AddressLine1>
+					<AddressLine2>UserAddress 2</AddressLine2>
+					<City>City</City>
+					<County>County</County>
+					<Postcode>PO5 8DE</Postcode>
+					<Country>Country</Country>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>NotSet</ResidencyStatus>
+					<ResidencyStatusDesc>Unknown</ResidencyStatusDesc>
+				</ContactAddress>
+			</NextOfKin>
+			<UserDocuments>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/cdb50db0-6a8d-4357-8b96-0138bb4f356d/Documents/CreditReport-6CarfaxRoad-20160323103709805.html</Url>
+					<DocumentType>CreditCheckReport</DocumentType>
+					<DocumentReference>CreditReport-6 Carfax Road-20160323103709805.html</DocumentReference>
+					<DocumentDate>2016-03-23T10:37:09.807</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301919.pdf</Url>
+					<DocumentType>WebsiteTerms</DocumentType>
+					<DocumentReference>Tenant Terms v1</DocumentReference>
+					<DocumentDate>2016-03-23T10:34:32.683</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/cdb50db0-6a8d-4357-8b96-0138bb4f356d/Documents/IdCheckReport-0.html</Url>
+					<DocumentType>IdCheckReport</DocumentType>
+					<DocumentReference>IdCheckReport-0.html</DocumentReference>
+					<DocumentDate>2016-03-23T10:34:44.263</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/cdb50db0-6a8d-4357-8b96-0138bb4f356d/Documents/20160323103519636.pdf</Url>
+					<DocumentType>ProofOfResidence</DocumentType>
+					<DocumentReference>ref-ProofOfResidence</DocumentReference>
+					<DocumentDate>2015-03-23T10:35:19.883</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/cdb50db0-6a8d-4357-8b96-0138bb4f356d/Documents/20160323103519979.pdf</Url>
+					<DocumentType>PhotoId</DocumentType>
+					<DocumentReference>ref-PhotoId</DocumentReference>
+					<DocumentDate>2015-03-23T10:35:20.317</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/cdb50db0-6a8d-4357-8b96-0138bb4f356d/Documents/20160323103521104.pdf</Url>
+					<DocumentType>ImmigrationStatusDoc</DocumentType>
+					<DocumentReference>ref-ImmigrationStatusDoc</DocumentReference>
+					<DocumentDate xsi:nil="true"/>
+					<StartDate>2015-03-23T10:35:21.457</StartDate>
+					<EndDate>2017-03-23T10:35:21.457</EndDate>
+					<Verified>true</Verified>
+				</ItpDocument>
+			</UserDocuments>
+			<ControllingOrganisation>
+				<OrganisationStatus>Limited</OrganisationStatus>
+				<OrganisationType>Advertising</OrganisationType>
+				<RegisteredOrganisationName>Glanty Ltd</RegisteredOrganisationName>
+				<TradingName>9yds</TradingName>
+				<LogoUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301232.png</LogoUrl>
+				<RegistrationNumber>05562443</RegistrationNumber>
+				<VatNumber>928289676</VatNumber>
+				<CompanyTelephone>0333 006 3000</CompanyTelephone>
+				<CompanyEmail>theteam@9yds-testing.co.uk</CompanyEmail>
+				<Established>2005-01-01T00:00:00</Established>
+				<GrossProfit>0.00</GrossProfit>
+				<MarketingType>
+					<Value>SystemRightmoveAccount</Value>
+					<Description>System RM Account</Description>
+					<Id>1</Id>
+				</MarketingType>
+				<ShowCoBranding>false</ShowCoBranding>
+				<OrganisationUsers>
+					<ItpOrganisationUser>
+						<OrganisationUserType>
+							<Value>OrganisationAdministrator</Value>
+							<Description>Organisation Administrator</Description>
+							<Id>1</Id>
+						</OrganisationUserType>
+						<OrganisationUserRole>
+							<Value>Owner</Value>
+							<Description>Owner</Description>
+							<Id>1</Id>
+						</OrganisationUserRole>
+						<SigningAuthority>true</SigningAuthority>
+						<Contact>
+							<Name>Hannah Cooper</Name>
+							<TelephoneNumber>2106716050</TelephoneNumber>
+							<Email>9ydsStaff@9yds-testing.co.uk</Email>
+							<ContactAddress>
+								<AddressId>c4b67cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+								<AddressLine1>5 Carfax Road</AddressLine1>
+								<City>Hayes</City>
+								<Postcode>UB3 4RB</Postcode>
+								<CurrentAddress>true</CurrentAddress>
+								<ResidencyStatus>NotSet</ResidencyStatus>
+								<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+							</ContactAddress>
+						</Contact>
+					</ItpOrganisationUser>
+				</OrganisationUsers>
+				<Addresses>
+					<ItpAddress>
+						<AddressId>54934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>RegisteredOffice</Value>
+							<Description>RegisteredOffice</Description>
+							<Id>2</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+					<ItpAddress>
+						<AddressId>55934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>AccountantAddress</Value>
+							<Description>AccountantAddress</Description>
+							<Id>4</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+				</Addresses>
+				<BankAccounts/>
+			</ControllingOrganisation>
+			<LandlordType>
+				<Value>NotSet</Value>
+				<Description>NotSet</Description>
+				<Id>0</Id>
+			</LandlordType>
+			<ReferencingPaid>true</ReferencingPaid>
+			<ReferenceCheckStatus>Passed</ReferenceCheckStatus>
+			<ReferenceCheckSoftPass>false</ReferenceCheckSoftPass>
+			<GuarantorRequired xsi:nil="true"/>
+			<GuarantorAdded>true</GuarantorAdded>
+			<AgreementSigningStatus>NotSet</AgreementSigningStatus>
+			<ConfirmedUser>true</ConfirmedUser>
+			<SigningUser>true</SigningUser>
+			<AgencyStaff>false</AgencyStaff>
+			<NoPasswordEnteredOnRegistration>false</NoPasswordEnteredOnRegistration>
+			<TenantWantsDetails>false</TenantWantsDetails>
+			<TenantWantsViewing>false</TenantWantsViewing>
+			<IsSmoker>false</IsSmoker>
+			<HasPets>true</HasPets>
+			<HasDependents>true</HasDependents>
+			<IsRegisteringDeposit>false</IsRegisteringDeposit>
+		</ItpUser>
+		<ItpUser>
+			<UserId>5e2bd473-69c1-4413-a701-9bc67ed4875e</UserId>
+			<Title>Dr</Title>
+			<FirstName>Mason</FirstName>
+			<LastName>Johnson</LastName>
+			<Email>GG_11TT9_9ydsStaff@9yds-testing.co.uk</Email>
+			<HomeTel>22597995</HomeTel>
+			<WorkTel>660404653</WorkTel>
+			<Mobile>1859613842</Mobile>
+			<PropertyUserType>
+				<Value>Guarantor</Value>
+				<Description>Guarantor</Description>
+				<Id>8</Id>
+			</PropertyUserType>
+			<Addresses>
+				<ItpAddress>
+					<AddressId>905e7c05-e3f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>12 Carfax Road</AddressLine1>
+					<City>Hayes</City>
+					<Postcode>UB3 4RB</Postcode>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>PrivateRented</ResidencyStatus>
+					<ResidencyStatusDesc>Private Rented</ResidencyStatusDesc>
+				</ItpAddress>
+			</Addresses>
+			<IdCheckStatus>
+				<Value>NotChecked</Value>
+				<Description>ID Check not yet Performed</Description>
+				<Id>0</Id>
+			</IdCheckStatus>
+			<NextOfKin>
+				<Name>Ted Accountant</Name>
+				<TelephoneNumber>01234 567891</TelephoneNumber>
+				<Email>test@test.com</Email>
+				<ContactAddress>
+					<AddressId>899abd0c-e3f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>UserAddress 1</AddressLine1>
+					<AddressLine2>UserAddress 2</AddressLine2>
+					<City>City</City>
+					<County>County</County>
+					<Postcode>PO5 8DE</Postcode>
+					<Country>Country</Country>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>NotSet</ResidencyStatus>
+					<ResidencyStatusDesc>Unknown</ResidencyStatusDesc>
+				</ContactAddress>
+			</NextOfKin>
+			<UserDocuments>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/5e2bd473-69c1-4413-a701-9bc67ed4875e/Documents/CreditReport-6CarfaxRoad-20160323103613463.html</Url>
+					<DocumentType>CreditCheckReport</DocumentType>
+					<DocumentReference>CreditReport-6 Carfax Road-20160323103613463.html</DocumentReference>
+					<DocumentDate>2016-03-23T10:36:13.463</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301919.pdf</Url>
+					<DocumentType>WebsiteTerms</DocumentType>
+					<DocumentReference>Tenant Terms v1</DocumentReference>
+					<DocumentDate>2016-03-23T10:35:55.497</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/5e2bd473-69c1-4413-a701-9bc67ed4875e/Documents/20160323103601572.pdf</Url>
+					<DocumentType>ProofOfResidence</DocumentType>
+					<DocumentReference>ref-ProofOfResidence</DocumentReference>
+					<DocumentDate>2015-03-23T10:36:01.843</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/5e2bd473-69c1-4413-a701-9bc67ed4875e/Documents/20160323103601807.pdf</Url>
+					<DocumentType>PhotoId</DocumentType>
+					<DocumentReference>ref-PhotoId</DocumentReference>
+					<DocumentDate>2015-03-23T10:36:02.167</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+			</UserDocuments>
+			<ControllingOrganisation>
+				<OrganisationStatus>Limited</OrganisationStatus>
+				<OrganisationType>Advertising</OrganisationType>
+				<RegisteredOrganisationName>Glanty Ltd</RegisteredOrganisationName>
+				<TradingName>9yds</TradingName>
+				<LogoUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301232.png</LogoUrl>
+				<RegistrationNumber>05562443</RegistrationNumber>
+				<VatNumber>928289676</VatNumber>
+				<CompanyTelephone>0333 006 3000</CompanyTelephone>
+				<CompanyEmail>theteam@9yds-testing.co.uk</CompanyEmail>
+				<Established>2005-01-01T00:00:00</Established>
+				<GrossProfit>0.00</GrossProfit>
+				<MarketingType>
+					<Value>SystemRightmoveAccount</Value>
+					<Description>System RM Account</Description>
+					<Id>1</Id>
+				</MarketingType>
+				<ShowCoBranding>false</ShowCoBranding>
+				<OrganisationUsers>
+					<ItpOrganisationUser>
+						<OrganisationUserType>
+							<Value>OrganisationAdministrator</Value>
+							<Description>Organisation Administrator</Description>
+							<Id>1</Id>
+						</OrganisationUserType>
+						<OrganisationUserRole>
+							<Value>Owner</Value>
+							<Description>Owner</Description>
+							<Id>1</Id>
+						</OrganisationUserRole>
+						<SigningAuthority>true</SigningAuthority>
+						<Contact>
+							<Name>Hannah Cooper</Name>
+							<TelephoneNumber>2106716050</TelephoneNumber>
+							<Email>9ydsStaff@9yds-testing.co.uk</Email>
+							<ContactAddress>
+								<AddressId>c4b67cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+								<AddressLine1>5 Carfax Road</AddressLine1>
+								<City>Hayes</City>
+								<Postcode>UB3 4RB</Postcode>
+								<CurrentAddress>true</CurrentAddress>
+								<ResidencyStatus>NotSet</ResidencyStatus>
+								<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+							</ContactAddress>
+						</Contact>
+					</ItpOrganisationUser>
+				</OrganisationUsers>
+				<Addresses>
+					<ItpAddress>
+						<AddressId>54934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>RegisteredOffice</Value>
+							<Description>RegisteredOffice</Description>
+							<Id>2</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+					<ItpAddress>
+						<AddressId>55934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>AccountantAddress</Value>
+							<Description>AccountantAddress</Description>
+							<Id>4</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+				</Addresses>
+				<BankAccounts/>
+			</ControllingOrganisation>
+			<LandlordType>
+				<Value>NotSet</Value>
+				<Description>NotSet</Description>
+				<Id>0</Id>
+			</LandlordType>
+			<ReferencingPaid>true</ReferencingPaid>
+			<ReferenceCheckStatus>Passed</ReferenceCheckStatus>
+			<ReferenceCheckSoftPass xsi:nil="true"/>
+			<GuarantorRequired xsi:nil="true"/>
+			<GuarantorAdded xsi:nil="true"/>
+			<AgreementSigningStatus>NotSet</AgreementSigningStatus>
+			<ConfirmedUser>true</ConfirmedUser>
+			<SigningUser>true</SigningUser>
+			<AgencyStaff>false</AgencyStaff>
+			<NoPasswordEnteredOnRegistration>false</NoPasswordEnteredOnRegistration>
+			<TenantWantsDetails>false</TenantWantsDetails>
+			<TenantWantsViewing>false</TenantWantsViewing>
+			<IsSmoker>false</IsSmoker>
+			<HasPets>false</HasPets>
+			<HasDependents>false</HasDependents>
+			<IsRegisteringDeposit>false</IsRegisteringDeposit>
+		</ItpUser>
+		<ItpUser>
+			<UserId>d9d81f89-533c-40a7-b2db-57f01c5658a3</UserId>
+			<Title>Dr</Title>
+			<FirstName>Austin</FirstName>
+			<LastName>Wright</LastName>
+			<Email>AT_11_TT9_9ydsStaff@9yds-testing.co.uk</Email>
+			<HomeTel>647104438</HomeTel>
+			<WorkTel>73029613</WorkTel>
+			<Mobile>421562268</Mobile>
+			<PropertyUserType>
+				<Value>AdditionalTenant</Value>
+				<Description>Additional Tenant</Description>
+				<Id>3</Id>
+			</PropertyUserType>
+			<Addresses>
+				<ItpAddress>
+					<AddressId>8dd96af6-e2f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>11 Carfax Road</AddressLine1>
+					<City>Hayes</City>
+					<Postcode>UB3 4RB</Postcode>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>PrivateRented</ResidencyStatus>
+					<ResidencyStatusDesc>Private Rented</ResidencyStatusDesc>
+				</ItpAddress>
+			</Addresses>
+			<IdCheckStatus>
+				<Value>NotChecked</Value>
+				<Description>ID Check not yet Performed</Description>
+				<Id>0</Id>
+			</IdCheckStatus>
+			<NextOfKin>
+				<Name>Ted Accountant</Name>
+				<TelephoneNumber>01234 567891</TelephoneNumber>
+				<Email>test@test.com</Email>
+				<ContactAddress>
+					<AddressId>09829e24-e3f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>UserAddress 1</AddressLine1>
+					<AddressLine2>UserAddress 2</AddressLine2>
+					<City>City</City>
+					<County>County</County>
+					<Postcode>PO5 8DE</Postcode>
+					<Country>Country</Country>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>NotSet</ResidencyStatus>
+					<ResidencyStatusDesc>Unknown</ResidencyStatusDesc>
+				</ContactAddress>
+			</NextOfKin>
+			<UserDocuments>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/d9d81f89-533c-40a7-b2db-57f01c5658a3/Documents/CreditReport-6CarfaxRoad-20160323103657383.html</Url>
+					<DocumentType>CreditCheckReport</DocumentType>
+					<DocumentReference>CreditReport-6 Carfax Road-20160323103657383.html</DocumentReference>
+					<DocumentDate>2016-03-23T10:36:57.383</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301919.pdf</Url>
+					<DocumentType>WebsiteTerms</DocumentType>
+					<DocumentReference>Tenant Terms v1</DocumentReference>
+					<DocumentDate>2016-03-23T10:35:30.213</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/d9d81f89-533c-40a7-b2db-57f01c5658a3/Documents/20160323103538932.pdf</Url>
+					<DocumentType>ProofOfResidence</DocumentType>
+					<DocumentReference>ref-ProofOfResidence</DocumentReference>
+					<DocumentDate>2015-03-23T10:35:39.273</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/d9d81f89-533c-40a7-b2db-57f01c5658a3/Documents/20160323103539182.pdf</Url>
+					<DocumentType>PhotoId</DocumentType>
+					<DocumentReference>ref-PhotoId</DocumentReference>
+					<DocumentDate>2015-03-23T10:35:39.537</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/d9d81f89-533c-40a7-b2db-57f01c5658a3/Documents/20160323103539526.pdf</Url>
+					<DocumentType>ImmigrationStatusDoc</DocumentType>
+					<DocumentReference>ref-ImmigrationStatusDoc</DocumentReference>
+					<DocumentDate xsi:nil="true"/>
+					<StartDate>2015-03-23T10:35:39.81</StartDate>
+					<EndDate>2017-03-23T10:35:39.81</EndDate>
+					<Verified>true</Verified>
+				</ItpDocument>
+			</UserDocuments>
+			<ControllingOrganisation>
+				<OrganisationStatus>Limited</OrganisationStatus>
+				<OrganisationType>Advertising</OrganisationType>
+				<RegisteredOrganisationName>Glanty Ltd</RegisteredOrganisationName>
+				<TradingName>9yds</TradingName>
+				<LogoUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301232.png</LogoUrl>
+				<RegistrationNumber>05562443</RegistrationNumber>
+				<VatNumber>928289676</VatNumber>
+				<CompanyTelephone>0333 006 3000</CompanyTelephone>
+				<CompanyEmail>theteam@9yds-testing.co.uk</CompanyEmail>
+				<Established>2005-01-01T00:00:00</Established>
+				<GrossProfit>0.00</GrossProfit>
+				<MarketingType>
+					<Value>SystemRightmoveAccount</Value>
+					<Description>System RM Account</Description>
+					<Id>1</Id>
+				</MarketingType>
+				<ShowCoBranding>false</ShowCoBranding>
+				<OrganisationUsers>
+					<ItpOrganisationUser>
+						<OrganisationUserType>
+							<Value>OrganisationAdministrator</Value>
+							<Description>Organisation Administrator</Description>
+							<Id>1</Id>
+						</OrganisationUserType>
+						<OrganisationUserRole>
+							<Value>Owner</Value>
+							<Description>Owner</Description>
+							<Id>1</Id>
+						</OrganisationUserRole>
+						<SigningAuthority>true</SigningAuthority>
+						<Contact>
+							<Name>Hannah Cooper</Name>
+							<TelephoneNumber>2106716050</TelephoneNumber>
+							<Email>9ydsStaff@9yds-testing.co.uk</Email>
+							<ContactAddress>
+								<AddressId>c4b67cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+								<AddressLine1>5 Carfax Road</AddressLine1>
+								<City>Hayes</City>
+								<Postcode>UB3 4RB</Postcode>
+								<CurrentAddress>true</CurrentAddress>
+								<ResidencyStatus>NotSet</ResidencyStatus>
+								<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+							</ContactAddress>
+						</Contact>
+					</ItpOrganisationUser>
+				</OrganisationUsers>
+				<Addresses>
+					<ItpAddress>
+						<AddressId>54934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>RegisteredOffice</Value>
+							<Description>RegisteredOffice</Description>
+							<Id>2</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+					<ItpAddress>
+						<AddressId>55934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>AccountantAddress</Value>
+							<Description>AccountantAddress</Description>
+							<Id>4</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+				</Addresses>
+				<BankAccounts/>
+			</ControllingOrganisation>
+			<LandlordType>
+				<Value>NotSet</Value>
+				<Description>NotSet</Description>
+				<Id>0</Id>
+			</LandlordType>
+			<ReferencingPaid>true</ReferencingPaid>
+			<ReferenceCheckStatus>Passed</ReferenceCheckStatus>
+			<ReferenceCheckSoftPass xsi:nil="true"/>
+			<GuarantorRequired xsi:nil="true"/>
+			<GuarantorAdded>true</GuarantorAdded>
+			<AgreementSigningStatus>NotSet</AgreementSigningStatus>
+			<ConfirmedUser>true</ConfirmedUser>
+			<SigningUser>true</SigningUser>
+			<AgencyStaff>false</AgencyStaff>
+			<NoPasswordEnteredOnRegistration>false</NoPasswordEnteredOnRegistration>
+			<TenantWantsDetails>false</TenantWantsDetails>
+			<TenantWantsViewing>false</TenantWantsViewing>
+			<IsSmoker>false</IsSmoker>
+			<HasPets>false</HasPets>
+			<HasDependents>false</HasDependents>
+			<IsRegisteringDeposit>false</IsRegisteringDeposit>
+		</ItpUser>
+		<ItpUser>
+			<UserId>3e2606f6-71d3-4d5c-a2bb-e7fcc860c59f</UserId>
+			<Title>Dr</Title>
+			<FirstName>Parker</FirstName>
+			<LastName>Hill</LastName>
+			<Email>GG_12AT_11_TT9_9ydsStaff@9yds-testing.co.uk</Email>
+			<HomeTel>695652529</HomeTel>
+			<WorkTel>1410311802</WorkTel>
+			<Mobile>769014014</Mobile>
+			<PropertyUserType>
+				<Value>Guarantor</Value>
+				<Description>Guarantor</Description>
+				<Id>8</Id>
+			</PropertyUserType>
+			<Addresses>
+				<ItpAddress>
+					<AddressId>4fea0017-e3f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>13 Carfax Road</AddressLine1>
+					<City>Hayes</City>
+					<Postcode>UB3 4RB</Postcode>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>PrivateRented</ResidencyStatus>
+					<ResidencyStatusDesc>Private Rented</ResidencyStatusDesc>
+				</ItpAddress>
+			</Addresses>
+			<IdCheckStatus>
+				<Value>NotChecked</Value>
+				<Description>ID Check not yet Performed</Description>
+				<Id>0</Id>
+			</IdCheckStatus>
+			<NextOfKin>
+				<Name>Ted Accountant</Name>
+				<TelephoneNumber>01234 567891</TelephoneNumber>
+				<Email>test@test.com</Email>
+				<ContactAddress>
+					<AddressId>34b3ee1d-e3f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>UserAddress 1</AddressLine1>
+					<AddressLine2>UserAddress 2</AddressLine2>
+					<City>City</City>
+					<County>County</County>
+					<Postcode>PO5 8DE</Postcode>
+					<Country>Country</Country>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>NotSet</ResidencyStatus>
+					<ResidencyStatusDesc>Unknown</ResidencyStatusDesc>
+				</ContactAddress>
+			</NextOfKin>
+			<UserDocuments>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/3e2606f6-71d3-4d5c-a2bb-e7fcc860c59f/Documents/CreditReport-6CarfaxRoad-20160323103646134.html</Url>
+					<DocumentType>CreditCheckReport</DocumentType>
+					<DocumentReference>CreditReport-6 Carfax Road-20160323103646134.html</DocumentReference>
+					<DocumentDate>2016-03-23T10:36:46.133</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301919.pdf</Url>
+					<DocumentType>WebsiteTerms</DocumentType>
+					<DocumentReference>Tenant Terms v1</DocumentReference>
+					<DocumentDate>2016-03-23T10:36:24.887</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/3e2606f6-71d3-4d5c-a2bb-e7fcc860c59f/Documents/20160323103636415.pdf</Url>
+					<DocumentType>ProofOfResidence</DocumentType>
+					<DocumentReference>ref-ProofOfResidence</DocumentReference>
+					<DocumentDate>2015-03-23T10:36:36.753</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/3e2606f6-71d3-4d5c-a2bb-e7fcc860c59f/Documents/20160323103637306.pdf</Url>
+					<DocumentType>PhotoId</DocumentType>
+					<DocumentReference>ref-PhotoId</DocumentReference>
+					<DocumentDate>2015-03-23T10:36:37.653</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+			</UserDocuments>
+			<ControllingOrganisation>
+				<OrganisationStatus>Limited</OrganisationStatus>
+				<OrganisationType>Advertising</OrganisationType>
+				<RegisteredOrganisationName>Glanty Ltd</RegisteredOrganisationName>
+				<TradingName>9yds</TradingName>
+				<LogoUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301232.png</LogoUrl>
+				<RegistrationNumber>05562443</RegistrationNumber>
+				<VatNumber>928289676</VatNumber>
+				<CompanyTelephone>0333 006 3000</CompanyTelephone>
+				<CompanyEmail>theteam@9yds-testing.co.uk</CompanyEmail>
+				<Established>2005-01-01T00:00:00</Established>
+				<GrossProfit>0.00</GrossProfit>
+				<MarketingType>
+					<Value>SystemRightmoveAccount</Value>
+					<Description>System RM Account</Description>
+					<Id>1</Id>
+				</MarketingType>
+				<ShowCoBranding>false</ShowCoBranding>
+				<OrganisationUsers>
+					<ItpOrganisationUser>
+						<OrganisationUserType>
+							<Value>OrganisationAdministrator</Value>
+							<Description>Organisation Administrator</Description>
+							<Id>1</Id>
+						</OrganisationUserType>
+						<OrganisationUserRole>
+							<Value>Owner</Value>
+							<Description>Owner</Description>
+							<Id>1</Id>
+						</OrganisationUserRole>
+						<SigningAuthority>true</SigningAuthority>
+						<Contact>
+							<Name>Hannah Cooper</Name>
+							<TelephoneNumber>2106716050</TelephoneNumber>
+							<Email>9ydsStaff@9yds-testing.co.uk</Email>
+							<ContactAddress>
+								<AddressId>c4b67cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+								<AddressLine1>5 Carfax Road</AddressLine1>
+								<City>Hayes</City>
+								<Postcode>UB3 4RB</Postcode>
+								<CurrentAddress>true</CurrentAddress>
+								<ResidencyStatus>NotSet</ResidencyStatus>
+								<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+							</ContactAddress>
+						</Contact>
+					</ItpOrganisationUser>
+				</OrganisationUsers>
+				<Addresses>
+					<ItpAddress>
+						<AddressId>54934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>RegisteredOffice</Value>
+							<Description>RegisteredOffice</Description>
+							<Id>2</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+					<ItpAddress>
+						<AddressId>55934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>AccountantAddress</Value>
+							<Description>AccountantAddress</Description>
+							<Id>4</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+				</Addresses>
+				<BankAccounts/>
+			</ControllingOrganisation>
+			<LandlordType>
+				<Value>NotSet</Value>
+				<Description>NotSet</Description>
+				<Id>0</Id>
+			</LandlordType>
+			<ReferencingPaid>true</ReferencingPaid>
+			<ReferenceCheckStatus>Passed</ReferenceCheckStatus>
+			<ReferenceCheckSoftPass xsi:nil="true"/>
+			<GuarantorRequired xsi:nil="true"/>
+			<GuarantorAdded xsi:nil="true"/>
+			<AgreementSigningStatus>NotSet</AgreementSigningStatus>
+			<ConfirmedUser>true</ConfirmedUser>
+			<SigningUser>true</SigningUser>
+			<AgencyStaff>false</AgencyStaff>
+			<NoPasswordEnteredOnRegistration>false</NoPasswordEnteredOnRegistration>
+			<TenantWantsDetails>false</TenantWantsDetails>
+			<TenantWantsViewing>false</TenantWantsViewing>
+			<IsSmoker>false</IsSmoker>
+			<HasPets>false</HasPets>
+			<HasDependents>false</HasDependents>
+			<IsRegisteringDeposit>false</IsRegisteringDeposit>
+		</ItpUser>
+		<ItpUser>
+			<UserId>0be45c3f-9b5b-4667-a084-cd677edc980f</UserId>
+			<Title>Dr</Title>
+			<FirstName>Hannah</FirstName>
+			<LastName>Cooper</LastName>
+			<Email>9ydsStaff@9yds-testing.co.uk</Email>
+			<HomeTel>1325055847</HomeTel>
+			<WorkTel>1636883632</WorkTel>
+			<Mobile>2106716050</Mobile>
+			<PropertyUserType>
+				<Value>PropertyOwner</Value>
+				<Description>Property Administrator</Description>
+				<Id>1</Id>
+			</PropertyUserType>
+			<Addresses>
+				<ItpAddress>
+					<AddressId>c4b67cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>5 Carfax Road</AddressLine1>
+					<City>Hayes</City>
+					<Postcode>UB3 4RB</Postcode>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>NotSet</ResidencyStatus>
+					<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+				</ItpAddress>
+			</Addresses>
+			<IdCheckStatus>
+				<Value>NotChecked</Value>
+				<Description>ID Check not yet Performed</Description>
+				<Id>0</Id>
+			</IdCheckStatus>
+			<UserDocuments>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/0be45c3f-9b5b-4667-a084-cd677edc980f/Documents/20160323103752991.pdf</Url>
+					<DocumentType>ProofOfResidence</DocumentType>
+					<DocumentReference>ref-ProofOfResidence</DocumentReference>
+					<DocumentDate>2015-03-23T10:37:53.327</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/0be45c3f-9b5b-4667-a084-cd677edc980f/Documents/20160323103753304.pdf</Url>
+					<DocumentType>PhotoId</DocumentType>
+					<DocumentReference>ref-PhotoId</DocumentReference>
+					<DocumentDate>2015-03-23T10:37:53.663</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+			</UserDocuments>
+			<ControllingOrganisation>
+				<OrganisationStatus>Limited</OrganisationStatus>
+				<OrganisationType>Advertising</OrganisationType>
+				<RegisteredOrganisationName>Glanty Ltd</RegisteredOrganisationName>
+				<TradingName>9yds</TradingName>
+				<LogoUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301232.png</LogoUrl>
+				<RegistrationNumber>05562443</RegistrationNumber>
+				<VatNumber>928289676</VatNumber>
+				<CompanyTelephone>0333 006 3000</CompanyTelephone>
+				<CompanyEmail>theteam@9yds-testing.co.uk</CompanyEmail>
+				<Established>2005-01-01T00:00:00</Established>
+				<GrossProfit>0.00</GrossProfit>
+				<MarketingType>
+					<Value>SystemRightmoveAccount</Value>
+					<Description>System RM Account</Description>
+					<Id>1</Id>
+				</MarketingType>
+				<ShowCoBranding>false</ShowCoBranding>
+				<OrganisationUsers>
+					<ItpOrganisationUser>
+						<OrganisationUserType>
+							<Value>OrganisationAdministrator</Value>
+							<Description>Organisation Administrator</Description>
+							<Id>1</Id>
+						</OrganisationUserType>
+						<OrganisationUserRole>
+							<Value>Owner</Value>
+							<Description>Owner</Description>
+							<Id>1</Id>
+						</OrganisationUserRole>
+						<SigningAuthority>true</SigningAuthority>
+						<Contact>
+							<Name>Hannah Cooper</Name>
+							<TelephoneNumber>2106716050</TelephoneNumber>
+							<Email>9ydsStaff@9yds-testing.co.uk</Email>
+							<ContactAddress>
+								<AddressId>c4b67cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+								<AddressLine1>5 Carfax Road</AddressLine1>
+								<City>Hayes</City>
+								<Postcode>UB3 4RB</Postcode>
+								<CurrentAddress>true</CurrentAddress>
+								<ResidencyStatus>NotSet</ResidencyStatus>
+								<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+							</ContactAddress>
+						</Contact>
+					</ItpOrganisationUser>
+				</OrganisationUsers>
+				<Addresses>
+					<ItpAddress>
+						<AddressId>54934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>RegisteredOffice</Value>
+							<Description>RegisteredOffice</Description>
+							<Id>2</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+					<ItpAddress>
+						<AddressId>55934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>AccountantAddress</Value>
+							<Description>AccountantAddress</Description>
+							<Id>4</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+				</Addresses>
+				<BankAccounts/>
+			</ControllingOrganisation>
+			<LandlordType>
+				<Value>AgentActingForLandlord</Value>
+				<Description>An agency staff member acting on behalf of a landlord</Description>
+				<Id>1</Id>
+			</LandlordType>
+			<ReferencingPaid xsi:nil="true"/>
+			<ReferenceCheckStatus>NotChecked</ReferenceCheckStatus>
+			<ReferenceCheckSoftPass xsi:nil="true"/>
+			<GuarantorRequired xsi:nil="true"/>
+			<GuarantorAdded xsi:nil="true"/>
+			<AgreementSigningStatus>NotSet</AgreementSigningStatus>
+			<ConfirmedUser>true</ConfirmedUser>
+			<SigningUser>true</SigningUser>
+			<AgencyStaff>true</AgencyStaff>
+			<NoPasswordEnteredOnRegistration>false</NoPasswordEnteredOnRegistration>
+			<TenantWantsDetails>false</TenantWantsDetails>
+			<TenantWantsViewing>false</TenantWantsViewing>
+			<IsSmoker>false</IsSmoker>
+			<HasPets>false</HasPets>
+			<HasDependents>false</HasDependents>
+			<IsRegisteringDeposit>true</IsRegisteringDeposit>
+		</ItpUser>
+		<ItpUser>
+			<UserId>65172b27-b473-40d0-b2df-b700d6870666</UserId>
+			<Title>Dr</Title>
+			<FirstName>Sydney</FirstName>
+			<LastName>Wood</LastName>
+			<Email>AL8_9ydsStaff@9yds-testing.co.uk</Email>
+			<HomeTel>1674311232</HomeTel>
+			<WorkTel>2105373289</WorkTel>
+			<Mobile>2107577631</Mobile>
+			<PropertyUserType>
+				<Value>AdditionalLandlord</Value>
+				<Description>Additional Landlord</Description>
+				<Id>2</Id>
+			</PropertyUserType>
+			<Addresses>
+				<ItpAddress>
+					<AddressId>75b77cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>1 Carfax Road</AddressLine1>
+					<City>Hayes</City>
+					<Postcode>UB3 4RB</Postcode>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>NotSet</ResidencyStatus>
+					<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+				</ItpAddress>
+			</Addresses>
+			<IdCheckStatus>
+				<Value>NotChecked</Value>
+				<Description>ID Check not yet Performed</Description>
+				<Id>0</Id>
+			</IdCheckStatus>
+			<UserDocuments>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301544.pdf</Url>
+					<DocumentType>WebsiteTerms</DocumentType>
+					<DocumentReference>Landlord Terms v1</DocumentReference>
+					<DocumentDate>2016-03-23T10:34:26.793</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+			</UserDocuments>
+			<ControllingOrganisation>
+				<OrganisationStatus>Limited</OrganisationStatus>
+				<OrganisationType>Advertising</OrganisationType>
+				<RegisteredOrganisationName>Glanty Ltd</RegisteredOrganisationName>
+				<TradingName>9yds</TradingName>
+				<LogoUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301232.png</LogoUrl>
+				<RegistrationNumber>05562443</RegistrationNumber>
+				<VatNumber>928289676</VatNumber>
+				<CompanyTelephone>0333 006 3000</CompanyTelephone>
+				<CompanyEmail>theteam@9yds-testing.co.uk</CompanyEmail>
+				<Established>2005-01-01T00:00:00</Established>
+				<GrossProfit>0.00</GrossProfit>
+				<MarketingType>
+					<Value>SystemRightmoveAccount</Value>
+					<Description>System RM Account</Description>
+					<Id>1</Id>
+				</MarketingType>
+				<ShowCoBranding>false</ShowCoBranding>
+				<OrganisationUsers>
+					<ItpOrganisationUser>
+						<OrganisationUserType>
+							<Value>OrganisationAdministrator</Value>
+							<Description>Organisation Administrator</Description>
+							<Id>1</Id>
+						</OrganisationUserType>
+						<OrganisationUserRole>
+							<Value>Owner</Value>
+							<Description>Owner</Description>
+							<Id>1</Id>
+						</OrganisationUserRole>
+						<SigningAuthority>true</SigningAuthority>
+						<Contact>
+							<Name>Hannah Cooper</Name>
+							<TelephoneNumber>2106716050</TelephoneNumber>
+							<Email>9ydsStaff@9yds-testing.co.uk</Email>
+							<ContactAddress>
+								<AddressId>c4b67cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+								<AddressLine1>5 Carfax Road</AddressLine1>
+								<City>Hayes</City>
+								<Postcode>UB3 4RB</Postcode>
+								<CurrentAddress>true</CurrentAddress>
+								<ResidencyStatus>NotSet</ResidencyStatus>
+								<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+							</ContactAddress>
+						</Contact>
+					</ItpOrganisationUser>
+				</OrganisationUsers>
+				<Addresses>
+					<ItpAddress>
+						<AddressId>54934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>RegisteredOffice</Value>
+							<Description>RegisteredOffice</Description>
+							<Id>2</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+					<ItpAddress>
+						<AddressId>55934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>AccountantAddress</Value>
+							<Description>AccountantAddress</Description>
+							<Id>4</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+				</Addresses>
+				<BankAccounts/>
+			</ControllingOrganisation>
+			<LandlordType>
+				<Value>ManagedPropertyLandlord</Value>
+				<Description>Where an agent adds an additional landlord</Description>
+				<Id>4</Id>
+			</LandlordType>
+			<ReferencingPaid xsi:nil="true"/>
+			<ReferenceCheckStatus>NotChecked</ReferenceCheckStatus>
+			<ReferenceCheckSoftPass xsi:nil="true"/>
+			<GuarantorRequired xsi:nil="true"/>
+			<GuarantorAdded xsi:nil="true"/>
+			<AgreementSigningStatus>NotSet</AgreementSigningStatus>
+			<ConfirmedUser>true</ConfirmedUser>
+			<SigningUser>false</SigningUser>
+			<AgencyStaff>false</AgencyStaff>
+			<NoPasswordEnteredOnRegistration>false</NoPasswordEnteredOnRegistration>
+			<TenantWantsDetails>false</TenantWantsDetails>
+			<TenantWantsViewing>false</TenantWantsViewing>
+			<IsSmoker>false</IsSmoker>
+			<HasPets>false</HasPets>
+			<HasDependents>false</HasDependents>
+			<IsRegisteringDeposit>false</IsRegisteringDeposit>
+		</ItpUser>
+		<ItpUser>
+			<UserId>244699f8-f742-414d-b114-b3893d0ac1d4</UserId>
+			<Title>Dr</Title>
+			<FirstName>Nora</FirstName>
+			<LastName>Hughes</LastName>
+			<Email>AO7_9ydsStaff@9yds-testing.co.uk</Email>
+			<HomeTel>1889778605</HomeTel>
+			<WorkTel>69938383</WorkTel>
+			<Mobile>57168725</Mobile>
+			<PropertyUserType>
+				<Value>PropertyOwner</Value>
+				<Description>Property Administrator</Description>
+				<Id>1</Id>
+			</PropertyUserType>
+			<Addresses>
+				<ItpAddress>
+					<AddressId>2eb77cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+					<AddressLine1>1 Carfax Road</AddressLine1>
+					<City>Hayes</City>
+					<Postcode>UB3 4RB</Postcode>
+					<CurrentAddress>true</CurrentAddress>
+					<ResidencyStatus>NotSet</ResidencyStatus>
+					<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+				</ItpAddress>
+			</Addresses>
+			<IdCheckStatus>
+				<Value>NotChecked</Value>
+				<Description>ID Check not yet Performed</Description>
+				<Id>0</Id>
+			</IdCheckStatus>
+			<UserDocuments>
+				<ItpDocument>
+					<Url>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301544.pdf</Url>
+					<DocumentType>WebsiteTerms</DocumentType>
+					<DocumentReference>Landlord Terms v1</DocumentReference>
+					<DocumentDate>2016-03-23T10:34:20.873</DocumentDate>
+					<StartDate xsi:nil="true"/>
+					<EndDate xsi:nil="true"/>
+					<Verified>true</Verified>
+				</ItpDocument>
+			</UserDocuments>
+			<ControllingOrganisation>
+				<OrganisationStatus>Limited</OrganisationStatus>
+				<OrganisationType>Advertising</OrganisationType>
+				<RegisteredOrganisationName>Glanty Ltd</RegisteredOrganisationName>
+				<TradingName>9yds</TradingName>
+				<LogoUrl>https://project-equalet-documents.s3.amazonaws.com/Test1/53934a27-e1f0-e511-8202-06ab496445e9/HostedItems/20160323102301232.png</LogoUrl>
+				<RegistrationNumber>05562443</RegistrationNumber>
+				<VatNumber>928289676</VatNumber>
+				<CompanyTelephone>0333 006 3000</CompanyTelephone>
+				<CompanyEmail>theteam@9yds-testing.co.uk</CompanyEmail>
+				<Established>2005-01-01T00:00:00</Established>
+				<GrossProfit>0.00</GrossProfit>
+				<MarketingType>
+					<Value>SystemRightmoveAccount</Value>
+					<Description>System RM Account</Description>
+					<Id>1</Id>
+				</MarketingType>
+				<ShowCoBranding>false</ShowCoBranding>
+				<OrganisationUsers>
+					<ItpOrganisationUser>
+						<OrganisationUserType>
+							<Value>OrganisationAdministrator</Value>
+							<Description>Organisation Administrator</Description>
+							<Id>1</Id>
+						</OrganisationUserType>
+						<OrganisationUserRole>
+							<Value>Owner</Value>
+							<Description>Owner</Description>
+							<Id>1</Id>
+						</OrganisationUserRole>
+						<SigningAuthority>true</SigningAuthority>
+						<Contact>
+							<Name>Hannah Cooper</Name>
+							<TelephoneNumber>2106716050</TelephoneNumber>
+							<Email>9ydsStaff@9yds-testing.co.uk</Email>
+							<ContactAddress>
+								<AddressId>c4b67cb5-e2f0-e511-8202-06ab496445e9</AddressId>
+								<AddressLine1>5 Carfax Road</AddressLine1>
+								<City>Hayes</City>
+								<Postcode>UB3 4RB</Postcode>
+								<CurrentAddress>true</CurrentAddress>
+								<ResidencyStatus>NotSet</ResidencyStatus>
+								<ResidencyStatusDesc>NotSet</ResidencyStatusDesc>
+							</ContactAddress>
+						</Contact>
+					</ItpOrganisationUser>
+				</OrganisationUsers>
+				<Addresses>
+					<ItpAddress>
+						<AddressId>54934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>RegisteredOffice</Value>
+							<Description>RegisteredOffice</Description>
+							<Id>2</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+					<ItpAddress>
+						<AddressId>55934a27-e1f0-e511-8202-06ab496445e9</AddressId>
+						<AddressLine1>9yds</AddressLine1>
+						<AddressLine2>PO box 459</AddressLine2>
+						<City>Gravesend</City>
+						<Postcode>DA12 9JW</Postcode>
+						<CurrentAddress>true</CurrentAddress>
+						<ResidencyStatus>Owned</ResidencyStatus>
+						<AddressType>
+							<Value>AccountantAddress</Value>
+							<Description>AccountantAddress</Description>
+							<Id>4</Id>
+						</AddressType>
+						<ResidencyStatusDesc>Owned</ResidencyStatusDesc>
+					</ItpAddress>
+				</Addresses>
+				<BankAccounts/>
+			</ControllingOrganisation>
+			<LandlordType>
+				<Value>ManagedPropertyAdministrator</Value>
+				<Description>Where an agent adds a property administrator (who is the actual landlord and will be allowed to do some parts of the journey)</Description>
+				<Id>2</Id>
+			</LandlordType>
+			<ReferencingPaid xsi:nil="true"/>
+			<ReferenceCheckStatus>NotChecked</ReferenceCheckStatus>
+			<ReferenceCheckSoftPass xsi:nil="true"/>
+			<GuarantorRequired xsi:nil="true"/>
+			<GuarantorAdded xsi:nil="true"/>
+			<AgreementSigningStatus>NotSet</AgreementSigningStatus>
+			<ConfirmedUser>true</ConfirmedUser>
+			<SigningUser>false</SigningUser>
+			<AgencyStaff>false</AgencyStaff>
+			<NoPasswordEnteredOnRegistration>false</NoPasswordEnteredOnRegistration>
+			<TenantWantsDetails>false</TenantWantsDetails>
+			<TenantWantsViewing>false</TenantWantsViewing>
+			<IsSmoker>false</IsSmoker>
+			<HasPets>false</HasPets>
+			<HasDependents>false</HasDependents>
+			<IsRegisteringDeposit>false</IsRegisteringDeposit>
+		</ItpUser>
+	</PropertyUsers>
+</ItpDocumentRequest>

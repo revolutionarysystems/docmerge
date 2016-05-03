@@ -30,7 +30,9 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from .resource_utils import get_working_dir, strip_xml_dec
+from .resource_utils import (
+    get_working_dir, strip_xml_dec, get_output_dir, get_local_dir, get_local_txt_content)
+from .config import install_name
 
 #try:
 #    import argparse
@@ -46,11 +48,10 @@ def get_credentials():
         Credentials, the obtained credential.
     """
     home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
+    credential_dir = os.path.join(home_dir, '.credentials', install_name)
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir, 
-                                   'drive-python-quickstart.json')
+    credential_path = os.path.join(credential_dir, 'drive-echopublish.json')
 
     store = oauth2client.file.Storage(credential_path)
     credentials = store.get()
@@ -697,24 +698,7 @@ def email_file(baseFileName, me, you, subject, credentials):
     server.quit()
     return {"email":you.replace(" ","+")}
 
-def get_output_dir():
-    cwd = os.getcwd()
-    if (cwd.find("home")>=0):  
-        opd = "/home/docmerge/docmerge/merge/output"
-    else:  
-        opd = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\output"
-    return opd
-
-def get_local_dir(local):
-    cwd = os.getcwd()
-    if (cwd.find("home")>=0):  
-        opd = "/home/docmerge/docmerge/merge/"+local
-    else:  
-        opd = "C:\\Users\\Andrew\\Documents\\GitHub\\docmerge\\merge\\"+local
-    return opd
-
-
-def local_textfile_content(filename, filepath=get_output_dir()):
+def xlocal_textfile_content(filename, filepath=get_output_dir()):
     file_content=""
     with open(filepath+"/"+filename) as file:
         for line in file:
@@ -726,15 +710,6 @@ def get_remote_txt_content(data_folder, data_file):
     data_doc_id = folder_file(data_folder, data_file)["id"]
     doc_txt = file_content_as(data_doc_id)
     return doc_txt
-
-def get_local_txt_content(cwd, data_folder, data_file):
-#def get_flow_local(cwd, flow_local_folder, flow_file_name):
-    try:
-#        print(cwd+"/merge/"+data_folder+"/"+data_file)
-        with open(cwd+"/merge/"+data_folder+"/"+data_file, "r") as file:
-            return  file.read()
-    except FileNotFoundError:
-        return None
 
 def get_txt_content(local_data_folder, remote_data_folder, data_file):
 #    print("looking locally")
@@ -751,14 +726,6 @@ def get_xml_content(local_data_folder, remote_data_folder, data_file):
         content = content.decode("UTF-8")
     return strip_xml_dec(content)
 
-def push_local_txt(cwd, data_folder, data_file, payload):
-    full_file_path = data_file
-    with open(full_file_path, "w") as file:
-        file.write(payload)
-        file.close()
-    return full_file_path
-
-#def merge_docx_footer(cwd, local_subfolder, filename, subs):
 def merge_docx_footer(full_local_filename, subs):
     docx_filename = full_local_filename
     #print(subs)
@@ -784,7 +751,7 @@ def merge_docx_footer(full_local_filename, subs):
 SCOPES = 'https://www.googleapis.com/auth/drive'
 CLIENT_SECRET_FILE = 'client_secret.json'
 if (os.getcwd().find("home")>=0):  #pythonanywhere deployment
-    CLIENT_SECRET_FILE = '/home/docmerge/docmerge/client_secret.json'
+    CLIENT_SECRET_FILE = '/home/docmerge/'+install_name+'/client_secret.json'
 APPLICATION_NAME = 'Echo Publish'
 
 
