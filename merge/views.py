@@ -7,7 +7,7 @@ from random import randint
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 #from .merge_utils import get_local_dir
-from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir, refresh_files
+from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir, refresh_files, zip_local_dirs
 from traceback import format_exc
 
 def getParamDefault(params, key, default, preserve_plus=False):
@@ -165,6 +165,11 @@ def file_raw(request):
         else:
             response['Content-Disposition'] = "inline; filename={}".format(filename)
         return response
+    elif filename.find(".zip")>=0:
+        file = open(filepath+"/"+filename, 'rb')
+        response = HttpResponse(file, content_type='application/zip')
+        response['Content-Disposition'] = "attachment; filename={}".format(filename)
+        return response
     elif filename.find(".docx")>=0:
         file = open(filepath+"/"+filename, 'rb')
         response = HttpResponse(file, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
@@ -198,6 +203,22 @@ def refresh(request):
         remote = getParamDefault(params, "remote", remote_default)
         files = refresh_files(remote, local)
         response = {"refreshed_files":files}
+    except Exception as ex:
+        response = error_response(ex)
+    return JsonResponse(response)
+
+def zip(request):
+    try:
+        params = request.GET
+        abs_uri = request.build_absolute_uri()            
+        protocol, uri = abs_uri.split("://")
+        site = protocol+"://"+uri.split("/")[0]+"/"
+        folders = getParamDefault(params, "folders", "templates,flows,transforms,test_data,branding")
+        zip_file_name = getParamDefault(params, "name", "backup")
+        target_dir = os.path.join(get_working_dir(),"merge")
+        zip_file_name = zip_local_dirs(target_dir, zip_file_name, selected_subdirs = folders.split(","))
+        link = site+"file/?name="+zip_file_name.split(os.path.sep)[-1]+"&path=."
+        response = {"zip_files":zip_file_name, "link":link}
     except Exception as ex:
         response = error_response(ex)
     return JsonResponse(response)

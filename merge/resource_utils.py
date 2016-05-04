@@ -1,4 +1,5 @@
 import os
+import zipfile
 from .config import install_name
 from .gd_resource_utils import folder, folder_contents, exportFile, getFile
 
@@ -97,4 +98,16 @@ def get_xml_content(local_data_folder, remote_data_folder, data_file):
     if type(content) is bytes:
         content = content.decode("UTF-8")
     return strip_xml_dec(content)
+
+def zip_local_dirs(path, zip_file_name, selected_subdirs = ["templates", "flows", "transforms", "test_data", "branding"]):
+    zip_name = os.path.join(path,zip_file_name+".zip")
+    ziph = zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED)
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            relpath = os.path.relpath(os.path.join(root, file), os.path.join(path, '..'))
+            if selected_subdirs == None or relpath.split(os.path.sep)[1] in selected_subdirs:
+                ziph.write(os.path.join(root, file), relpath)
+    ziph.close()
+    return zip_name
+
 
