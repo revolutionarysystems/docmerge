@@ -30,7 +30,6 @@ class LocalResourceTestCase(unittest.TestCase):
     def test_get_local_txt_content(self):
         cwd = get_working_dir()
         txt = get_local_txt_content(cwd, "test", "test.txt")
-        print(txt)
         self.assertEqual(txt, "Sample test text.")
 
     def test_push_local_txt(self):
@@ -55,7 +54,6 @@ def run():
     try:
         suite = unittest.TestLoader().loadTestsFromTestCase(LocalResourceTestCase)
         unittest.TextTestRunner(verbosity=2).run(suite)
-        #unittest.main()
     except Exception as ex:
         print(ex)
 

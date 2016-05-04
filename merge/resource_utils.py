@@ -1,5 +1,6 @@
 import os
 from .config import install_name
+from .gd_resource_utils import folder, folder_contents, exportFile, getFile
 
 ## Local Resource management
 
@@ -32,7 +33,6 @@ def get_output_dir():
 def get_local_txt_content(cwd, data_folder, data_file):
     try:
         full_file_path = os.path.join(cwd, "merge", data_folder, data_file)
-        print(full_file_path)
         with open(cwd+"/merge/"+data_folder+"/"+data_file, "r") as file:
             return  file.read()
     except FileNotFoundError:

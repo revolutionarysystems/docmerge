@@ -7,8 +7,7 @@ from random import randint
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 #from .merge_utils import get_local_dir
-from .gd_resource_utils import  refresh_files
-from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir
+from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir, refresh_files
 from traceback import format_exc
 
 def getParamDefault(params, key, default, preserve_plus=False):

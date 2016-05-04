@@ -118,6 +118,19 @@ plain_TA = {
 
 }
 
+chartest_TA = {
+	"data_file":"testData3.xml",
+	"xform_file":"ITP_9yds_TA.xml",
+	"flow_file":"docx.txt",
+	"template_subfolder":"/Sandbox",
+	"template_file":"Character Sampler",
+	"payload":None,
+	"uniq":"11",
+	"expected_outcomes": {}
+
+}
+
+
 def test_data(test_case):
 	subs = getData(remote_data_folder = "/Doc Merge/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
@@ -139,7 +152,7 @@ def test_flow(test_case):
 		test_case["template_file"], 
 		test_case["uniq"], subs, "/Doc Merge/Output", None, None, None, 
 		payload=test_case["payload"])
-	#assert (outcomes["success"]==(test_case["expected_outcomes"]["success"]))
+#	assert (outcomes["success"]==(test_case["expected_outcomes"]["success"]))
 	#assert (len(outcomes["steps"])==(len(test_case["expected_outcomes"]["steps"])))
 	for step in outcomes["steps"]:
 		print(step["step"])
@@ -149,6 +162,7 @@ def test_flow(test_case):
 
 def run():
 #	test_flow(compound_TA)
-	test_flow(plain_TA)
+#	test_flow(plain_TA)
+	test_flow(chartest_TA)
 #	test_data(compound_TA)
 

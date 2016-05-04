@@ -207,6 +207,13 @@ def folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files
             contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
         except (errors.HttpError, ssl.SSLError) as ex:
             contents = []
+    except IOError as e:
+        if e.errno == errno.EPIPE:        
+            try:
+                foldr = folder(path, parent)
+                contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+            except:
+                contents = []
     return contents
 
 def create_folder(parent_id, name):
@@ -217,25 +224,6 @@ def create_folder(parent_id, name):
     }
     folder = service.files().create(body=folder_metadata, fields='id').execute()
     return folder
-
-def refresh_files(path, local_dir, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
-    foldr = folder(path, parent)
-    files = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
-    files_info=[]
-    for file in files:
-        doc_id =file["id"]
-        cwd = get_working_dir()
-        localFileName = cwd+"/merge/"+local_dir+"/"+file["name"]
-        if file["mimeType"] == 'application/vnd.google-apps.folder':
-            pass
-        elif file["mimeType"] == 'application/vnd.google-apps.document':
-            if localFileName.find(".") < 0: # no extension
-                files_info.append(exportFile(doc_id, localFileName+".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
-            else:
-                files_info.append(exportFile(doc_id, localFileName, "text/plain"))
-        else:
-            files_info.append(getFile(doc_id, localFileName, file["mimeType"]))
-    return files_info
 
 
     

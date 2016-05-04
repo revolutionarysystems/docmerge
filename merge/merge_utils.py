@@ -222,10 +222,10 @@ def email_file(baseFileName, me, you, subject, credentials):
 
 def merge_docx_footer(full_local_filename, subs):
     docx_filename = full_local_filename
-    #print(subs)
     f = open(docx_filename, 'rb')
     zip = zipfile.ZipFile(f)
     xml_content = zip.read('word/footer1.xml')
+    xml_content = xml_content.decode("ISO-8859-1")
     xml_content = substituteVariablesPlainString(xml_content, subs)
     tmp_dir = tempfile.mkdtemp()
     zip.extractall(tmp_dir)
