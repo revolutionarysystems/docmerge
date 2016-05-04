@@ -148,7 +148,7 @@ def test_flow(test_case):
 	print(outcomes["messages"])
 
 def run():
-	test_flow(compound_TA)
-#	test_flow(plain_TA)
+#	test_flow(compound_TA)
+	test_flow(plain_TA)
 #	test_data(compound_TA)
 

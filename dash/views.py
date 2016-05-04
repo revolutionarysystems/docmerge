@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render
 from .forms import MergeForm, SimpleMergeForm, RefreshForm
 from .models import MergeJob, RefreshJob
-from merge.merge_utils import folder_files
+from merge.gd_resource_utils import folder_files
 from merge.views import merge_raw_wrapped,getParamDefault 
 
 # Create your views here.

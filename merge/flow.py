@@ -6,9 +6,11 @@
 #
 import os
 import json
+from .gd_resource_utils import (folder_file, folder, uploadAsGoogleDoc, uploadFile, 
+    exportFile, getFile, file_content_as)
 from .merge_utils import (substituteVariablesDocx, substituteVariablesPlain,
-    convert_markdown, folder_file, folder, email_file, uploadAsGoogleDoc, uploadFile, 
-    exportFile, getFile, file_content_as, combine_docx, 
+    convert_markdown, email_file, 
+    combine_docx, 
     substituteVariablesPlainString, merge_docx_footer)
 from .resource_utils import (push_local_txt)
 
@@ -91,8 +93,10 @@ def process_compound_merge(cwd, uniq, step, template_subfolder, template_list, o
     localCombinedFileNameOnly = (template_subfolder[1:]+"/"+template_list.split(".")[0]).replace("//", "/")
     localCombinedFileNameOnly = localCombinedFileNameOnly.replace(" ","_").replace("/","-")
     localCombinedFileName = cwd+"/merge/"+local_output_folder+"/"+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
-    template_list = get_template_list_local(template_local_folder, template_list, subs=subs)
-    files = template_list[0]["compound"]
+    template_list_content = get_template_list_local(template_local_folder, template_list, subs=subs)
+    if not template_list_content:
+        raise FileNotFoundError("'"+template_list+"' could not be found")
+    files = template_list_content[0]["compound"]
     output_files = []
     for file_name in files:
         if file_name[0]=="-":

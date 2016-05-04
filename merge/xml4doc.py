@@ -3,8 +3,8 @@ import iso8601
 import json
 import datetime
 from .testData import xml0, xml1
-from .merge_utils import folder_file,file_content_as,get_xml_content
-from .resource_utils import strip_xml_dec
+from .gd_resource_utils import folder_file,file_content_as
+from .resource_utils import strip_xml_dec,get_xml_content
 import lxml.etree as etree
 import re
 

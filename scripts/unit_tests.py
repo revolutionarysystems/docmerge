@@ -6,7 +6,7 @@ from merge.resource_utils import (
     push_local_txt, del_local)
 #from merge.merge_utils import 
 
-class ResourceTestCase(unittest.TestCase):
+class LocalResourceTestCase(unittest.TestCase):
 
     def test_working_dir(self):
         cwd = get_working_dir()
@@ -53,7 +53,7 @@ class ResourceTestCase(unittest.TestCase):
 
 def run():
     try:
-        suite = unittest.TestLoader().loadTestsFromTestCase(ResourceTestCase)
+        suite = unittest.TestLoader().loadTestsFromTestCase(LocalResourceTestCase)
         unittest.TextTestRunner(verbosity=2).run(suite)
         #unittest.main()
     except Exception as ex:

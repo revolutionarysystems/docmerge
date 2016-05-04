@@ -1,5 +1,5 @@
 from django.db import models
-from merge.merge_utils import folder_files
+from merge.gd_resource_utils import folder_files
 
 class MergeJob(models.Model):
 
