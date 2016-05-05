@@ -1,3 +1,5 @@
-install_name="docmerge"
-email_credentials = {"username":"andrewcaelliott@gmail.com", "password":"napier", "server":"smtp.gmail.com:587"}
-email_default_recipient="andrew.elliott+epub@revolutionarysystems.co.uk"
+try:
+    from .config_custom import install_name, install_display_name, email_credentials, email_default_recipient
+except:
+    from .config_default import install_name, install_display_name, email_credentials, email_default_recipient
+

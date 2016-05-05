@@ -4,6 +4,7 @@ from .forms import MergeForm, SimpleMergeForm, RefreshForm
 from .models import MergeJob, RefreshJob
 from merge.gd_resource_utils import folder_files
 from merge.views import merge_raw_wrapped,getParamDefault 
+from merge.config import install_display_name
 
 # Create your views here.
 
@@ -25,7 +26,7 @@ def dash(request):
         flow = "md.txt",
         )
     mergeForm = MergeForm(instance=quickTestJob)
-    return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm})
+    return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm, "install_display_name": install_display_name})
 
 def test(request):
     params = request.GET
@@ -55,7 +56,7 @@ def test(request):
     files = folder_files("/Doc Merge/Flows")
     files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
     mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
-    return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm})
+    return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, "install_display_name": install_display_name})
 
 def test_result(mergeForm, request, method="POST"):
     mergeForm =  MergeForm(request.GET)
@@ -89,7 +90,7 @@ def test_result(mergeForm, request, method="POST"):
     files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
     mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
     json_response = merge_raw_wrapped(request, method=method)
-    return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response})
+    return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response, "install_display_name": install_display_name})
 
 def test_result_get(request):
     mergeForm =  MergeForm(request.GET)
@@ -122,7 +123,7 @@ def library_folder(request):
         files.append({"mimeType":'application/vnd.google-apps.folder',"name":"..", "parent":{"root":parent_root, "folder":parent_folder}})
         files = sorted(files, key=lambda k: ('aa' if k['mimeType']=='application/vnd.google-apps.folder' else k['mimeType'])+k['name']) 
         widgets.append({"subfolder": subfolder, "title": folder_name, "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form(folder_name.replace("Templates", "templates"))})
-    return render(request, 'dash/library.html', {"widgets":widgets})
+    return render(request, 'dash/library.html', {"widgets":widgets, "install_display_name": install_display_name})
 
 def library(request):
     widgets = []
@@ -141,14 +142,14 @@ def library(request):
     files = folder_files("/Doc Merge/Transforms",fields="files(id, name, mimeType)")
     files = sorted(files, key=lambda k: k['mimeType']+k['name']) 
     widgets.append({"title":"Transforms", "files":files, "glyph":"glyphicon glyphicon-transfer", "refreshForm": refresh_form("transforms")})
-    return render(request, 'dash/library.html', {"widgets":widgets})
+    return render(request, 'dash/library.html', {"widgets":widgets, "install_display_name": install_display_name})
 
 def archive(request):
     widgets = []
     widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-hand-up"})
     files = folder_files("/Doc Merge/Output",fields="files(id, name, mimeType, modifiedTime)")
     widgets.append({"title":"Documents", "files":files, "glyph":"glyphicon glyphicon-file"})
-    return render(request, 'dash/archive.html', {"widgets":widgets})
+    return render(request, 'dash/archive.html', {"widgets":widgets, "install_display_name": install_display_name})
 
 def account(request):
     widgets = []
@@ -156,7 +157,7 @@ def account(request):
     widgets.append({"title":"Users", "glyph":"glyphicon glyphicon-user"})
     widgets.append({"title":"Reports", "glyph":"glyphicon glyphicon-list-alt"})
     widgets.append({"title":"Credit", "glyph":"glyphicon glyphicon-star"})
-    return render(request, 'dash/account.html', {"widgets":widgets})
+    return render(request, 'dash/account.html', {"widgets":widgets, "install_display_name": install_display_name})
 
 def links(request):
     return render(request, 'dash/links.html', {})
