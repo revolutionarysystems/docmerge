@@ -8,7 +8,7 @@ from .gd_resource_utils import folder, folder_contents, exportFile, getFile
 def get_working_dir():
     cwd = os.getcwd()
     if (cwd.find("home")>=0):  
-        cwd = cwd+"/docmerge"
+        cwd = os.path.join(cwd,install_name)
     if (cwd.find("scripts")>=0):  
         cwd = cwd.replace("\scripts","")
     return cwd
