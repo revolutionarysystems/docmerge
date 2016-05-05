@@ -1,7 +1,7 @@
 import os
 import zipfile
 from .config import install_name
-from .gd_resource_utils import folder, folder_contents, exportFile, getFile
+from .gd_resource_utils import folder, folder_contents, exportFile, getFile, folder_item
 
 ## Local Resource management
 
