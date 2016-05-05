@@ -6,6 +6,15 @@
                 {% for widget in widgets %}
                 <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
+                {% if widget.title == "Upload" %}
+	        <form id = "makeZip" method="GET" class="query-form" action="/download-zip/" target="_blank" > 
+                	<button id="zipDownButton" type="submit" class="save btn btn-warning">Download Backup Zip file</button>
+                </form>
+	        <form id = "backupZip" method="POST" class="query-form" action="/upload-zip/" target="_blank" enctype="multipart/form-data"> 
+                            {{ zipform.as_p }}
+                	<button id="zipButton" type="submit" class="save btn btn-warning">Upload Backup Zip file</button>
+                </form>
+                {% endif %}
                 </div>
                 {% endfor %}
         </div>

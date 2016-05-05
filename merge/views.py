@@ -1,4 +1,5 @@
 import os
+import zipfile
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from .docMerge import mergeDocument
@@ -9,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 #from .merge_utils import get_local_dir
 from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir, refresh_files, zip_local_dirs
 from traceback import format_exc
+from dash.forms import UploadZipForm
 
 def getParamDefault(params, key, default, preserve_plus=False):
     try:
@@ -223,3 +225,37 @@ def zip(request):
         response = error_response(ex)
     return JsonResponse(response)
 
+def download_zip(request):
+    try:
+        params = request.GET
+        abs_uri = request.build_absolute_uri()            
+        protocol, uri = abs_uri.split("://")
+        site = protocol+"://"+uri.split("/")[0]+"/"
+        folders = getParamDefault(params, "folders", "templates,flows,transforms,test_data,branding")
+        zip_file_name = getParamDefault(params, "name", "backup")
+        target_dir = os.path.join(get_working_dir(),"merge")
+        zip_file_full = zip_local_dirs(target_dir, zip_file_name, selected_subdirs = folders.split(","))
+        zip_file_name = os.path.split(zip_file_full)[1]
+        link = site+"file/?name="+zip_file_full.split(os.path.sep)[-1]+"&path=."
+        response = {"zip_files":zip_file_full, "link":link}
+    except Exception as ex:
+        response = error_response(ex)
+    file = open(zip_file_full, 'rb')
+    response = HttpResponse(file, content_type='application/zip')
+    response['Content-Disposition'] = "attachment; filename={}".format(zip_file_name)
+    return response
+#    return JsonResponse(response)
+
+@csrf_exempt
+def upload_zip(request):
+    form = UploadZipForm(request.POST, request.FILES)
+    target = os.path.join(get_working_dir(),"merge",request.FILES['file']._name)
+    handle_uploaded_zip(request.FILES['file'], target)
+    return JsonResponse({"file":target})
+
+def handle_uploaded_zip(f, target):
+    with open(target, 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    zfile = zipfile.ZipFile(target)
+    zfile.extractall(os.path.join(get_working_dir()))

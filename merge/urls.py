@@ -8,4 +8,6 @@ urlpatterns = [
     url(r'^file/', views.file, name='file'),
     url(r'^refresh/', views.refresh, name='refresh'),
     url(r'^zip/', views.zip, name='zip'),
+    url(r'^upload-zip/$', views.upload_zip, name='upload_zip'),
+    url(r'^download-zip/$', views.download_zip, name='download_zip'),
 ]

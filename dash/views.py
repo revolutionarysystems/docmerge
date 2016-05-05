@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render
-from .forms import MergeForm, SimpleMergeForm, RefreshForm
+from .forms import MergeForm, SimpleMergeForm, RefreshForm, UploadZipForm
 from .models import MergeJob, RefreshJob
 from merge.gd_resource_utils import folder_files
 from merge.views import merge_raw_wrapped,getParamDefault 
@@ -8,6 +8,21 @@ from merge.config import install_display_name
 
 # Create your views here.
 
+
+def login(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+            # Redirect to a success page.
+        else:
+            # Return a 'disabled account' error message
+            ...
+    else:
+        # Return an 'invalid login' error message.
+        ...
 
 def dash(request):
     widgets = []
@@ -157,7 +172,15 @@ def account(request):
     widgets.append({"title":"Users", "glyph":"glyphicon glyphicon-user"})
     widgets.append({"title":"Reports", "glyph":"glyphicon glyphicon-list-alt"})
     widgets.append({"title":"Credit", "glyph":"glyphicon glyphicon-star"})
-    return render(request, 'dash/account.html', {"widgets":widgets, "install_display_name": install_display_name})
+    widgets.append({"title":"Upload", "glyph":"glyphicon glyphicon-star"})
+    zipform = UploadZipForm()
+    return render(request, 'dash/account.html', {"widgets":widgets, "install_display_name": install_display_name, "zipform":zipform})
+
+def upload_zip(request):
+    form = UploadZipForm(request.POST, request.FILES)
+    if form.is_valid():
+        handle_uploaded_file(request.FILES['file'])
+        return HttpResponseRedirect('/success/url/')
 
 def links(request):
     return render(request, 'dash/links.html', {})
