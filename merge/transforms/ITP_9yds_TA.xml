@@ -1,16 +1,10 @@
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="#default,#all">
 
   <xsl:template match="/">
-    <docroot>
-      <!--<xsl:for-each select = "ItpDocumentRequest/*">
-            <xsl:copy-of select = "."/>
-        </xsl:for-each>-->
+    <docroot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <actionLink>
         <xsl:value-of select ="ItpDocumentRequest/UrlLinks/*[LinkType='ActionLink']/LinkUrl"/>
       </actionLink>
-      <!--<nBedrooms>
-            <xsl:value-of select ="ItpDocumentRequest/Property/PropertyRooms/*[RoomTypeId/Value='Bedroom']/Quantity"/>
-        </nBedrooms>-->
       <Request>
         <AppUrl>
           <xsl:value-of select = "ItpDocumentRequest/AppUrl"/>
@@ -71,18 +65,78 @@
             <xsl:copy-of select = "."/>
           </xsl:for-each>
         </Guarantors>
+        <Parties list="true">
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='PropertyOwner' and AgencyStaff = 'false']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='AdditionalLandlord']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='ManuallyInvitedTenant']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='AdditionalTenant']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+          <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='Guarantor']">
+            <xsl:copy-of select = "."/>
+          </xsl:for-each>
+        </Parties>
         <AgentSignatory>
           <xsl:for-each select ="ItpDocumentRequest/PropertyUsers/*[PropertyUserType/Value='PropertyOwner' and AgencyStaff='true' and SigningUser='true']">
             <xsl:copy-of select = "."/>
           </xsl:for-each>
         </AgentSignatory>
+        <SpecialClauses list="true">
+	        <xsl:for-each select ="ItpDocumentRequest/Tenancy/OtherTerms/*">
+		        <xsl:copy-of select = "."/>
+	        </xsl:for-each>
+        </SpecialClauses>
       </Request>
       <SystemParameter>
-        <xsl:copy-of select = "ItpDocumentRequest/EMailUser/ControllingOrganisation"/>
+        <xsl:copy-of select = "ItpDocumentRequest/ControllingOrganisation"/>
         <CompanyName>
-          <xsl:value-of select ="ItpDocumentRequest/EMailUser/ControllingOrganisation/TradingName"/>
+          <xsl:value-of select ="ItpDocumentRequest/ControllingOrganisation/TradingName"/>
         </CompanyName>
+        <CompanyTelephone>
+          <xsl:value-of select ="ItpDocumentRequest/ControllingOrganisation/CompanyTelephone"/>
+        </CompanyTelephone>
+        <CompanyEmail>
+          <xsl:value-of select ="ItpDocumentRequest/ControllingOrganisation/CompanyEmail"/>
+        </CompanyEmail>
       </SystemParameter>
+      <Roles list ="true">
+        <Role>
+          <Called>Landlord</Called>
+          <Values list = "true">
+            <V>
+              <Value>PropertyOwner</Value>
+            </V>
+            <V>
+              <Value>AdditionalLandlord</Value>
+            </V>
+          </Values>
+        </Role>
+        <Role>
+          <Called>Tenant</Called>
+          <Values list = "true">
+            <V>
+              <Value>ManuallyInvitedTenant</Value>
+            </V>
+            <V>
+              <Value>AdditionalTenant</Value>
+            </V>
+          </Values>
+        </Role>
+        <Role>
+          <Called>Guarantor</Called>
+          <Values list = "true">
+            <V>
+              <Value>Guarantor</Value>
+            </V>
+          </Values>
+        </Role>
+      </Roles>
     </docroot>
     <xsl:copy-of select="/"/>
   </xsl:template>
@@ -92,14 +146,6 @@
     </TenancyDocuments>
   </xsl:template>
   <xsl:template match="Tenancy/*">
-    <xsl:apply-templates mode="copy" select = "."/>
-  </xsl:template>
-  <xsl:template match="*" mode="copy">
-    <xsl:element name="{name()}" namespace="{namespace-uri()}">
-      <xsl:apply-templates select="@*|node()" mode="copy" />
-    </xsl:element>
-  </xsl:template>
-  <xsl:template match="@*|text()|comment()" mode="copy">
-    <xsl:copy/>
+    <xsl:copy-of select = "."/>
   </xsl:template>
 </xsl:stylesheet>
