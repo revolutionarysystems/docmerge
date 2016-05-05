@@ -92,7 +92,7 @@ def docx_copy_para_format_from(para1, para2):
 def isControlLine(s):
     s = s.split("+")[0]
     s = s.strip()
-    if s[:2]=="{%" and s[-2:]=="%}":
+    if s[:2]=="{%" and s[-2:]=="%}" and s.find("%}")== s.rfind("%}"):
         return True
     else:
         return False
@@ -121,9 +121,11 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
         i+=1
 #   print(fullText)
     fullText = preprocess(fullText)
+    print(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
     xtxt = apply_sequence(xtxt)
+    print(xtxt)
     xParaTxts = xtxt.split("+para+")
     for p in paras:
         removePara(p)

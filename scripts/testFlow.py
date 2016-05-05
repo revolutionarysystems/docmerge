@@ -118,6 +118,63 @@ plain_TA = {
 
 }
 
+
+plain_TA_S7 = {
+	"data_file":"testData2.xml",
+	"xform_file":"ITP_9yds_email.xml",
+	"flow_file":"docx.txt",
+	"template_subfolder":"/Wizard Move in documents/Tenancy Agreements/AST",
+	"template_file":"Copy of Tenancy_Agreement_v1_sched_7",
+	"payload":None,
+	"uniq":"1012",
+	"expected_outcomes": {
+		'link_Generate_pdf': 'localhost:8001file/?name=Sandbox-cmpnd_doc_10101.pdf', 
+		'id_Upload_pdf': '0B-R1VJ7CNz2Zc1pRX0JSbnBNOFE', 
+		'id': '0B-R1VJ7CNz2Zc1pRX0JSbnBNOFE', 
+		'success': True, 
+		'messages': [], 
+		'link_Merge_docx': 'localhost:8001file/?name=Sandbox-cmpnd_doc_10101.docx', 
+		'mimeType_Upload_to_gdoc': 'application/vnd.google-apps.document', 
+		'mimeType_Upload_pdf': 'application/pdf', 
+		'id_Upload_to_gdoc': '1sGqmQ4taa_HhMF4Z9npDJbm3NYA-1FtvlnGAe9Eb9dI', 
+		'mimeType': 'application/pdf', 
+		'link': 'localhost:8001file/?name=Sandbox-cmpnd_doc_10101.pdf', 
+		'steps': [
+			{
+				'step': 'Merge docx', 
+				'outcome': {
+					'link': 'localhost:8001file/?name=Sandbox-cmpnd_doc_10101.docx', 
+					'file': 'C:\\Users\\Andrew\\Documents\\GitHub\\docmerge/merge/output/Sandbox-cmpnd_doc_10101.docx'
+				}
+			}, {
+				'step': 'Upload to gdoc', 
+				'outcome': {
+					'kind': 'drive#file', 
+					'id': '1sGqmQ4taa_HhMF4Z9npDJbm3NYA-1FtvlnGAe9Eb9dI', 
+					'mimeType': 
+					'application/vnd.google-apps.document', 
+					'name': 'C:\\Users\\Andrew\\Documents\\GitHub\\docmerge/merge/output/Sandbox-cmpnd_doc_10101.docx'
+				}
+			}, {
+				'step': 'Generate pdf', 
+				'outcome': {
+					'link': 'localhost:8001file/?name=Sandbox-cmpnd_doc_10101.pdf', 
+					'file': 'C:\\Users\\Andrew\\Documents\\GitHub\\docmerge/merge/output/Sandbox-cmpnd_doc_10101.pdf'
+				}
+			}, {
+				'step': 'Upload pdf', 
+				'outcome': {
+					'kind': 'drive#file', 
+					'id': '0B-R1VJ7CNz2Zc1pRX0JSbnBNOFE', 
+					'mimeType': 'application/pdf', 
+					'name': 'Sandbox-cmpnd_doc_10101.pdf'
+				}
+			}
+		]
+	}
+
+}
+
 chartest_TA = {
 	"data_file":"testData3.xml",
 	"xform_file":"ITP_9yds_TA.xml",
@@ -163,6 +220,6 @@ def test_flow(test_case):
 def run():
 #	test_flow(compound_TA)
 #	test_flow(plain_TA)
-	test_flow(chartest_TA)
+	test_flow(plain_TA_S7)
 #	test_data(compound_TA)
 
