@@ -172,15 +172,9 @@ def account(request):
     widgets.append({"title":"Users", "glyph":"glyphicon glyphicon-user"})
     widgets.append({"title":"Reports", "glyph":"glyphicon glyphicon-list-alt"})
     widgets.append({"title":"Credit", "glyph":"glyphicon glyphicon-star"})
-    widgets.append({"title":"Upload", "glyph":"glyphicon glyphicon-star"})
+    widgets.append({"title":"Backup", "glyph":"glyphicon glyphicon-sort"})
     zipform = UploadZipForm()
     return render(request, 'dash/account.html', {"widgets":widgets, "install_display_name": install_display_name, "zipform":zipform})
-
-def upload_zip(request):
-    form = UploadZipForm(request.POST, request.FILES)
-    if form.is_valid():
-        handle_uploaded_file(request.FILES['file'])
-        return HttpResponseRedirect('/success/url/')
 
 def links(request):
     return render(request, 'dash/links.html', {})

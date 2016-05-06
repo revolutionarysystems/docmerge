@@ -41,6 +41,9 @@ def get_local_txt_content(cwd, data_folder, data_file):
 
 def push_local_txt(cwd, data_folder, data_file, payload):
     full_file_path = os.path.join(cwd, "merge", data_folder, data_file)
+    return push_local_txt_fullname(full_file_path, payload)
+
+def push_local_txt_fullname(full_file_path, payload):
 #    full_file_path = data_file
     with open(full_file_path, "w") as file:
         file.write(payload)

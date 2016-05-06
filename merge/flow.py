@@ -10,9 +10,9 @@ from .gd_resource_utils import (folder_file, folder, uploadAsGoogleDoc, uploadFi
     exportFile, getFile, file_content_as)
 from .merge_utils import (substituteVariablesDocx, substituteVariablesPlain,
     convert_markdown, email_file, 
-    combine_docx, 
+    combine_docx, extract_regex_matches_docx,
     substituteVariablesPlainString, merge_docx_footer)
-from .resource_utils import (push_local_txt)
+from .resource_utils import (push_local_txt, push_local_txt_fullname)
 
 from datetime import datetime
 
@@ -51,7 +51,9 @@ def get_flow(cwd, flow_local_folder, flow_folder, flow_file_name):
 def get_template_list_local(template_list_local_folder, template_list_file_name, subs=None):
     try:
 #        print(template_list_local_folder+template_list_file_name)
-        with open(template_list_local_folder+template_list_file_name, "r") as template_list_file:
+        full_name = template_list_local_folder+template_list_file_name
+        full_name = full_name.replace("//", "/")
+        with open(full_name, "r") as template_list_file:
             str_content = '{"template_list":'+template_list_file.read()+'}'
             if subs:
                 str_content = substituteVariablesPlainString(str_content, subs)
@@ -155,6 +157,14 @@ def process_upload(step, localFileName, subfolder, upload_id):
     else:
         return uploadFile(localFileName+step["local_ext"], upload_id, step["mimetype"])
 
+
+# extract text fragments using regex, output as xml (for now)
+def process_extract(step, localFileName, subs):
+    extract = extract_regex_matches_docx(localFileName+step["local_ext"], step["regex"], wrap=".xml", root_tag=step["root_tag"], child_tag=step["child_tag"])
+    extract_file_name = localFileName+".xml"
+    push_local_txt_fullname(extract_file_name, extract)
+    return {"file":extract_file_name, "link":subs["site"]+"file/?name="+extract_file_name.split("/")[-1]+"&path="+step["folder"]}
+
 # send email
 def process_email(step, localFileName, you, credentials):
     return email_file(localFileName, step["from"], you, step["subject"], credentials) 
@@ -245,6 +255,10 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
 
             if step["step"]=="payload":
                 outcome = process_payload_dump(cwd, step, localMergedFileName, subs, payload=payload)
+
+            if step["step"]=="extract":
+                outcome = process_extract(step, localMergedFileName, subs)
+
 
             outcomes.append({"step":step["name"], "success": True, "outcome":outcome})
             for key in outcome.keys():

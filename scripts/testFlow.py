@@ -63,11 +63,11 @@ compound_TA = {
 
 
 plain_TA = {
-	"data_file":"testData2.xml",
+	"data_file":"testDataListS.xml",
 	"xform_file":"ITP_9yds_TA.xml",
 	"flow_file":"docx.txt",
 	"template_subfolder":None,
-	"template_file":"Wizard Move in documents/Tenancy Agreements/AST/Copy of Tenancy_Agreement_v1_LL_AL_TT_AT_GG",
+	"template_file":"Wizard Move in documents/Tenancy Agreements/AST/Tenancy_Agreement_v1_sched_7",
 	"payload":"<email>sample</email>",
 	"uniq":"1011",
 	"expected_outcomes": {
@@ -191,10 +191,10 @@ chartest_TA = {
 def test_data(test_case):
 	subs = getData(remote_data_folder = "/Doc Merge/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
-	                   xform_file="Copy of ITP_9yds_email.xml")["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
+	                   xform_file="ITP_9yds_email.xml")["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
 #	print(subs)
-	print(subs["Request"]["Guarantors"])
-	print(subs["Request"]["Landlords"])
+#	print(subs["Request"]["Guarantors"])
+#	print(subs["Request"]["Landlords"])
 
 
 def test_flow(test_case):
@@ -218,8 +218,8 @@ def test_flow(test_case):
 	print(outcomes["messages"])
 
 def run():
-#	test_flow(compound_TA)
+	test_flow(compound_TA)
 #	test_flow(plain_TA)
-	test_flow(plain_TA_S7)
-#	test_data(compound_TA)
+#	test_flow(plain_TA_S7)
+#	test_data(plain_TA)
 

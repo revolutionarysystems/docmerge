@@ -67,7 +67,8 @@ def force_lists(doc):
                 force_lists(node)
         elif isinstance(node, list):
             for item in node:
-                force_lists(item)
+                if isinstance(item, dict):
+                    force_lists(item)
         else:
             sv=parse_special_values(node)
             if not(sv==None):

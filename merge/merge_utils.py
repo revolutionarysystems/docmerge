@@ -1,4 +1,5 @@
 import os
+import re
 import string
 import zipfile
 import tempfile
@@ -97,9 +98,39 @@ def isControlLine(s):
     else:
         return False
 
-def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
+def wrap_list_xml(childlist, root_tag, child_tag):
+    out = "<"+root_tag+">\n"
+    for child in childlist:
+        out+= "\t<"+child_tag+">"+child+"</"+child_tag+">\n"
+    out+= "</"+root_tag+">"
+    return out
+
+def docx_text(file_name_in):
+    doc_in = Document(docx=file_name_in)
+    paras=doc_in.paragraphs
+    fullText="" 
+    for para in paras:
+        paraText=para.text
+        fullText+=paraText
+    return fullText
+
+def extract_regex_matches_docx(file_name_in, regex, wrap=None, root_tag="list", child_tag="item"):
+    text = docx_text(file_name_in)
+    p = re.compile(regex)
+    m=p.findall(text)
+    if wrap:
+        return wrap_list_xml(m, root_tag, child_tag)
+    else:
+        return m
+
+    #            literal = m.group('literal')
+
+
+
+
+def substituteVariablesDocx(file_name_in, fileNameOut, subs):
     c = Context(subs)
-    doc_in = Document(docx=fileNameIn)
+    doc_in = Document(docx=file_name_in)
     doc_temp = Document()
     paras=doc_in.paragraphs
     fullText="" 
@@ -121,11 +152,9 @@ def substituteVariablesDocx(fileNameIn, fileNameOut, subs):
         i+=1
 #   print(fullText)
     fullText = preprocess(fullText)
-    print(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
     xtxt = apply_sequence(xtxt)
-    print(xtxt)
     xParaTxts = xtxt.split("+para+")
     for p in paras:
         removePara(p)
