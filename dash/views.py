@@ -116,7 +116,7 @@ def library_folder(request):
     lib_folders = getParamDefault(params, "folders", "templates").split(",")
     widgets = []
     for folder in lib_folders:
-        folder_name =lib_root+"/"+folder
+        folder_name =(lib_root+"/"+folder).replace("Templates", "templates")
         subfolder = folder_name[folder_name.find("/")+1:]
         files = folder_files(folder_name, fields="files(id, name, mimeType)")
         print(files)
