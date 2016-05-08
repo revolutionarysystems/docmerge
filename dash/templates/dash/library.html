@@ -6,15 +6,17 @@
                 {% for widget in widgets %}
                     <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
                         <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
+                    {% if widget.refreshForm %}
                     <form id = "quickTest" method="GET" class="query-form" action="/refresh/" target="_blank">
                             {{ widget.refreshForm.as_p }}
                     <button id="quickTestButton" type="submit" class="save btn btn-warning">Refresh</button>
+                    {% endif %}
                     {% if "Template" in widget.title %}
                     <a href="../test/?template_subfolder={{ widget.subfolder }}" target="_blank">Test</a>
                     {% endif %}
                     </form>
                         {% for file in widget.files %}
-                            {% if file.mimeType = "application/vnd.google-apps.folder" %}
+                            {% if file.isdir %}
                                 {% if file.name = ".." %}
                                     {% if file.parent.folder %}
                                         <strong><p><a href="../library_folder/?root={{ file.parent.root}}&folders={{ file.parent.folder }}" >Open Parent</a> {{ file.name }}</p></strong>
@@ -25,7 +27,7 @@
                                     <strong><p><a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" >Open Folder</a> {{ file.name }}</p></strong>
                                 {% endif %}
                             {% else %}
-                                <p><a href="https://drive.google.com/open?id={{ file.id}}" target="_blank">Edit</a> <a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">View</a> {{ file.name }} - {{ file.mimeType }}</p>
+                                <p><!--a href="https://drive.google.com/open?id={{ file.id}}" target="_blank">Edit</a--> <!--a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">View</a--> <a href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">File</a> {{ file.is_remote}}-{{file.is_local}} {{ file.name }}</p>
                             {% endif %}
                         {% endfor %}
                     </div>

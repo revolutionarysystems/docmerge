@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir, refresh_files, zip_local_dirs
 from traceback import format_exc
 from dash.forms import UploadZipForm
+from .config import remote_library
 
 def getParamDefault(params, key, default, preserve_plus=False):
     try:
@@ -124,6 +125,15 @@ def error_response(ex):
 
     return overall_outcome
 
+def disallowed_response(reason):
+    overall_outcome = {}
+    overall_outcome["success"]=False
+    overall_outcome["messages"]=[{"level":"error", "message": reason}]
+    overall_outcome["steps"]=[]
+
+    return overall_outcome
+
+
 def merge_raw_wrapped(request, method="POST"):
     try:
         return merge_raw(request, method=method)
@@ -185,28 +195,31 @@ def file(request):
     return file_raw(request)
 
 def refresh(request):
-    try:
-        params = request.GET
-        local = getParamDefault(params, "local", "templates")
-        if local.find("templates")==0:
-            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Templates")
-        elif local.find("flows")==0:
-            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Flows")
-        elif local.find("branding")==0:
-            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Branding")
-        elif local.find("test_data")==0:
-            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Test Data")
-        elif local.find("transforms")==0:
-            remote_default = local.replace(local.split("/")[0],"/Doc Merge/Transforms")
-        else:
-            remote_default = None    
+    if remote_library:
+        try:
+            params = request.GET
+            local = getParamDefault(params, "local", "templates")
+            if local.find("templates")==0:
+                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Templates")
+            elif local.find("flows")==0:
+                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Flows")
+            elif local.find("branding")==0:
+                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Branding")
+            elif local.find("test_data")==0:
+                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Test Data")
+            elif local.find("transforms")==0:
+                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Transforms")
+            else:
+                remote_default = None    
 
-        print("refresh:", local, remote_default)
-        remote = getParamDefault(params, "remote", remote_default)
-        files = refresh_files(remote, local)
-        response = {"refreshed_files":files}
-    except Exception as ex:
-        response = error_response(ex)
+            print("refresh:", local, remote_default)
+            remote = getParamDefault(params, "remote", remote_default)
+            files = refresh_files(remote, local)
+            response = {"refreshed_files":files}
+        except Exception as ex:
+            response = error_response(ex)
+    else:
+        response = disallowed_response("No connection to remote library")
     return JsonResponse(response)
 
 def zip(request):

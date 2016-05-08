@@ -34,7 +34,7 @@ def run5():
     print(file_name)
 
 def run():
-    fldr = folder("/Doc Merge/Dummy2/Sub", create_if_absent = True)
+    fldr = folder("/Doc Merge/Branding", create_if_absent = False)
     print(fldr)
 #    files = folder_files("/Doc Merge/Dummy",fields="files(id, name, mimeType, trashed)", mimeType='application/vnd.google-apps.folder')
 #    target = "Output"    

@@ -1,7 +1,12 @@
 import os
+import time
+import pytz
+import iso8601
+import datetime
 import zipfile
-from .config import install_name
-from .gd_resource_utils import folder, folder_contents, exportFile, getFile, folder_item, file_content_as
+from .config import install_name, remote_library
+from .gd_resource_utils import (folder, folder_contents, exportFile, getFile, folder_item, file_content_as, 
+        gd_folder_files, gd_path_equivalent)
 
 ## Local Resource management
 
@@ -21,7 +26,7 @@ def strip_xml_dec(content):
         return content
 
 def get_local_dir(local):
-    cwd = os.getcwd()
+    cwd = get_working_dir()
     if (cwd.find("home")>=0):  
         local_d = "/home/docmerge/"+install_name+"/merge/"+local
     else:  
@@ -54,9 +59,59 @@ def del_local(cwd, data_folder, data_file):
     full_file_path = os.path.join(cwd, "merge", data_folder, data_file)
     os.remove(full_file_path)
 
+def local_folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents"):
+    cwd = get_working_dir()
+    full_path = os.path.join(cwd, "merge", path)
+    files = os.listdir(full_path)
+    response = []
+    for file in files:
+        ext = os.path.splitext(file)[-1].lower()
+#        print(file)
+#        print(os.path.isfile(os.path.join(full_path, file)))
+#        print(os.path.isdir(os.path.join(full_path, file)))
+        response.append({
+            "name":file, 
+            "ext":ext, 
+            "isdir": os.path.isdir(os.path.join(full_path, file)),
+            "mtime": pytz.utc.localize(datetime.datetime.utcfromtimestamp(os.path.getmtime(os.path.join(full_path, file))))})
+    return response
+
 
 
 # Remote <-> Local methods
+
+
+def combined_folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)"):
+    local_files = local_folder_files(path, parent='root', mimeType='*', fields=fields)
+    combined_files = {}
+    response = []
+    for file in local_files:
+        file["is_local"]="Y"
+        if remote_library:
+            file["is_remote"]="N"
+        else:
+            file["is_remote"]="X"
+        combined_files[file["name"]]=file
+    if remote_library:
+        remote_files = gd_folder_files(gd_path_equivalent(path), parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)")
+        for file in remote_files:
+            if file["name"] in combined_files.keys():
+                combined_files[file["name"]]["mimeType"]=file["mimeType"]
+            else:
+                combined_files[file["name"]]=file
+                combined_files[file["name"]]["is_local"]="N"
+            combined_files[file["name"]]["is_remote"]="Y"
+            print(file)
+            combined_files[file["name"]]["modifiedTime"]=iso8601.parse_date(file["modifiedTime"])
+            if "mtime" in combined_files[file["name"]].keys():
+                if combined_files[file["name"]]["modifiedTime"] > combined_files[file["name"]]["mtime"]: #remote time > local time:
+                    combined_files[file["name"]]["is_local"]="R"
+            combined_files[file["name"]]["isdir"]=file["mimeType"]=="application/vnd.google-apps.folder"
+            combined_files[file["name"]]["ext"] = os.path.splitext(file["name"])[-1].lower()
+    for file in combined_files.values():
+        response.append(file)
+    return response
+
 
 def refresh_files(path, local_dir, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
     foldr = folder(path, parent)

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'dash',
     'merge',
     'django_extensions',
@@ -51,6 +52,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_password_protect.PasswordProtectMiddleware',
 ]
 
 ROOT_URLCONF = 'docmerge.urls'
@@ -84,7 +86,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
@@ -102,6 +103,13 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+#Site-wide password protection
+PASSWORD_PROTECT= True
+PASSWORD_PROTECT_USERNAME= "PrimeUser"
+PASSWORD_PROTECT_PASSWORD= "EchoPrime"
+PASSWORD_PROTECT_REALM= "Password Protected"
 
 
 # Internationalization

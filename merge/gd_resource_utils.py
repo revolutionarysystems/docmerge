@@ -148,19 +148,18 @@ def uploadFile(fileName, folder, mimeType):
 
 #### Navigate Drive folders
 
-def folder_contents(parent, mimeType='application/vnd.google-apps.folder', fields="nextPageToken, files(id, name, mimeType, parents)"):
+def folder_contents(parent, mimeType='application/vnd.google-apps.folder', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)"):
     if mimeType=="*":
         q = "trashed = false and '"+parent+"' in parents"
     else:
         q = "trashed = false and mimeType = '"+mimeType+"' and '"+parent+"' in parents" 
-
-    try:
+#   try:
+    if True:
         results = service.files().list(
             fields=fields, q=q).execute()
-#        pageSize=50,fields="nextPageToken, files(id, name, mimeType)", q="'0B-R1VJ7CNz2ZYlI0M3ROR0YzS00' in parents").execute()
         items = results.get('files', [])
-    except:
-        return []
+#    except:
+#        return [{"name":"Google Drive Retrieval failed", "mimeType":"error"}]
     return items
 
 def folder_item(parent, name, mimeType='application/vnd.google-apps.folder', ):
@@ -197,24 +196,49 @@ def folder(path, parent='root', create_if_absent=False):
         path_parts = path_parts[1:]
     return ls_list(path_parts, parent=parent, create_if_absent=create_if_absent)
 
-def folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
-    try:
+def gd_folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
+        print(fields)
         foldr = folder(path, parent)
         contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
-    except (errors.HttpError, ssl.SSLError) as ex:
-        try:
-            foldr = folder(path, parent)
-            contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
-        except (errors.HttpError, ssl.SSLError) as ex:
-            contents = []
-    except IOError as e:
-        if e.errno == errno.EPIPE:        
-            try:
-                foldr = folder(path, parent)
-                contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
-            except:
-                contents = []
-    return contents
+        return contents
+
+#    try:
+#        foldr = folder(path, parent)
+#        contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+#    except (errors.HttpError, ssl.SSLError) as ex:
+#        try:
+#            foldr = folder(path, parent)
+#            contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+#        except (errors.HttpError, ssl.SSLError) as ex:
+#            contents = []
+#    except IOError as e:
+#        print("IO Error")
+#        print(e)
+##        if e.errno == errno.EPIPE:        
+##            try:
+##                foldr = folder(path, parent)
+##                contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+##            except:
+##                contents = []
+#    return contents
+
+def gd_path_equivalent(path):
+    if path.lower().find("templates")==0:
+        remote_equiv = path.replace(path.split("/")[0],"/Doc Merge/Templates")
+    elif path.lower().find("flows")==0:
+        remote_equiv = path.replace(path.split("/")[0],"/Doc Merge/Flows")
+    elif path.lower().find("branding")==0:
+        remote_equiv = path.replace(path.split("/")[0],"/Doc Merge/Branding")
+    elif path.lower().find("test_data")==0:
+        remote_equiv = path.replace(path.split("/")[0],"/Doc Merge/Test Data")
+    elif path.lower().find("transforms")==0:
+        remote_equiv = path.replace(path.split("/")[0],"/Doc Merge/Transforms")
+    elif path.lower().find("output")==0:
+        remote_equiv = path.replace(path.split("/")[0],"/Doc Merge/Output")
+    else:
+        remote_equiv = None    
+    return remote_equiv
+
 
 def create_folder(parent_id, name):
     folder_metadata = {
