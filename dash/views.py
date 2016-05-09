@@ -153,7 +153,8 @@ def library(request):
 def archive(request):
     widgets = []
     widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-hand-up"})
-    files = folder_files("output",fields="files(id, name, mimeType, modifiedTime)")
+    files = local_folder_files("output",fields="files(id, name, mimeType, modifiedTime)")
+    files = sorted(files, key=lambda k: k['mtime'], reverse=True) 
     widgets.append({"title":"Documents", "files":files, "glyph":"glyphicon glyphicon-file"})
     return render(request, 'dash/archive.html', {"widgets":widgets, "install_display_name": install_display_name})
 

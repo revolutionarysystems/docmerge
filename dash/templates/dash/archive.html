@@ -6,9 +6,16 @@
                 {% for widget in widgets %}
                 <div class="widget col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
+                        <table>
                         {% for file in widget.files %}
-                            <p><!--a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">Link</a--><a href="../file/?name={{ file.name }}" target="_blank">File</a> {{ file.mtime }} - {{ file.name }}</p>
+                            <tr>
+                            <td class="libcell" >
+                            <a href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">File</a><!--a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">Link</a--><!--a href="../file/?name={{ file.name }}" target="_blank">File</a--></td>
+                            <td class="libcell" >{{ file.mtime }}</td>
+                            <td class="libcell" >{{ file.name }}</td>
+                        </tr>
                         {% endfor %}
+                        </table>
                 </div>
                 {% endfor %}
         </div>
