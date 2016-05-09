@@ -97,11 +97,14 @@ def combined_folder_files(path, parent='root', mimeType='*', fields="nextPageTok
         for file in remote_files:
             if file["name"] in combined_files.keys():
                 combined_files[file["name"]]["mimeType"]=file["mimeType"]
+            elif file["name"]+".docx" in combined_files.keys():
+                file["name"]=file["name"]+".docx"
+                combined_files[file["name"]]["mimeType"]=file["mimeType"]
             else:
                 combined_files[file["name"]]=file
                 combined_files[file["name"]]["is_local"]="N"
             combined_files[file["name"]]["is_remote"]="Y"
-            print(file)
+            combined_files[file["name"]]["id"]=file["id"]
             combined_files[file["name"]]["modifiedTime"]=iso8601.parse_date(file["modifiedTime"])
             if "mtime" in combined_files[file["name"]].keys():
                 if combined_files[file["name"]]["modifiedTime"] > combined_files[file["name"]]["mtime"]: #remote time > local time:

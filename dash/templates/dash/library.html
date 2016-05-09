@@ -27,7 +27,7 @@
                                     <strong><p><a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" >Open Folder</a> {{ file.name }}</p></strong>
                                 {% endif %}
                             {% else %}
-                                <p><!--a href="https://drive.google.com/open?id={{ file.id}}" target="_blank">Edit</a--> <!--a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">View</a--> <a href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">File</a> {{ file.is_remote}}-{{file.is_local}} {{ file.name }}</p>
+                                <p>{% if file.is_remote == 'Y' %}<a href="https://drive.google.com/open?id={{ file.id}}" target="_blank">Edit</a> <a href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">View</a>{% else %}----- ----- {% endif %}  {{ file.is_remote}}-{{file.is_local}} {% if file.is_local == 'Y' %}<a href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Published</a>{% elif file.is_local == 'R' %}<a href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Out-of-date</a>{% else %}---------- {% endif %} {{ file.name }}</p>
                             {% endif %}
                         {% endfor %}
                     </div>
