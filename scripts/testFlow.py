@@ -67,7 +67,7 @@ plain_TA = {
 	"xform_file":"ITP_9yds_email.xml",
 	"flow_file":"docx.txt",
 	"template_subfolder":None,
-	"template_file":"Wizard Move in documents/Tenancy Agreements/AST/Tenancy_Agreement_v1_Section_1_2_3_4_5_6_DPS",
+	"template_file":"Wizard Move in documents/Tenancy Agreements/AST/Copy of Tenancy_Agreement_v1_Section_1_2_3_4_5_6_DPS",
 	"payload":"<email>sample</email>",
 	"uniq":"1012",
 	"expected_outcomes": {
@@ -218,8 +218,8 @@ def test_flow(test_case):
 	print(outcomes["messages"])
 
 def run():
-#	test_flow(compound_TA)
-	test_flow(plain_TA)
+	test_flow(compound_TA)
+#	test_flow(plain_TA)
 #	test_flow(plain_TA_S7)
 #	test_data(plain_TA)
 
