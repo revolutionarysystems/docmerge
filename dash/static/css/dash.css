@@ -11,7 +11,8 @@ textarea {
 }
 
 td.libcell {
-    padding: 0.5rem;
+    padding: 0.45rem;
+    font-size: 14px;
 }
 
 td.nb {
