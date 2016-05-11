@@ -48,7 +48,7 @@
                                 {% if file.is_local == 'Y' %}
                                 <td class="libcell"><a title = "{{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Fresh</a></td>
                                 {% elif file.is_local == 'R' %}
-                                <td class="libcell"><a title = "{{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Stale</a></td>
+                                <td class="libcell"><a title = "{{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Stale </a></td>
                                 {% else %}
                                 <td class="libcell"/>
                                 {% endif %}

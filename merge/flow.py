@@ -212,7 +212,8 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
     overall_outcome["success"]=True
     overall_outcome["messages"]=[]
     for step in flow:
-        try:
+        if True:
+#        try:
             try:
                 local_folder = step["folder"]
             except:
@@ -265,12 +266,12 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
                 if key in ["link", "id", "mimeType"]:
                     overall_outcome[key]=outcome[key]
                     overall_outcome[key+"_"+step["name"].replace(" ","_")]=outcome[key]
-        except Exception as ex:
-            outcomes.append({"step":step["name"], "success": False, "outcome": {"exception":str(ex)}})
-            overall_outcome["success"]=False
-            overall_outcome["messages"].append("Exception in step: "+step["name"]+".  "+str(ex))
-            if not("critical" in step.keys() and step["critical"]=="false"):
-                raise ex
+        #except Exception as ex:
+        #    outcomes.append({"step":step["name"], "success": False, "outcome": {"exception":str(ex)}})
+        #    overall_outcome["success"]=False
+        #    overall_outcome["messages"].append("Exception in step: "+step["name"]+".  "+str(ex))
+        #    if not("critical" in step.keys() and step["critical"]=="false"):
+        #        raise ex
  
 #    overall_outcome["success"]=True
     overall_outcome["steps"]=outcomes

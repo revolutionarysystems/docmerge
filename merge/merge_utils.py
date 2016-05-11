@@ -94,7 +94,10 @@ def isControlLine(s):
     s = s.split("+")[0]
     s = s.strip()
     if s[:2]=="{%" and s[-2:]=="%}" and s.find("%}")== s.rfind("%}"):
-        return True
+        if s.find("include")>=0:
+            return False
+        else:
+            return True
     else:
         return False
 
@@ -150,7 +153,6 @@ def substituteVariablesDocx(file_name_in, fileNameOut, subs):
             j+=1
         fullText+= paraText+str(i)+"+para+"
         i+=1
-#   print(fullText)
     fullText = preprocess(fullText)
     t = Template(fullText)
     xtxt = t.render(c)
@@ -257,7 +259,10 @@ def merge_docx_footer(full_local_filename, subs):
     zip = zipfile.ZipFile(f)
     xml_content = zip.read('word/footer1.xml')
     xml_content = xml_content.decode("ISO-8859-1")
-    xml_content = substituteVariablesPlainString(xml_content, subs)
+    try:
+        xml_content = substituteVariablesPlainString(xml_content, subs)
+    except:
+        pass
     tmp_dir = tempfile.mkdtemp()
     zip.extractall(tmp_dir)
 

@@ -63,13 +63,13 @@ compound_TA = {
 
 
 plain_TA = {
-	"data_file":"testDataListS.xml",
-	"xform_file":"ITP_9yds_TA.xml",
+	"data_file":"testData2.xml",
+	"xform_file":"ITP_9yds_email.xml",
 	"flow_file":"docx.txt",
 	"template_subfolder":None,
-	"template_file":"Wizard Move in documents/Tenancy Agreements/AST/Tenancy_Agreement_v1_sched_7",
+	"template_file":"Wizard Move in documents/Tenancy Agreements/AST/Tenancy_Agreement_v1_Section_1_2_3_4_5_6_DPS",
 	"payload":"<email>sample</email>",
-	"uniq":"1011",
+	"uniq":"1012",
 	"expected_outcomes": {
 		'link_Generate_pdf': 'localhost:8001file/?name=Sandbox-cmpnd_doc_10101.pdf', 
 		'id_Upload_pdf': '0B-R1VJ7CNz2Zc1pRX0JSbnBNOFE', 
@@ -218,8 +218,8 @@ def test_flow(test_case):
 	print(outcomes["messages"])
 
 def run():
-	test_flow(compound_TA)
-#	test_flow(plain_TA)
+#	test_flow(compound_TA)
+	test_flow(plain_TA)
 #	test_flow(plain_TA_S7)
 #	test_data(plain_TA)
 
