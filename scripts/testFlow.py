@@ -187,19 +187,103 @@ chartest_TA = {
 
 }
 
+ECVTNC = {
+	"data_file":"EchoCentral-Glanty.xml",
+	"xform_file":None,
+	"flow_file":"comp_docx.txt",
+	"template_subfolder":"/Sandbox",
+	"template_file":"Compound.json",
+	"payload":None,
+	"uniq":"14",
+	"expected_outcomes": {}
+
+}
+
+ECVSL = {
+	"data_file":"EchoCentral-Glanty.xml",
+	"xform_file":None,
+	"flow_file":"comp_docx.txt",
+	"template_subfolder":"/Contracts",
+	"template_file":"SLS.json",
+	"payload":None,
+	"uniq":"1.0",
+	"expected_outcomes": {}
+}
+
+
+
+ECVTNC_2 = {
+	"data_file":None,
+	"payload_type": "params",
+	"params": {"product":"EchoProd", "vendor.name":"ECVL"},
+	"xform_file":None,
+	"flow_file":"docx.flo",
+	"template_subfolder":"/Contracts",
+	"template_file":"Copy of Echo Central Ts and Cs",
+	"payload":None,
+	"uniq":"1.0",
+	"expected_outcomes": {}
+
+}
+
+ITABN = {
+	"data_file":"book.xml",
+	"xform_file":None,
+	"flow_file":"comp_docx.flo",
+	"template_subfolder":"/ITABN",
+	"template_file":"Book2.json",
+	"payload":None,
+	"uniq":"1.1",
+	"expected_outcomes": {}
+}
+
+ITABN_Summary = {
+	"data_file":"book.xml",
+	"xform_file":None,
+	"flow_file":"docx.flo",
+	"template_subfolder":"/ITABN",
+	"template_file":"ITABN Summary",
+	"payload":None,
+	"uniq":"1.1",
+	"expected_outcomes": {}
+}
+
+EPDemo = {
+	"data_file":"sample.xml",
+	"xform_file":None,
+	"flow_file":"docx.flo",
+	"template_subfolder":None,
+	"template_file":"Sample Document",
+	"payload":None,
+	"uniq":None,
+	"expected_outcomes": {}
+}
+
+
+def get(dct, item):
+	try:
+		return dct[item]
+	except KeyError:
+		return None
+
 
 def test_data(test_case):
-	subs = getData(remote_data_folder = "/Doc Merge/Test Data", local_data_folder = "test_data", 
+	subs = getData(remote_data_folder = "/Echo Publish Demo/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
-	                   xform_file="ITP_9yds_email.xml")["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
-#	print(subs)
+	                   xform_file=test_case["xform_file"])["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
+	print(subs)
+	print(type(subs))
+	template_str = "Product {{ product|upper }} {{ licensor.name}}"
+	print(substituteVariablesPlainString(template_str, subs))
+
 #	print(subs["Request"]["Guarantors"])
 #	print(subs["Request"]["Landlords"])
 
 
 def test_flow(test_case):
 	subs = getData(remote_data_folder = "/Doc Merge/Test Data", local_data_folder = "test_data", 
-	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
+	                   data_file=test_case["data_file"], payload_type=get(test_case,"payload_type"), 
+	                   params=get(test_case,"params"), xform_folder = "/Doc Merge/Transforms", 
 	                   xform_file=test_case["xform_file"])["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
 	subs["site"]="localhost:8001"
 	cwd = get_working_dir()
@@ -218,8 +302,9 @@ def test_flow(test_case):
 	print(outcomes["messages"])
 
 def run():
-	test_flow(compound_TA)
+#	test_flow(compound_TA)
+#	test_flow(ITABN)
 #	test_flow(plain_TA)
 #	test_flow(plain_TA_S7)
-#	test_data(plain_TA)
+	test_data(EPDemo)
 

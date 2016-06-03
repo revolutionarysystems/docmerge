@@ -2,7 +2,7 @@ import xmltodict
 import iso8601
 import json
 import datetime
-from .testData import xml0, xml1
+#from .testData import xml0, xml1
 from .gd_resource_utils import folder_file,file_content_as
 from .resource_utils import strip_xml_dec,get_xml_content
 import lxml.etree as etree
@@ -123,7 +123,19 @@ def xform_xml(content, local_folder, remote_folder, xform_file):
     newdom = transform(dom)
     return etree.tostring(newdom, pretty_print=True).decode("utf-8")
 
-def getData(test_case = None, payload=None, payload_type="xml", data_file=None, remote_data_folder = None, local_data_folder = None, xform_folder = None, xform_file = None):
+def dictify(par_dict, node_name, node_value):
+    if node_name.find(".")<0:
+        par_dict[node_name]=node_value
+        return par_dict
+    else:
+        root = node_name[:node_name.find(".")]
+        remainder = node_name[node_name.find(".")+1:]
+        if not (root in par_dict.keys()):
+            par_dict[root]={}
+        dictify(par_dict[root], remainder, node_value)
+
+
+def getData(test_case = None, payload=None, payload_type="xml", params = None, data_file=None, remote_data_folder = None, local_data_folder = None, xform_folder = None, xform_file = None):
     data = None
     if payload and payload_type.lower()=="xml":
         if xform_file:
@@ -131,11 +143,10 @@ def getData(test_case = None, payload=None, payload_type="xml", data_file=None, 
         data = xmltodict.parse(payload)
     elif payload and payload_type=="json":
         data = json.loads(payload)
-    #todo, test case db
-    elif test_case == "0":
-        data = xmltodict.parse(xml0) 
-    elif test_case == "1":
-        data = xmltodict.parse(xml1) 
+    elif payload_type == "params" and params:
+        data = {}
+        for key in params.keys():
+            dictify(data, key, params[key])
     elif data_file:
         doc_xml = get_xml_content(local_data_folder, remote_data_folder, data_file)
 #        data_doc_id = folder_file(data_folder, data_file)["id"]

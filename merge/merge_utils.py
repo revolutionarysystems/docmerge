@@ -1,4 +1,5 @@
 import os
+import io
 import re
 import string
 import zipfile
@@ -11,9 +12,12 @@ from markdown import markdown
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import difflib
+from subprocess import check_output
+import lxml.etree as etree
 
 from .resource_utils import (
-    get_working_dir, strip_xml_dec, get_output_dir, get_local_dir, get_local_txt_content)
+    get_working_dir, strip_xml_dec, get_xml_dec, get_output_dir, get_local_dir, get_local_txt_content)
 from .config import install_name
 
 def replaceParams(txt, subs):
@@ -46,9 +50,11 @@ def substituteVariablesPlainString(stringIn, subs):
     return xtxt
     
 def preprocess(text):
-    text = text.replace("{% #A %}", "{% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'%}")    
-    text = text.replace("{% #9 %}", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' '23' '24' '25' '26' '27' '28' '29' '30' as level1 %}")    
-    text = text.replace("{% #9= %}", "{{ level1 }}")    
+    text = text.replace("{% #A", "{% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'")    
+    text = text.replace("{% #a", "{% cycle 'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm' 'n' 'o' 'p' 'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z'")    
+    text = text.replace("{% #9", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' '23' '24' '25' '26' '27' '28' '29' '30' '31' '32' '33' '34' '35' '36' '37' '38' '39' '40' '41' '42' '43' '44' '45' '46' '47' '48' '49'")    
+    text = text.replace("{% #I", "{% cycle 'I' 'II' 'III' 'IV' 'V' 'VI' 'VII' 'VIII' 'IX' 'X' 'XI' 'XII' 'XIII' 'XIV' 'XV' 'XVI' 'XVII' 'XVIII' 'XIX' 'XX'")    
+    text = text.replace("{% #i", "{% cycle 'i' 'ii' 'iii' 'iv' 'v' 'vi' 'vii' 'viii' 'ix' 'x' 'xi' 'xii' 'xiii' 'xiv' 'xv' 'xvi' 'xvii' 'xviii' 'xix' 'xx'")    
     return text
 
 def apply_sequence(text):
@@ -254,10 +260,18 @@ def email_file(baseFileName, me, you, subject, credentials):
     return {"email":you.replace(" ","+")}
 
 def merge_docx_footer(full_local_filename, subs):
+    merge_docx_header_footer(full_local_filename, subs, "footer1")
+    return merge_docx_header_footer(full_local_filename, subs, "footer2")
+
+def merge_docx_header(full_local_filename, subs):
+    merge_docx_header_footer(full_local_filename, subs, "header1")
+    return merge_docx_header_footer(full_local_filename, subs, "header2")
+
+def merge_docx_header_footer(full_local_filename, subs, xmlname):
     docx_filename = full_local_filename
     f = open(docx_filename, 'rb')
     zip = zipfile.ZipFile(f)
-    xml_content = zip.read('word/footer1.xml')
+    xml_content = zip.read('word/'+xmlname+'.xml')
 #    xml_content = xml_content.decode("ISO-8859-1")
     xml_content = xml_content.decode("UTF-8")
     try:
@@ -267,7 +281,7 @@ def merge_docx_footer(full_local_filename, subs):
     tmp_dir = tempfile.mkdtemp()
     zip.extractall(tmp_dir)
 
-    with open(os.path.join(tmp_dir,'word/footer1.xml'), 'w') as f:
+    with open(os.path.join(tmp_dir,'word/'+xmlname+'.xml'), 'w') as f:
         f.write(xml_content)
     filenames = zip.namelist()
     zip_copy_filename = docx_filename
@@ -276,3 +290,232 @@ def merge_docx_footer(full_local_filename, subs):
             docx.write(os.path.join(tmp_dir,filename), filename)
     shutil.rmtree(tmp_dir)
     return({"file":docx_filename})
+
+def docx_subfile(zip, tmp_dir, subs, filename):
+    try:
+        xml_content = zip.read(filename)
+        xml_content = xml_content.decode("UTF-8")
+        xml_content = preprocess(xml_content)
+        xml_content = xml_content.replace("&quot;", '"')
+        xml_content = substituteVariablesPlainString(xml_content, subs)
+        with io.open(os.path.join(tmp_dir,filename), 'w', encoding="utf8") as f:
+            f.write(xml_content)
+    except KeyError:
+        pass
+
+def substituteVariablesDocx_direct(file_name_in, file_name_out, subs):
+    docx_filename = file_name_in
+    f = open(docx_filename, 'rb')
+    zip = zipfile.ZipFile(f)
+    filenames = zip.namelist()
+    tmp_dir = tempfile.mkdtemp()
+    zip.extractall(tmp_dir)
+
+    candidates = ["word/document.xml","word/header1.xml","word/header2.xml","word/footer1.xml","word/footer2.xml"]
+    for filename in filenames:
+        if filename in candidates:
+            docx_subfile(zip, tmp_dir, subs, filename)
+#    docx_subfile(zip, tmp_dir, "header1")
+#    docx_subfile(zip, tmp_dir, "header2")
+#    docx_subfile(zip, tmp_dir, "footer1")
+#    docx_subfile(zip, tmp_dir, "footer2")
+
+    with zipfile.ZipFile(file_name_out, "w") as docx:
+        for filename in filenames:
+            docx.write(os.path.join(tmp_dir,filename), filename)
+    shutil.rmtree(tmp_dir)
+    return({"file":file_name_out})
+
+def get_docx_paras(zip):
+    xml_content = zip.read("word/document.xml").decode("utf8")
+    paras_start = xml_content.find("<w:p")
+    paras_end = xml_content.rfind("</w:p>")+6
+    return xml_content[paras_start:paras_end]
+
+def get_docx_numbering(zip):
+    xml_content = zip.read("word/numbering.xml").decode("utf8")
+    remain = xml_content
+    abstract_num_schemes = {}
+    num_schemes = {}
+    while remain.find("<w:abstractNum ")>=0:
+        scheme_start = remain.find("<w:abstractNum ")
+        scheme_end = remain.find("</w:abstractNum>")+16
+        scheme_str = remain[scheme_start:scheme_end]
+        scheme_index_loc_s = scheme_str.find('="')
+        scheme_index_loc_e = scheme_str.find('">')
+        scheme_index = scheme_str[scheme_index_loc_s+2:scheme_index_loc_e]
+        abstract_num_schemes[scheme_index] = scheme_str
+        remain = remain[scheme_end:]
+    while remain.find("<w:num ")>=0:
+        scheme_start = remain.find("<w:num ")
+        scheme_end = remain.find("</w:num>")+8
+        scheme_str = remain[scheme_start:scheme_end]
+        scheme_index_loc_s = scheme_str.find('="')
+        scheme_index_loc_e = scheme_str.find('">')
+        scheme_index = scheme_str[scheme_index_loc_s+2:scheme_index_loc_e]
+        num_schemes[scheme_index] = scheme_str
+        remain = remain[scheme_end:]
+    return abstract_num_schemes, num_schemes, xml_content
+
+
+def get_docx_content(filename):
+    docx_filename = filename
+    f = open(docx_filename, 'rb')
+    zip = zipfile.ZipFile(f)
+    filenames = zip.namelist()
+    tmp_dir = tempfile.mkdtemp()
+    zip.extractall(tmp_dir)
+    xml_str = zip.read("word/_rels/document.xml.rels").decode("utf8")
+    rel_xml_content = strip_xml_dec(xml_str)
+    rel_xml_dec = get_xml_dec(xml_str)
+    rel_dom = etree.fromstring(rel_xml_content)
+    response = {}
+    response["paras"] = get_docx_paras(zip)
+    response["numbering"] = get_docx_numbering(zip)
+    response["tmp_dir"] = tmp_dir
+    response["filenames"] = filenames
+    response["rel_dom"] = rel_dom
+    # get images too
+    # return tmp_dir too
+    return response
+
+def copy_docx_media(tmp_dir_from, tmp_dir_to, filenames_from, filenames_to, rel_0, max_Rel_id):
+    rel_elements = []
+    renames = []
+    for filename in filenames_from:
+        if filename.find("word/media/")==0:
+#            filename=filename.replace("/",os.sep)
+            print("media file:",tmp_dir_from, tmp_dir_to,  filename)
+            source = os.path.join(tmp_dir_from,filename)
+            dest = os.path.join(tmp_dir_to,filename)
+            if not os.path.exists(os.path.split(dest)[0]):
+                os.makedirs(os.path.split(dest)[0])
+            print(filenames_to)
+            if filename in filenames_to:
+                oldfilename = filename
+                i = 1
+                while filename in filenames_to:
+                    filename = "word/media/image"+"{0:0>2}".format(i)+".png"
+                    i+=1
+                print(oldfilename,">",filename)
+                renames.append((os.path.split(oldfilename)[1],os.path.split(filename)[1]))
+                dest = os.path.join(tmp_dir_to,filename)
+            else:
+                renames.append((os.path.split(filename)[1],os.path.split(filename)[1]))
+            shutil.copyfile(source.replace("/",os.sep),dest.replace("/",os.sep))
+            filenames_to.append(filename)
+            new_rel_el = etree.Element("Relationship", attrib={"Id":"".join(["rId", str(max_Rel_id+1)]), 
+                "Type":rel_0.attrib["Type"].replace("settings","image"), 
+                "Target":"/".join(["media",os.path.split(filename)[1]])})
+            print(">>rel",os.path.split(filename)[1],"".join(["rId", str(max_Rel_id+1)]))
+            rel_elements.append(new_rel_el)
+            max_Rel_id+=1
+    return filenames_to, rel_elements, renames
+
+def combine_docx_direct(file_names_to_combine, file_name_out):
+    docx_filename = file_names_to_combine[0]
+    f = open(docx_filename, 'rb')
+    zip = zipfile.ZipFile(f)
+    filenames = zip.namelist()
+    tmp_dir = tempfile.mkdtemp()
+    zip.extractall(tmp_dir)
+    main_xml_content = zip.read("word/document.xml").decode("utf8")
+    xml_str = zip.read("word/_rels/document.xml.rels").decode("utf8")
+    rel_xml_content = strip_xml_dec(xml_str)
+    rel_xml_dec = get_xml_dec(xml_str)
+    rel_dom = etree.fromstring(rel_xml_content)
+    max_Rel_id = len(rel_dom)
+    rel_0  = rel_dom[0]
+    main_abs_num, main_num, main_number_xml = get_docx_numbering(zip)
+    insertion_point = main_xml_content.find("<w:sectPr>")
+    count, number_of_files = 0, len(file_names_to_combine)
+    for file in file_names_to_combine[1:]:
+        if file == "pagebreak":
+            break_xml = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
+            main_xml_content = main_xml_content[:insertion_point]+break_xml+main_xml_content[insertion_point:]
+            insertion_point+=len(break_xml)
+        else:    
+            print()
+            print("next file:", file)
+            sub_xml_content = get_docx_content(file)
+            sub_xml_paras = sub_xml_content["paras"]
+            abs_num, num, sub_num_xml = sub_xml_content["numbering"]
+            if not main_abs_num: # No main scheme
+                if abs_num: # But there is sub-document numbering
+                    main_number_xml = sub_num_xml
+                    main_abs_num = abs_num
+                    main_num = num
+            else: # there is a main scheme
+                if abs_num: # And there is sub-document numbering
+                    for key in abs_num.keys():
+                        n_main_schemes = len(main_abs_num)
+                        new_key = str(n_main_schemes+1)
+                        main_abs_num[new_key]=abs_num[key].replace('w:abstractNumId="'+key+'"', 'w:abstractNumId="'+new_key+'"')
+                        main_num[new_key]=num[key].replace('w:numId="'+key+'"', 'w:numId="'+new_key+'"').replace('<w:abstractNumId w:val="'+key+'"/>','<w:abstractNumId w:val="'+new_key+'"/>')
+                        sub_xml_paras = sub_xml_paras.replace('<w:numId w:val="'+key+'"/>', '<w:numId w:val="'+new_key+'"/>')
+
+
+            #Now move media files:  # incomplete - also need to correct relationships
+            filenames, rel_elements, renames= copy_docx_media(sub_xml_content["tmp_dir"], tmp_dir, sub_xml_content["filenames"], filenames, rel_0, max_Rel_id)
+
+#            rel_renames = []
+            for rename in renames:
+                print(rename)
+                sub_xml_paras = sub_xml_paras.replace(rename[0],rename[1])
+                for element in rel_elements:
+                    if element.attrib["Target"]=="media/"+rename[1]:
+                        new_rel = element.attrib["Id"]
+
+                        # make sure the replacement is right
+
+                for element in sub_xml_content["rel_dom"]:
+                    if element.attrib["Target"]=="media/"+rename[0]:
+                        old_rel = element.attrib["Id"]
+                print(">>replacing", old_rel, ">", new_rel)
+                sub_xml_paras = sub_xml_paras.replace(old_rel,new_rel)
+#                rel_renames.append((old_rel, new_rel))
+
+ 
+            for element in rel_elements:
+                rel_dom.append(element)
+
+            max_Rel_id += len(rel_elements)
+
+            main_xml_content = main_xml_content[:insertion_point]+sub_xml_paras+main_xml_content[insertion_point:]
+            insertion_point+=len(sub_xml_paras)
+            if main_number_xml.find("<w:abstractNum ") >=0:
+                main_number_xml_pre = main_number_xml[:main_number_xml.find("<w:abstractNum ")]
+                main_number_xml_post = main_number_xml[main_number_xml.rfind("</w:num>")+8:]
+                main_number_xml = main_number_xml_pre
+                for scheme in main_abs_num.values():
+                    main_number_xml+=scheme
+                for scheme in main_num.values():
+                    main_number_xml+=scheme
+                main_number_xml+=main_number_xml_post
+            #print(main_number_xml)
+    rels_xml = "\n".join([rel_xml_dec,etree.tostring(rel_dom).decode("utf8")])
+    print(rels_xml)
+
+
+
+    #All files assimilated
+    with io.open(os.path.join(tmp_dir,"word/document.xml"), 'w', encoding="utf8") as f:
+        f.write(main_xml_content)
+    with io.open(os.path.join(tmp_dir,"word/numbering.xml"), 'w', encoding="utf8") as f:
+        f.write(main_number_xml)
+    with io.open(os.path.join(tmp_dir,"word/_rels/document.xml.rels"), 'w', encoding="utf8") as f:
+        f.write(rels_xml)
+    # rewrite the rel file
+    with zipfile.ZipFile(file_name_out, "w") as docx:
+        for filename in filenames:
+            docx.write(os.path.join(tmp_dir,filename), filename)
+    shutil.rmtree(tmp_dir)
+    return({"file":file_name_out})
+
+def shellCommand(command):
+    return check_output(command, shell=True).decode()
+
+def convert_pdf(filename_in, filename_out, outdir = "."):
+    command = "soffice --headless --convert-to pdf "+filename_in+" --outdir "+outdir
+    response = shellCommand("soffice --headless --convert-to pdf "+filename_in+" --outdir "+outdir)
+    return {"file":filename_out, "response":response, "command": command}

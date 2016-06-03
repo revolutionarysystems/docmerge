@@ -5,6 +5,7 @@ urlpatterns = [
     url(r'^merge/', views.merge, name='merge'),
     url(r'^push/', views.push, name='push'),
     url(r'^merge-get/', views.merge_get, name='merge_get'),
+    url(r'^file/link/', views.file_link, name='file_link'),
     url(r'^file/', views.file, name='file'),
     url(r'^refresh/', views.refresh, name='refresh'),
     url(r'^zip/', views.zip, name='zip'),

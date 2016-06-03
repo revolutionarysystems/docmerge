@@ -42,6 +42,10 @@ td.nb {
     text-decoration: none;
 }
 
+.page-header .user {
+    float: right;
+}
+
 .share {
     height: 3rem;
 }

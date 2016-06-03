@@ -2,6 +2,13 @@
 
 {% block content %}
 	<h2><a href="">Test Document Merge Flow</a></h2>
+        {% if warning %}
+            <h3>{{ warning }} </h3>
+            <ul>
+                <li><a href = "../link">Click here to link to Google Drive</a></li>
+            </ul>
+        {% endif %}
+
         <div class="row widget">
             <div>
 	 	<h3><a href=""><span class="glyphicon glyphicon-question-sign"></span> Request</a></h2>

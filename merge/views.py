@@ -8,10 +8,10 @@ from random import randint
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 #from .merge_utils import get_local_dir
-from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir, refresh_files, zip_local_dirs
+from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir, refresh_files, zip_local_dirs, remote_link
 from traceback import format_exc
 from dash.forms import UploadZipForm
-from .config import remote_library
+from .config import remote_library, gdrive_root, local_root
 
 def getParamDefault(params, key, default, preserve_plus=False):
     try:
@@ -37,28 +37,28 @@ def merge_raw(request, method="POST"):
     protocol, uri = abs_uri.split("://")
     site = protocol+"://"+uri.split("/")[0]+"/"
     id = getParamDefault(params, "identifier", str(randint(0,10000)))
-    flowFolder = getParamDefault(params, "flow_folder", "/Doc Merge/Flows")
+    flowFolder = getParamDefault(params, "flow_folder", "/"+gdrive_root+"/Flows")
     flow = getParamDefault(params, "flow", "md")
-    remoteTemplateFolder = getParamDefault(params, "template_folder", "/Doc Merge/Templates")
-    remoteOutputFolder = getParamDefault(params, "output_folder", "/Doc Merge/Output")
+    remoteTemplateFolder = getParamDefault(params, "template_folder", "/"+gdrive_root+"/Templates")
+    remoteOutputFolder = getParamDefault(params, "output_folder", "/"+gdrive_root+"/Output")
     template_subfolder = getParamDefault(params, "template_subfolder", None)
     output_subfolder = getParamDefault(params, "output_subfolder", None)
     payload = getParamDefault(params, "payload", None, preserve_plus=True)
     payload_type = getParamDefault(params, "payload_type", None)
     test_case = getParamDefault(params, "test_case", None)
-    data_folder = getParamDefault(params, "data_folder", "/Doc Merge/Test Data")
+    data_folder = getParamDefault(params, "data_folder", "/"+gdrive_root+"/Test Data")
     data_file = getParamDefault(params, "data_file", None)
     data_root = getParamDefault(params, "data_root", None)
-    branding_folder = getParamDefault(params, "branding_folder", "/Doc Merge/Branding")
+    branding_folder = getParamDefault(params, "branding_folder", "/"+gdrive_root+"/Branding")
     branding_file = getParamDefault(params, "branding_file", None)
-    xform_folder = getParamDefault(params, "xform_folder", "/Doc Merge/Transforms")
+    xform_folder = getParamDefault(params, "xform_folder", "/"+gdrive_root+"/Transforms")
     xform_file = getParamDefault(params, "xform_file", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
     email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
     templateName = templateName.replace("\\", "/")
     if template_subfolder:
         template_subfolder = template_subfolder.replace("\\", "/")
-    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, local_data_folder="test_data", remote_data_folder = data_folder, data_file=data_file, xform_folder = xform_folder, xform_file=xform_file)
+    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, params = params, local_data_folder="test_data", remote_data_folder = data_folder, data_file=data_file, xform_folder = xform_folder, xform_file=xform_file)
     if data_root:
         if data_root in subs:
             subs = subs[data_root]
@@ -81,7 +81,6 @@ def merge_raw(request, method="POST"):
 
 
 def push_raw(request, method="POST"):
-    print(">> push_raw")
     if method=="GET":
         params = request.GET
     else:
@@ -90,10 +89,10 @@ def push_raw(request, method="POST"):
     protocol, uri = abs_uri.split("://")
     site = protocol+"://"+uri.split("/")[0]+"/"
     id = getParamDefault(params, "identifier", str(randint(0,10000)))
-    flowFolder = getParamDefault(params, "flow_folder", "/Doc Merge/Flows")
+    flowFolder = getParamDefault(params, "flow_folder", "/"+gdrive_root+"/Flows")
     flow = getParamDefault(params, "flow", "md")
-    remoteTemplateFolder = getParamDefault(params, "template_folder", "/Doc Merge/Templates")
-    remoteOutputFolder = getParamDefault(params, "output_folder", "/Doc Merge/Output")
+    remoteTemplateFolder = getParamDefault(params, "template_folder", "/"+gdrive_root+"/Templates")
+    remoteOutputFolder = getParamDefault(params, "output_folder", "/"+gdrive_root+"/Output")
     payload = getParamDefault(params, "payload", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
     template_subfolder = getParamDefault(params, "template_subfolder", None)
@@ -153,8 +152,6 @@ def push_raw_wrapped(request, method="POST"):
 @csrf_exempt
 def push(request):
     return JsonResponse(push_raw_wrapped(request))
-    
-
 
 def merge_get(request):
     return JsonResponse(merge_raw_wrapped(request, method="GET"))
@@ -194,24 +191,34 @@ def file_raw(request):
 def file(request):
     return file_raw(request)
 
+
+def file_link(request):
+    params = request.GET
+    filename = getParamDefault(params, "name", None)
+    subfolder = getParamDefault(params, "path", "output")
+    response = {"remote":remote_link(filename, subfolder)}
+    return JsonResponse(response)
+
+
+
 def refresh(request):
     if remote_library:
         try:
             params = request.GET
             local = getParamDefault(params, "local", "templates")
             if local.find("templates")==0:
-                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Templates")
+                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Templates")
             elif local.find("flows")==0:
-                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Flows")
+                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Flows")
             elif local.find("branding")==0:
-                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Branding")
+                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Branding")
             elif local.find("test_data")==0:
-                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Test Data")
+                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Test Data")
             elif local.find("transforms")==0:
-                remote_default = local.replace(local.split("/")[0],"/Doc Merge/Transforms")
+                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Transforms")
             else:
                 remote_default = None    
-
+            print("GDrive:", gdrive_root)
             print("refresh:", local, remote_default)
             remote = getParamDefault(params, "remote", remote_default)
             files = refresh_files(remote, local)
@@ -230,7 +237,7 @@ def zip(request):
         site = protocol+"://"+uri.split("/")[0]+"/"
         folders = getParamDefault(params, "folders", "templates,flows,transforms,test_data,branding")
         zip_file_name = getParamDefault(params, "name", "backup")
-        target_dir = os.path.join(get_working_dir(),"merge")
+        target_dir = os.path.join(get_working_dir(),local_root)
         zip_file_name = zip_local_dirs(target_dir, zip_file_name, selected_subdirs = folders.split(","))
         link = site+"file/?name="+zip_file_name.split(os.path.sep)[-1]+"&path=."
         response = {"zip_files":zip_file_name, "link":link}
@@ -246,7 +253,7 @@ def download_zip(request):
         site = protocol+"://"+uri.split("/")[0]+"/"
         folders = getParamDefault(params, "folders", "templates,flows,transforms,test_data,branding")
         zip_file_name = getParamDefault(params, "name", "backup")
-        target_dir = os.path.join(get_working_dir(),"merge")
+        target_dir = os.path.join(get_working_dir(),local_root)
         zip_file_full = zip_local_dirs(target_dir, zip_file_name, selected_subdirs = folders.split(","))
         zip_file_name = os.path.split(zip_file_full)[1]
         link = site+"file/?name="+zip_file_full.split(os.path.sep)[-1]+"&path=."
@@ -262,7 +269,7 @@ def download_zip(request):
 @csrf_exempt
 def upload_zip(request):
     form = UploadZipForm(request.POST, request.FILES)
-    target = os.path.join(get_working_dir(),"merge",request.FILES['file']._name)
+    target = os.path.join(get_working_dir(),local_root,request.FILES['file']._name)
     handle_uploaded_zip(request.FILES['file'], target)
     return JsonResponse({"file":target})
 

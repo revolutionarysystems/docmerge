@@ -1,20 +1,20 @@
-from merge.merge_utils import folder_files, refresh_files, get_working_dir, get_xml_content, push_local_txt, folder
-from merge.flow import get_flow_local, get_flow
-from merge.xml4doc import getData
-
+from merge.resource_utils import refresh_files
+#from merge.flow import get_flow_local, get_flow
+#from merge.xml4doc import getData
+"""
 def run1():
     files = folder_files("/Doc Merge/Flows",fields="files(id, name, mimeType, trashed)")
     for file in files:
         print(file["name"])
         print(file["id"])
         print(file)
-
-def run2():
-    files = refresh_files("/Doc Merge/Flows", "flows")
+"""
+def run():
+    files = refresh_files("/Echo Publish Resources/Templates/Experiments", "templates/Experiments")
     #files = refresh_files("/Doc Merge/Flows", "flows/")
     for file in files:
         print(file)
-
+"""
 def run3():
     run2()
     cwd = get_working_dir()
@@ -33,7 +33,7 @@ def run5():
     file_name = push_local_txt(cwd, "branding", "text.xml", "<brand/>")
     print(file_name)
 
-def run():
+def run6():
     fldr = folder("/Doc Merge/Branding", create_if_absent = False)
     print(fldr)
 #    files = folder_files("/Doc Merge/Dummy",fields="files(id, name, mimeType, trashed)", mimeType='application/vnd.google-apps.folder')
@@ -44,4 +44,4 @@ def run():
 #    print("done")
 #def folder_item(parent, name, mimeType='application/vnd.google-apps.folder', ):
 
-    
+"""    

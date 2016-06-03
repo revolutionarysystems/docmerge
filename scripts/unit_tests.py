@@ -1,5 +1,6 @@
 import unittest
 import os
+from merge.config import local_root
 
 from merge.resource_utils import (
     get_working_dir, strip_xml_dec,get_local_dir, get_output_dir, get_local_txt_content,
@@ -14,12 +15,12 @@ class LocalResourceTestCase(unittest.TestCase):
 
     def test_local_dir(self):
         local = get_local_dir("templates")
-        expected = os.path.sep.join(["docmerge","merge","templates"])
+        expected = os.path.sep.join(["docmerge",local_root,"templates"])
         self.assertEqual(local[-len(expected):],expected)
 
     def test_output_dir(self):
         output = get_output_dir()
-        expected = os.path.sep.join(["docmerge","merge","output"])
+        expected = os.path.sep.join(["docmerge",local_root,"output"])
         self.assertEqual(output[-len(expected):],expected)
 
     def test_strip_xml_dec(self):
