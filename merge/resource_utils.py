@@ -4,7 +4,7 @@ import pytz
 import iso8601
 import datetime
 import zipfile
-from .config import install_name, remote_library, gdrive_root, local_root
+from .config import install_name, remote_library, gdrive_root, local_root,extend_path
 from .gd_resource_utils import (folder, folder_contents, exportFile, getFile, folder_item, file_content_as, 
         gd_folder_files, gd_path_equivalent, gd_folder_files, gd_folder_item)
 
@@ -12,7 +12,7 @@ from .gd_resource_utils import (folder, folder_contents, exportFile, getFile, fo
 
 def get_working_dir():
     cwd = os.getcwd()
-    if (cwd.find("home")>=0):  
+    if (cwd.find("home")>=0 and extend_path):  
         cwd = os.path.join(cwd,install_name)
     if (cwd.find("scripts")>=0):  
         cwd = cwd.replace("\scripts","")
@@ -68,37 +68,44 @@ def del_local(cwd, data_folder, data_file):
     full_file_path = os.path.join(cwd, local_root, data_folder, data_file)
     os.remove(full_file_path)
 
-def local_folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents"):
+def local_folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents", days_ago=0, days_recent=365):
     cwd = get_working_dir()
     full_path = os.path.join(cwd, local_root, path)
     files = os.listdir(full_path)
+    now = time.time()
     response = []
     for file in files:
-        ext = os.path.splitext(file)[-1].lower()
-#        print(file)
-#        print(os.path.isfile(os.path.join(full_path, file)))
-#        print(os.path.isdir(os.path.join(full_path, file)))
-        response.append({
-            "name":file, 
-            "ext":ext, 
-            "isdir": os.path.isdir(os.path.join(full_path, file)),
-            "mtime": pytz.utc.localize(datetime.datetime.utcfromtimestamp(os.path.getmtime(os.path.join(full_path, file))))})
+        full = os.path.join(full_path, file)
+        timestamp = os.stat(full).st_mtime
+        if timestamp < now - days_ago * 86400 and timestamp >= now - days_recent * 86400:
+            ext = os.path.splitext(file)[-1].lower()
+    #        print(file)
+    #        print(os.path.isfile(os.path.join(full_path, file)))
+    #        print(os.path.isdir(os.path.join(full_path, file)))
+            response.append({
+                "name":file, 
+                "ext":ext, 
+                "isdir": os.path.isdir(os.path.join(full_path, file)),
+                "mtime": pytz.utc.localize(datetime.datetime.utcfromtimestamp(os.path.getmtime(os.path.join(full_path, file))))})
     return response
 
 
-def cull_local_files(subfolder, days=7, action="report"):
+def process_local_files(subfolder, days_ago=7, days_recent=365, action="report"):
     path = os.path.join(get_working_dir(), local_root, subfolder)
     now = time.time()
-    to_delete = []
+    to_process = []
     for f in os.listdir(path):
         full = os.path.join(path, f)
-        if os.stat(full).st_mtime < now - days * 86400:
+        if os.stat(full).st_mtime < now - days_ago * 86400 and os.stat(full).st_mtime >= now - days_recent * 86400:
             if os.path.isfile(full):
-                to_delete.append(f)
+                to_process.append(f)
                 if action == "delete":
                     os.remove(full)
-    return to_delete
+    return to_process
 
+def count_local_files(subfolder, days_ago=7, days_recent=365):
+    files = process_local_files(subfolder, days_ago=days_ago, days_recent=days_recent, action="report")
+    return(len(files))
 
 
 

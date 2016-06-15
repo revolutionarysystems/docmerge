@@ -202,14 +202,25 @@ ECVTNC = {
 ECVSL = {
 	"data_file":"EchoCentral-Glanty.xml",
 	"xform_file":None,
-	"flow_file":"comp_docx.txt",
+	"flow_file":"comp_docx_2.flo",
 	"template_subfolder":"/Contracts",
 	"template_file":"SLS.json",
 	"payload":None,
-	"uniq":"1.0",
+	"uniq":"1.1",
 	"expected_outcomes": {}
 }
 
+
+ECVInv = {
+	"data_file":"EchoCentral-Glanty-Invoice.xml",
+	"xform_file":None,
+	"flow_file":"docx_2.flo",
+	"template_subfolder":"/Invoices",
+	"template_file":"Invoice.json",
+	"payload":None,
+	"uniq":"1.1",
+	"expected_outcomes": {}
+}
 
 
 ECVTNC_2 = {
@@ -236,6 +247,29 @@ ITABN = {
 	"uniq":"1.1",
 	"expected_outcomes": {}
 }
+
+Sample = {
+	"data_file":"sample.xml",
+	"xform_file":None,
+	"flow_file":"docx_2.flo",
+	"template_subfolder":"",
+	"template_file":"Sample Document",
+	"payload":None,
+	"uniq":"1.2",
+	"expected_outcomes": {}
+}
+
+Strong = {
+	"data_file":"strongman.xml",
+	"xform_file":None,
+	"flow_file":"docx_2.flo",
+	"template_subfolder":"",
+	"template_file":"Job Description",
+	"payload":None,
+	"uniq":"1.2",
+	"expected_outcomes": {}
+}
+
 
 ITABN_Summary = {
 	"data_file":"book.xml",
@@ -302,9 +336,12 @@ def test_flow(test_case):
 	print(outcomes["messages"])
 
 def run():
-#	test_flow(compound_TA)
-#	test_flow(ITABN)
+#	test_flow(compound_TA)	test_flow(ECVInv)
+
+#	test_flow(Strong)
+#	test_flow(ECVInv)
+	test_flow(ECVSL)
 #	test_flow(plain_TA)
 #	test_flow(plain_TA_S7)
-	test_data(EPDemo)
+#	test_data(EPDemo)
 

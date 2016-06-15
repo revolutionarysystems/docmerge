@@ -11,7 +11,7 @@ from .gd_resource_utils import (folder_file, folder, uploadAsGoogleDoc, uploadFi
 from .merge_utils import (substituteVariablesDocx, substituteVariablesDocx_direct, substituteVariablesPlain,
     convert_markdown, convert_pdf, email_file, 
     combine_docx, combine_docx_direct, extract_regex_matches_docx,
-    substituteVariablesPlainString, merge_docx_footer, merge_docx_header)
+    substituteVariablesPlainString, merge_docx_footer, merge_docx_header, preprocess_docx_template, postprocess_docx)
 from .resource_utils import (push_local_txt, push_local_txt_fullname)
 from .config import local_root
 
@@ -203,7 +203,9 @@ def process_merge2(cwd, uniq, step, localTemplateFileName, template_subfolder, l
     except KeyError: #No rederivation of names if no step["template"]
         pass        
     if step["local_ext"]==".docx":
-        outcome = substituteVariablesDocx_direct(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+        preprocess_docx_template(localTemplateFileName+step["local_ext"], localTemplateFileName+".prep"+step["local_ext"])
+        outcome = substituteVariablesDocx_direct(localTemplateFileName+".prep"+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+        postprocess_docx(localMergedFileName+step["local_ext"])
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
     else:
         outcome = substituteVariablesPlain(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
@@ -230,9 +232,10 @@ def process_markdown(step, localMergedFileName):
     return outcome
 
 # convert to pdf
-def process_pdf(step, localMergedFileName):
+def process_pdf(step, localMergedFileName, localMergedFileNameOnly, subs):
     output_dir = localMergedFileName[:localMergedFileName.rfind("/")]
     outcome = convert_pdf(localMergedFileName+step["local_ext"], localMergedFileName+".pdf", outdir=output_dir)  
+    outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".pdf"
     return outcome
 
 
@@ -331,7 +334,7 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
                 outcome = process_markdown(step, localMergedFileName)
 
             if step["step"]=="pdf":
-                outcome = process_pdf(step, localMergedFileName)
+                outcome = process_pdf(step, localMergedFileName, localMergedFileNameOnly, subs)
 
             if step["step"]=="upload":
                 if local_folder=="templates":
@@ -369,10 +372,34 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
             overall_outcome["success"]=False
             overall_outcome["messages"].append("Exception in step: "+step["name"]+".  "+str(ex))
             if not("critical" in step.keys() and step["critical"]=="false"):
-                raise ex
+                break
+#                raise ex
  
 #    overall_outcome["success"]=True
     overall_outcome["steps"]=outcomes
+
+    input = {
+        "cwd":cwd,
+        "flow":flow,
+        "template_remote_folder":template_remote_folder,
+        "template_subfolder":template_subfolder,
+        "template_name":template_name,
+        "uniq":uniq,
+#        "subs":subs,
+        "output_folder":output_folder,
+        "output_subfolder":output_subfolder,
+#        "you":you,
+#        "email_credentials":email_credentials,
+#        "payload":payload,
+        "require_template":require_template,
+    }
+    request_record = {"record": {"time": datetime.now(),"request":input, "outcome":overall_outcome}}
+    request_record_str = json.dumps(request_record, default = json_serial, indent=True)
+    if overall_outcome["success"]:
+        state = "success"
+    else:
+        state="fail"
+    push_local_txt(cwd, "requests", localMergedFileNameOnly+"."+state+".json", request_record_str)
 
     return overall_outcome
 

@@ -96,16 +96,29 @@ def docx_copy_para_format_from(para1, para2):
     para1.paragraph_format.space_before = para2.paragraph_format.space_before
     para1.paragraph_format.widow_control = para2.paragraph_format.widow_control
 
-def isControlLine(s):
-    s = s.split("+")[0]
+def isControlText(s):
     s = s.strip()
     if s[:2]=="{%" and s[-2:]=="%}" and s.find("%}")== s.rfind("%}"):
         if s.find("include")>=0:
+            return False
+        elif s.find("now")>=0:
             return False
         else:
             return True
     else:
         return False
+
+def isControlLine(s):
+    s = s.split("+")[0]
+    return isControlText(s)
+#    s = s.strip()
+#    if s[:2]=="{%" and s[-2:]=="%}" and s.find("%}")== s.rfind("%}"):
+#        if s.find("include")>=0:
+#            return False
+#        else:
+#            return True
+#    else:
+#        return False
 
 def wrap_list_xml(childlist, root_tag, child_tag):
     out = "<"+root_tag+">\n"
@@ -135,6 +148,31 @@ def extract_regex_matches_docx(file_name_in, regex, wrap=None, root_tag="list", 
     #            literal = m.group('literal')
 
 
+def preprocess_docx_template(file_name_in, file_name_out):
+    timestamp_template = os.stat(file_name_in).st_mtime
+    prep_file_exists = False
+    if os.path.isfile(file_name_out):
+        timestamp_template_prep = os.stat(file_name_out).st_mtime
+        prep_file_exists = True
+    if (not prep_file_exists) or timestamp_template_prep < timestamp_template:
+        doc_in = Document(docx=file_name_in)
+        paras=doc_in.paragraphs
+        i = 0
+        for para in paras:
+            paraText=""
+            runs = para.runs
+            for run in runs:
+                txt = run.text
+                if isControlText(txt):
+                    run.text = "[##]"+txt
+        doc_in.save(file_name_out)
+
+def postprocess_docx(file_name_in):
+    doc_in = Document(docx=file_name_in)
+    for p in doc_in.paragraphs:
+        if p.text.strip()=="[##]":
+            removePara(p)
+    doc_in.save(file_name_in)
 
 
 def substituteVariablesDocx(file_name_in, fileNameOut, subs):
@@ -272,7 +310,8 @@ def merge_docx_header_footer(full_local_filename, subs, xmlname):
     f = open(docx_filename, 'rb')
     zip = zipfile.ZipFile(f)
     xml_content = zip.read('word/'+xmlname+'.xml')
-#    xml_content = xml_content.decode("ISO-8859-1")
+ #   xml_content = xml_content.decode("ISO-8859-1")
+###
     xml_content = xml_content.decode("UTF-8")
     try:
         xml_content = substituteVariablesPlainString(xml_content, subs)
@@ -295,15 +334,19 @@ def docx_subfile(zip, tmp_dir, subs, filename):
     try:
         xml_content = zip.read(filename)
         xml_content = xml_content.decode("UTF-8")
+        #xml_content = xml_content.decode("ISO-8859-1")
         xml_content = preprocess(xml_content)
         xml_content = xml_content.replace("&quot;", '"')
-        xml_content = substituteVariablesPlainString(xml_content, subs)
-        with io.open(os.path.join(tmp_dir,filename), 'w', encoding="utf8") as f:
-            f.write(xml_content)
+        xml_content_subs = str(substituteVariablesPlainString(xml_content, subs))
+        with io.open(os.path.join(tmp_dir,filename), 'w', encoding="UTF-8") as f:
+#        with io.open(os.path.join(tmp_dir,filename), 'w', encoding="UTF-8") as f:
+            f.write(xml_content_subs)
     except KeyError:
         pass
 
 def substituteVariablesDocx_direct(file_name_in, file_name_out, subs):
+
+
     docx_filename = file_name_in
     f = open(docx_filename, 'rb')
     zip = zipfile.ZipFile(f)
@@ -315,15 +358,12 @@ def substituteVariablesDocx_direct(file_name_in, file_name_out, subs):
     for filename in filenames:
         if filename in candidates:
             docx_subfile(zip, tmp_dir, subs, filename)
-#    docx_subfile(zip, tmp_dir, "header1")
-#    docx_subfile(zip, tmp_dir, "header2")
-#    docx_subfile(zip, tmp_dir, "footer1")
-#    docx_subfile(zip, tmp_dir, "footer2")
 
     with zipfile.ZipFile(file_name_out, "w") as docx:
         for filename in filenames:
             docx.write(os.path.join(tmp_dir,filename), filename)
     shutil.rmtree(tmp_dir)
+
     return({"file":file_name_out})
 
 def get_docx_paras(zip):
@@ -407,7 +447,6 @@ def copy_docx_media(tmp_dir_from, tmp_dir_to, filenames_from, filenames_to, rel_
             new_rel_el = etree.Element("Relationship", attrib={"Id":"".join(["rId", str(max_Rel_id+1)]), 
                 "Type":rel_0.attrib["Type"].replace("settings","image"), 
                 "Target":"/".join(["media",os.path.split(filename)[1]])})
-            print(">>rel",os.path.split(filename)[1],"".join(["rId", str(max_Rel_id+1)]))
             rel_elements.append(new_rel_el)
             max_Rel_id+=1
     return filenames_to, rel_elements, renames
@@ -471,7 +510,6 @@ def combine_docx_direct(file_names_to_combine, file_name_out):
                 for element in sub_xml_content["rel_dom"]:
                     if element.attrib["Target"]=="media/"+rename[0]:
                         old_rel = element.attrib["Id"]
-                print(">>replacing", old_rel, ">", new_rel)
                 sub_xml_paras = sub_xml_paras.replace(old_rel,new_rel)
 #                rel_renames.append((old_rel, new_rel))
 

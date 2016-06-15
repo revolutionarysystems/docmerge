@@ -6,6 +6,20 @@
                 {% for widget in widgets %}
                 <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
+                    {% if widget.title == "Merge Requests" %}
+                        <p>In previous day: {{ widget.data.nrequests_1d }}</p>
+                        <p>In previous 7 days: {{ widget.data.nrequests_7d }}</p>
+                        <p>In previous 30 days: {{ widget.data.nrequests_30d }}</p>
+                        {% if widget.latest_request %}
+                            <h4>Latest Request</h4>
+                            <li><a href="../file/?name={{ widget.latest_request.name }}&path=requests" target="_blank">File</a> {{ widget.latest_request.mtime }} {{ widget.latest_request.name }}</li>
+                        {% endif %}    
+                    {% endif %}    
+                    {% if widget.title == "Service Status" %}
+                        <h4>Status</h4>
+                        <li>{{ widget.status }}</li>
+                        <li>{{ widget.reason }}</li>
+                    {% endif %}    
                 </div>
                 {% endfor %}
                 <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">

@@ -165,7 +165,6 @@ def ls_list(pathlist, parent='root', create_if_absent=False):
         next_level = folder_item(parent, pathlist[0])
     except FileNotFoundError as ex:
         if create_if_absent:
-            print(">>Try to create",  parent, pathlist[0])
             next_level = create_folder(parent, pathlist[0])
         else:
             raise ex   
@@ -252,5 +251,4 @@ def gd_build_folders():
             ]
     for subfolder in folders:
         path = gd_path_equivalent(subfolder) 
-        print(path)
         folder(path, create_if_absent=True)  

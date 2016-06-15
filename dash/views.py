@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from .forms import MergeForm, SimpleMergeForm, RefreshForm, UploadZipForm
 from .models import MergeJob, RefreshJob
-from merge.resource_utils import combined_folder_files as folder_files, local_folder_files
+from merge.resource_utils import combined_folder_files as folder_files, local_folder_files, count_local_files, process_local_files
 from merge.views import merge_raw_wrapped,getParamDefault 
 from merge.config import install_display_name, remote_library
 from merge.gd_service import GDriveAccessException, initialise as library_initialise, get_credentials_ask, get_credentials_store
@@ -14,12 +14,38 @@ from merge.gd_resource_utils import gd_build_folders
 
 @login_required 
 def dash(request):
-    print(request.user)
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     widgets = []
-    widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-hand-up"})
-    widgets.append({"title":"Service Status", "glyph":"glyphicon glyphicon-info-sign"})
+    nrequests_1d = count_local_files("requests", days_ago=0, days_recent=1)
+    nrequests_7d = count_local_files("requests", days_ago=0, days_recent=7)
+    nrequests_30d = count_local_files("requests", days_ago=0, days_recent=30)
+    recent_requests = local_folder_files("requests", days_recent=1)
+    recent_requests = sorted(recent_requests, key=lambda k: k['mtime'])
+    if recent_requests:
+        latest_request = recent_requests[-1] 
+    else:
+        latest_request = None
+    widgets.append({"title":"Merge Requests", 
+        "data": {"nrequests_1d": nrequests_1d, "nrequests_7d": nrequests_7d, "nrequests_30d": nrequests_30d},
+        "glyph":"glyphicon glyphicon-hand-up",
+        "latest_request":latest_request})
+    status = "BLACK" # No info
+    reason = "No recent requests"
+    if recent_requests:
+        status = "GREEN"
+        reason = "No recent failures"
+        for ep_request in recent_requests[-10:]:
+            if ep_request["name"].find(".fail.")>=0:
+                status = "RED"
+                reason = "All of the most recent requests have failed"
+            else:
+                if status != "GREEN":
+                    status = "AMBER"
+                    reason = "Some recent requests have failed"
+
+
+    widgets.append({"title":"Service Status", "glyph":"glyphicon glyphicon-info-sign", "status":status, "reason":reason})
     #Todo protect against SSLError AND BrokenPipeError
     #files = {"files":local_folder_files("templates",fields="files(id, name, mimeType, trashed)")}
     quickTestJob=MergeJob(
@@ -192,7 +218,9 @@ def library_link(request):
 @login_required 
 def archive(request):
     widgets = []
-    widgets.append({"title":"Merge Requests", "glyph":"glyphicon glyphicon-hand-up"})
+    files = local_folder_files("requests",fields="files(id, name, mimeType, modifiedTime)")
+    files = sorted(files, key=lambda k: k['mtime'], reverse=True) 
+    widgets.append({"title":"Merge Requests", "files":files[:10], "path":"requests", "glyph":"glyphicon glyphicon-hand-up"})
     files = local_folder_files("output",fields="files(id, name, mimeType, modifiedTime)")
     files = sorted(files, key=lambda k: k['mtime'], reverse=True) 
     widgets.append({"title":"Documents", "files":files, "glyph":"glyphicon glyphicon-file"})

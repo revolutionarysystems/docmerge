@@ -27,7 +27,7 @@
                             {% if file.isdir %}
                                 <strong>
                                 <td class="libcell" colspan=4>
-                                {% if file.name = ".." %}
+                                {% if file.name == ".." %}
                                     {% if file.parent.folder %}
                                         <a href="../library_folder/?root={{ file.parent.root}}&folders={{ file.parent.folder }}" >Open Parent</a> 
                                     {% else %}

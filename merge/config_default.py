@@ -5,3 +5,4 @@ local_root ="merge"
 email_credentials = {"username":"", "password":"", "server":""}
 email_default_recipient=""
 remote_library = True
+extend_path = True
