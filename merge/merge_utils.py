@@ -555,5 +555,11 @@ def shellCommand(command):
 
 def convert_pdf(filename_in, filename_out, outdir = "."):
     command = "soffice --headless --convert-to pdf "+filename_in+" --outdir "+outdir
-    response = shellCommand("soffice --headless --convert-to pdf "+filename_in+" --outdir "+outdir)
+    response = shellCommand(command)
     return {"file":filename_out, "response":response, "command": command}
+
+def convert_pdf_abiword(filename_in, filename_out, outdir = "."):
+    command = "abiword --to=pdf "+filename_in+" --to-name="+filename_out
+    response = shellCommand(command)
+    return {"file":filename_out, "response":response, "command": command}
+

@@ -6,10 +6,11 @@
 #
 import os
 import json
+import time
 from .gd_resource_utils import (folder_file, folder, uploadAsGoogleDoc, uploadFile, 
     exportFile, getFile, file_content_as)
 from .merge_utils import (substituteVariablesDocx, substituteVariablesDocx_direct, substituteVariablesPlain,
-    convert_markdown, convert_pdf, email_file, 
+    convert_markdown, convert_pdf, convert_pdf_abiword, email_file, 
     combine_docx, combine_docx_direct, extract_regex_matches_docx,
     substituteVariablesPlainString, merge_docx_footer, merge_docx_header, preprocess_docx_template, postprocess_docx)
 from .resource_utils import (push_local_txt, push_local_txt_fullname)
@@ -233,9 +234,20 @@ def process_markdown(step, localMergedFileName):
 
 # convert to pdf
 def process_pdf(step, localMergedFileName, localMergedFileNameOnly, subs):
+    flavour = "soffice"
+    try:
+        if step["flavour"]=="abiword":
+            flavour = "abiword"
+    except KeyError:
+        pass
+
     output_dir = localMergedFileName[:localMergedFileName.rfind("/")]
-    outcome = convert_pdf(localMergedFileName+step["local_ext"], localMergedFileName+".pdf", outdir=output_dir)  
-    outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".pdf"
+    
+    if flavour == "abiword":
+        outcome = convert_pdf_abiword(localMergedFileName+step["local_ext"], localMergedFileName+".pdf", outdir=output_dir)  
+    else:
+        outcome = convert_pdf(localMergedFileName+step["local_ext"], localMergedFileName+".pdf", outdir=output_dir)  
+    outcome["link"] = subs["site"]+"/file/?name="+localMergedFileNameOnly+".pdf"
     return outcome
 
 
@@ -304,6 +316,7 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
     doc_id = None
     overall_outcome["success"]=True
     overall_outcome["messages"]=[]
+    step_time = time.time()
     for step in flow:
         try:
             try:
@@ -361,8 +374,9 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
             if step["step"]=="extract":
                 outcome = process_extract(step, localMergedFileName, subs)
 
-
-            outcomes.append({"step":step["name"], "success": True, "outcome":outcome})
+            step_end_time = time.time()
+            outcomes.append({"step":step["name"], "success": True, "outcome":outcome, "time": step_end_time-step_time})
+            step_time = step_end_time
             for key in outcome.keys():
                 if key in ["link", "id", "mimeType"]:
                     overall_outcome[key]=outcome[key]
@@ -374,7 +388,7 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
             if not("critical" in step.keys() and step["critical"]=="false"):
                 break
 #                raise ex
- 
+        
 #    overall_outcome["success"]=True
     overall_outcome["steps"]=outcomes
 

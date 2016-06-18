@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'', include('dash.urls')),
     url(r'', include('merge.urls')),
+    url(r'', include('tokenapi.urls')),
 ]

@@ -12,6 +12,7 @@ from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir
 from traceback import format_exc
 from dash.forms import UploadZipForm
 from .config import remote_library, gdrive_root, local_root
+from tokenapi.decorators import token_required
 
 def getParamDefault(params, key, default, preserve_plus=False):
     try:
@@ -139,7 +140,8 @@ def merge_raw_wrapped(request, method="POST"):
     except Exception as ex:
         return error_response(ex)
 
-@csrf_exempt
+#@csrf_exempt
+@token_required
 def merge(request):
     return JsonResponse(merge_raw_wrapped(request))
     

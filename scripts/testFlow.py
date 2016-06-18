@@ -206,7 +206,7 @@ ECVSL = {
 	"template_subfolder":"/Contracts",
 	"template_file":"SLS.json",
 	"payload":None,
-	"uniq":"1.1",
+	"uniq":"1.2",
 	"expected_outcomes": {}
 }
 
@@ -331,6 +331,7 @@ def test_flow(test_case):
 	#assert (len(outcomes["steps"])==(len(test_case["expected_outcomes"]["steps"])))
 	for step in outcomes["steps"]:
 		print(step["step"])
+		print(step["time"])
 		print(step["outcome"])
 	print(outcomes["success"])
 	print(outcomes["messages"])

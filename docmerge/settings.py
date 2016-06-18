@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'dash',
     'merge',
     'django_extensions',
+    'tokenapi',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -111,6 +112,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+AUTHENTICATION_BACKENDS = [
+    'tokenapi.backends.TokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+TOKEN_TIMEOUT_DAYS = 10000
 
 #Site-wide password protection
 PASSWORD_PROTECT= False
