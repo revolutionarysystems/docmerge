@@ -4,9 +4,9 @@ import pytz
 import iso8601
 import datetime
 import zipfile
-from .config import install_name, remote_library, gdrive_root, local_root,extend_path
+from .config import install_name, remote_library, gdrive_root, local_root, extend_path
 from .gd_resource_utils import (folder, folder_contents, exportFile, getFile, folder_item, file_content_as, 
-        gd_folder_files, gd_path_equivalent, gd_folder_files, gd_folder_item)
+        gd_folder_files, gd_path_equivalent, gd_folder_files, gd_folder_item, uploadAsGoogleDoc, uploadFile, gd_mimetype_equivalent)
 
 ## Local Resource management
 
@@ -32,12 +32,9 @@ def get_xml_dec(content):
     else:
         return content
 
-def get_local_dir(local):
+def get_local_dir(local, config):
     cwd = get_working_dir()
-    if (cwd.find("home")>=0):  
-        local_d = os.path.join(cwd, local_root, local)
-    else:  
-        local_d = os.path.join(cwd, local_root, local)
+    local_d = os.path.join(cwd, local_root, config.tenant, local)
 
 #        local_d = "C:\\Users\\Andrew\\Documents\\GitHub\\"+install_name+"\\"+local_root+"\\"+local
     return local_d
@@ -45,16 +42,16 @@ def get_local_dir(local):
 def get_output_dir():
     return get_local_dir("output")
 
-def get_local_txt_content(cwd, data_folder, data_file):
+def get_local_txt_content(cwd, config, data_folder, data_file):
     try:
-        full_file_path = os.path.join(cwd, local_root, data_folder, data_file)
-        with open(cwd+"/"+local_root+"/"+data_folder+"/"+data_file, "r") as file:
+        full_file_path = os.path.join(get_local_dir(data_folder, config), data_file)
+        with open(full_file_path, "r") as file:
             return  file.read()
     except FileNotFoundError:
         return None
 
-def push_local_txt(cwd, data_folder, data_file, payload):
-    full_file_path = os.path.join(cwd, local_root, data_folder, data_file)
+def push_local_txt(cwd, config, data_folder, data_file, payload):
+    full_file_path = os.path.join(get_local_dir(data_folder, config), data_file)
     return push_local_txt_fullname(full_file_path, payload)
 
 def push_local_txt_fullname(full_file_path, payload):
@@ -65,12 +62,13 @@ def push_local_txt_fullname(full_file_path, payload):
     return full_file_path
 
 def del_local(cwd, data_folder, data_file):
-    full_file_path = os.path.join(cwd, local_root, data_folder, data_file)
+    full_file_path = os.path.join(get_local_dir(data_folder, config), data_file)
     os.remove(full_file_path)
 
-def local_folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents", days_ago=0, days_recent=365):
+def local_folder_files(config, path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents", days_ago=0, days_recent=365):
     cwd = get_working_dir()
-    full_path = os.path.join(cwd, local_root, path)
+#    full_path = os.path.join(cwd, local_root, path)
+    full_path = get_local_dir(path, config)
     files = os.listdir(full_path)
     now = time.time()
     response = []
@@ -79,9 +77,6 @@ def local_folder_files(path, parent='root', mimeType='*', fields="nextPageToken,
         timestamp = os.stat(full).st_mtime
         if timestamp < now - days_ago * 86400 and timestamp >= now - days_recent * 86400:
             ext = os.path.splitext(file)[-1].lower()
-    #        print(file)
-    #        print(os.path.isfile(os.path.join(full_path, file)))
-    #        print(os.path.isdir(os.path.join(full_path, file)))
             response.append({
                 "name":file, 
                 "ext":ext, 
@@ -90,8 +85,9 @@ def local_folder_files(path, parent='root', mimeType='*', fields="nextPageToken,
     return response
 
 
-def process_local_files(subfolder, days_ago=7, days_recent=365, action="report"):
-    path = os.path.join(get_working_dir(), local_root, subfolder)
+def process_local_files(config, subfolder, days_ago=7, days_recent=365, action="report"):
+    path = get_local_dir(subfolder, config)
+    #path = os.path.join(get_working_dir(), local_root, subfolder)
     now = time.time()
     to_process = []
     for f in os.listdir(path):
@@ -103,17 +99,50 @@ def process_local_files(subfolder, days_ago=7, days_recent=365, action="report")
                     os.remove(full)
     return to_process
 
-def count_local_files(subfolder, days_ago=7, days_recent=365):
-    files = process_local_files(subfolder, days_ago=days_ago, days_recent=days_recent, action="report")
+def count_local_files(config, subfolder, days_ago=7, days_recent=365):
+    files = process_local_files(config, subfolder, days_ago=days_ago, days_recent=days_recent, action="report")
     return(len(files))
 
+def gd_populate_folders(config):
+    folders = [
+            "templates", 
+            "templates/Sandbox", 
+            "templates/Demo Examples", 
+            "transforms",
+            "flows",
+            "branding",
+            "test_data",
+            "output",
+            ]
+    for subfolder in folders:
+        if subfolder != "output":
+            path = gd_path_equivalent(config, subfolder) 
+            fldr = folder(config, path, create_if_absent=True)      
+            files = process_local_files(config, subfolder, days_ago=0, days_recent=365, action="report")
+            for file in files:
+                if file.find("_.docx")<0: #No preprocess files
+                    filepath = os.path.join(get_local_dir(subfolder, config), file)
+                    barename, ext = os.path.splitext(file)
+                    if ext == ".docx": 
+                        upload_name = barename
+                    else:
+                        upload_name = file
+                    try:
+                        exists = folder_item(config, fldr["id"], upload_name, mimeType="*")
+                    except FileNotFoundError:
+                        exists = False
+                    if not exists:
+                        if ext == ".docx": 
+                            uploadAsGoogleDoc(config, filepath, fldr["id"], gd_mimetype_equivalent(ext), name=upload_name)
+                        else:
+                            uploadFile(config, filepath, fldr["id"], gd_mimetype_equivalent(ext), name=upload_name)
 
 
 # Remote <-> Local methods
 
 
-def combined_folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)"):
-    local_files = local_folder_files(path, parent='root', mimeType='*', fields=fields)
+def combined_folder_files(config, path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)"):
+    local_files = local_folder_files(config, path, parent='root', mimeType='*', fields=fields)
     combined_files = {}
     response = []
     for file in local_files:
@@ -124,7 +153,9 @@ def combined_folder_files(path, parent='root', mimeType='*', fields="nextPageTok
             file["is_remote"]="X"
         combined_files[file["name"]]=file
     if remote_library:
-        remote_files = gd_folder_files(gd_path_equivalent(path), parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)")
+        if path[-1] == "/":
+            path = path[:-1]
+        remote_files = gd_folder_files(config, gd_path_equivalent(config, path), parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)")
         for file in remote_files:
             if file["name"] in combined_files.keys():
                 combined_files[file["name"]]["mimeType"]=file["mimeType"]
@@ -143,55 +174,57 @@ def combined_folder_files(path, parent='root', mimeType='*', fields="nextPageTok
             combined_files[file["name"]]["isdir"]=file["mimeType"]=="application/vnd.google-apps.folder"
             combined_files[file["name"]]["ext"] = os.path.splitext(file["name"])[-1].lower()
     for file in combined_files.values():
-        response.append(file)
+        if file["name"].find("_.docx")<0: # No "hidden" files
+            response.append(file)
     return response
 
 
-def refresh_files(path, local_dir, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
-    foldr = folder(path, parent)
-    files = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+def refresh_files(config, path, local_dir, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
+    foldr = folder(config, path, parent)
+    files = folder_contents(config, foldr["id"], mimeType=mimeType, fields=fields)
     files_info=[]
     for file in files:
+        print(file)
         doc_id =file["id"]
         cwd = get_working_dir()
-        localFileName = os.path.join(cwd, local_root, local_dir, file["name"])
+        localFileName = os.path.join(get_local_dir(local_dir, config), file["name"])
+#        localFileName = os.path.join(cwd, local_root, local_dir, file["name"])
         if file["mimeType"] == 'application/vnd.google-apps.folder':
             # create local 
-            print(file)
-            print(localFileName)
             if not os.path.exists(localFileName):
                 os.makedirs(localFileName) #actually a directory
             files_info.append({"folder": localFileName})
         elif file["mimeType"] == 'application/vnd.google-apps.document':
             if localFileName.find(".") < 0: # no extension
-                files_info.append(exportFile(doc_id, localFileName+".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                files_info.append(exportFile(config, doc_id, localFileName+".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
             else:
-                files_info.append(exportFile(doc_id, localFileName, "text/plain"))
+                files_info.append(exportFile(config, doc_id, localFileName, "text/plain"))
         else:
-            files_info.append(getFile(doc_id, localFileName, file["mimeType"]))
+            files_info.append(getFile(config, doc_id, localFileName, file["mimeType"]))
     return files_info
 
 
     
-def folder_file(path, name, parent='root', mimeType='*'):
-    foldr = folder(path, parent)
-    return folder_item(foldr["id"], name, mimeType=mimeType)
+def folder_file(config, path, name, parent='root', mimeType='*'):
+    foldr = folder(config, path, parent)
+    return folder_item(config, foldr["id"], name, mimeType=mimeType)
 
-def get_remote_txt_content(data_folder, data_file):
-    data_doc_id = folder_file(data_folder, data_file)["id"]
-    doc_txt = file_content_as(data_doc_id)
+def get_remote_txt_content(config, data_folder, data_file):
+    data_doc_id = folder_file(config, data_folder, data_file)["id"]
+    doc_txt = file_content_as(config, data_doc_id)
     return doc_txt
 
-def get_txt_content(local_data_folder, remote_data_folder, data_file):
-#    print("looking locally")
-    content = get_local_txt_content(get_working_dir(), local_data_folder, data_file)
+def get_txt_content(config, local_data_folder, remote_data_folder, data_file):
+    content = get_local_txt_content(get_working_dir(), config, local_data_folder, data_file)
     if content == None:
-#        print("looking remotely")
-        content = get_remote_txt_content(remote_data_folder, data_file)
+        if remote_library:
+            content = get_remote_txt_content(config, remote_data_folder, data_file)
+        else:
+            raise FileNotFoundError("'"+data_file+"' was not found locally. No remote library")
     return content
 
-def get_xml_content(local_data_folder, remote_data_folder, data_file):
-    content = get_txt_content(local_data_folder, remote_data_folder, data_file)
+def get_xml_content(config, local_data_folder, remote_data_folder, data_file):
+    content = get_txt_content(config, local_data_folder, remote_data_folder, data_file)
     if type(content) is bytes:
         content = content.decode("UTF-8")
     return strip_xml_dec(content)
@@ -207,11 +240,11 @@ def zip_local_dirs(path, zip_file_name, selected_subdirs = ["templates", "flows"
     ziph.close()
     return zip_name
 
-def remote_link(filename, subfolder):
-    filepath = get_local_dir(subfolder)
-    remote = gd_path_equivalent(subfolder)
-    remote_folder = folder(remote)
-    file_details = gd_folder_item(remote, filename)
+def remote_link(config, filename, subfolder):
+    filepath = get_local_dir(subfolder, config)
+    remote = gd_path_equivalent(config, subfolder)
+    remote_folder = folder(config, remote)
+    file_details = gd_folder_item(config, remote, filename)
     "https://docs.google.com/document/d/1S8gJeCD_vDjbM2JKk8Ojkt-6Uj_fdn_NQPdzHeQnn0Y/edit?usp=sharing"
 #    return "https://drive.google.com/open?id={}".format(file_details["id"])
     return "https://drive.google.com/file/d/{}/view?usp=sharing".format(file_details["id"])

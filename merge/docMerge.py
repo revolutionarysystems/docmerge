@@ -18,9 +18,9 @@ from .config import email_default_recipient
 
 cwd = get_working_dir()
 cwd = cwd.replace("\\", "/")
-def mergeDocument(flow_folder, flow, template_folder, template_subfolder, template_name, 
+def mergeDocument(config, flow_folder, flow, template_folder, template_subfolder, template_name, 
 	                uniq, subs, output_folder, output_subfolder, email=email_default_recipient, payload="", require_template=True):
-    response = process_flow(cwd, get_flow(cwd, "flows", flow_folder, flow), template_folder, template_subfolder,
+    response = process_flow(cwd, config, get_flow(cwd, config, "flows", flow_folder, flow), template_folder, template_subfolder,
     			template_name, uniq, subs, output_folder, output_subfolder, email, email_credentials, payload=payload, require_template=require_template)
     return response
 

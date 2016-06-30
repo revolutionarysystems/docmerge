@@ -11,15 +11,27 @@ class MergeForm(forms.ModelForm):
         	'xform_folder', 'xform_file',
         	)                
 
+class TestNavForm(forms.ModelForm):
+    class Meta:
+        model = MergeJob
+        fields = (
+            'template_subfolder',
+            )                
+
 class SimpleMergeForm(forms.ModelForm):
     class Meta:
         model = MergeJob
         fields = (
-        	'template_subfolder', 'template', 'flow', 'identifier',
-        	'data_file', 'data_root',
-        	'branding_file',
-        	'xform_file',
-        	)                
+            'template_subfolder',
+            'template', 'flow',
+            'data_file', 'data_root',
+            )                
+#        fields = (
+#        	'template_subfolder', 'template', 'flow', 'identifier',
+#        	'data_file', 'data_root',
+#        	'branding_file',
+#        	'xform_file',
+#        	)                
 
 class RefreshForm(forms.ModelForm):
     class Meta:

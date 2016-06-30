@@ -1,7 +1,9 @@
 from merge.flow import *
 from merge.merge_utils import *
 from merge.xml4doc import *
+from merge.models import ClientConfig
 import string
+from merge.gd_service import ensure_initialised
 
 creds = {"username":"andrewcaelliott@gmail.com", "password":"napier", "server":"smtp.gmail.com:587"}
 
@@ -282,16 +284,29 @@ ITABN_Summary = {
 	"expected_outcomes": {}
 }
 
+Library = {
+	"data_file":"sample.xml",
+	"xform_file":None,
+	"flow_file":"md.flo",
+	"template_subfolder":"/EP Documents",
+	"template_file":"library_page.md",
+	"payload":None,
+	"uniq":"1",
+	"expected_outcomes": {}
+}
+
+
 EPDemo = {
 	"data_file":"sample.xml",
 	"xform_file":None,
-	"flow_file":"docx.flo",
-	"template_subfolder":None,
+	"flow_file":"docx_2.flo",
+	"template_subfolder":"/Demo Examples",
 	"template_file":"Sample Document",
 	"payload":None,
-	"uniq":None,
+	"uniq":"122",
 	"expected_outcomes": {}
 }
+
 
 
 def get(dct, item):
@@ -315,17 +330,20 @@ def test_data(test_case):
 
 
 def test_flow(test_case):
-	subs = getData(remote_data_folder = "/Doc Merge/Test Data", local_data_folder = "test_data", 
+	config = ClientConfig()
+	config.tenant="ECV"
+	ensure_initialised(config)
+	subs = getData(config, remote_data_folder = "/Echo Publish Demo/circus/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], payload_type=get(test_case,"payload_type"), 
-	                   params=get(test_case,"params"), xform_folder = "/Doc Merge/Transforms", 
+	                   params=get(test_case,"params"), xform_folder = "/Echo Publish Demo/circus/Transforms", 
 	                   xform_file=test_case["xform_file"])["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
 	subs["site"]="localhost:8001"
 	cwd = get_working_dir()
-	flow = get_flow(cwd,"flows", "/Doc Merge/Flows", test_case["flow_file"])
-	outcomes = process_flow(cwd, flow, "/Doc Merge/Templates", 
+	flow = get_flow(cwd, config, "flows", "/Echo Publish Demo/circus/Flows", test_case["flow_file"])
+	outcomes = process_flow(cwd, config, flow, "/Echo Publish Demo/circus/Templates", 
 		test_case["template_subfolder"], 
 		test_case["template_file"], 
-		test_case["uniq"], subs, "/Doc Merge/Output", None, None, None, 
+		test_case["uniq"], subs, "/Echo Publish Demo/circus/Output", None, None, None, 
 		payload=test_case["payload"])
 #	assert (outcomes["success"]==(test_case["expected_outcomes"]["success"]))
 	#assert (len(outcomes["steps"])==(len(test_case["expected_outcomes"]["steps"])))
@@ -335,14 +353,20 @@ def test_flow(test_case):
 		print(step["outcome"])
 	print(outcomes["success"])
 	print(outcomes["messages"])
+	try:
+		print(outcomes["traceback"])
+	except:
+		pass
 
 def run():
 #	test_flow(compound_TA)	test_flow(ECVInv)
 
-#	test_flow(Strong)
-#	test_flow(ECVInv)
-	test_flow(ECVSL)
+	test_flow(Strong)
+#	test_flow(Library)
+#	test_flow(ECVSL)
 #	test_flow(plain_TA)
 #	test_flow(plain_TA_S7)
 #	test_data(EPDemo)
+
+
 

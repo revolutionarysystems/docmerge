@@ -8,9 +8,11 @@
                 <li><a href = "{{ authuri }}">Click here to link to Google Drive</a></li>
             </ul>
             {% endif %}
-            <div class="row widget">
+            <!--div class="row widget"-->
+            <div class="grid" data-masonry='{ "itemSelector": ".grid-item", "columnWidth": ".grid-item"}'>
                     {% for widget in widgets %}
-                        <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                    <div class="grid-item widget">
+                        <!--div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12"-->
                             <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
                     {% if widget.refreshForm %}
                     <form id = "quickTest" method="GET" class="query-form" action="/refresh/" target="_blank">

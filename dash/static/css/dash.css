@@ -209,3 +209,27 @@ div.content.container{
     padding-bottom: 1rem;
     padding-right: 1rem;
 }
+
+
+.content .grid-item {
+    margin-bottom: 1rem;
+    padding-right: 1rem;
+    width: 50%;
+}
+/*
+.content .grid-item h1,.content .grid-item-doubled h1 {
+    margin-top: 0;
+    font-size: 28px;
+}
+
+
+*/
+.content div .grid-item {
+    background-color: rgba(170,148,57,0.1);
+    padding: 1rem;
+}
+/*
+.content .grid-item label, .content .grid-item-doubled label {
+    width: 7em;
+}
+*/

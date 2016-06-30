@@ -5,40 +5,10 @@ from time import sleep
 from apiclient.http import MediaFileUpload
 from apiclient import errors
 from apiclient.errors import HttpError
-from .config import install_name, gdrive_root
+from .config import install_name, gdrive_root, remote_library
 from .gd_service import get_service, protected_execute
+from docmerge.settings import MULTI_TENANTED
 
-
-"""class GDriveAccessException(Exception):
-    def __init__(self,*args,**kwargs):
-        Exception.__init__(self,*args,**kwargs)
-
-
-
-def get_credentials():
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials', install_name)
-    if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir, 'drive-echopublish.json')
-    print("Looking for credentials at:",credential_path)
-
-    store = oauth2client.file.Storage(credential_path)
-    credentials = store.get()
-    if not credentials or credentials.invalid:
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        try:
-            if flags:
-                credentials = tools.run_flow(flow, store, flags)
-            else: # Needed only for compatibility with Python 2.6
-                credentials = tools.run(flow, store)
-            print('Storing credentials to ' + credential_path)
-        except Exception as e:
-            print("No credentials at:", credential_path)
-    return credentials
-
-"""
 
 def file_content(service, file_id):
   try:
@@ -67,12 +37,12 @@ def file_get(service, file_id):
     print(error.__dict__)
     return ""
 
-def file_content_as(doc_id):
-    content = file_get(get_service(), doc_id)
+def file_content_as(config, doc_id):
+    content = file_get(get_service(config), doc_id)
     return content
 
-def getFile(doc_id, fileName, mimetype):
-    content_doc = file_get(get_service(), doc_id)
+def getFile(config, doc_id, fileName, mimetype):
+    content_doc = file_get(get_service(config), doc_id)
     try:
         outfile = open(fileName,"wb")
         outfile.write(content_doc)
@@ -84,8 +54,8 @@ def getFile(doc_id, fileName, mimetype):
 
 
 
-def downloadFile(doc_id, fileName, mimetype):
-    content_doc = file_export(get_service(), doc_id, mimetype)
+def downloadFile(config, doc_id, fileName, mimetype):
+    content_doc = file_export(get_service(config), doc_id, mimetype)
     try:
         outfile = open(fileName,"wb")
         outfile.write(content_doc)
@@ -95,10 +65,10 @@ def downloadFile(doc_id, fileName, mimetype):
     outfile.close()
     return {"file":fileName}
 
-def exportFile(doc_id, fileName, mimetype):
+def exportFile(config, doc_id, fileName, mimetype):
     #print_file_metadata(service, doc_id)
     #content = file_content(service, docId)
-    content_doc = file_export(get_service(), doc_id, mimetype)
+    content_doc = file_export(get_service(config), doc_id, mimetype)
     try:
         outfile = open(fileName,"wb")
         outfile.write(content_doc)
@@ -108,117 +78,169 @@ def exportFile(doc_id, fileName, mimetype):
     outfile.close()
     return {"file":fileName}
 
-def uploadAsGoogleDoc(fileName, folder, mimeType):
+def uploadAsGoogleDoc(config, fileName, folder, mimeType, name=None):
     body ={}
-    body["name"]=fileName
+    if name==None:
+        body["name"]=fileName
+    else:
+        body["name"]=name
     body["parents"]=[folder]
     body["mimeType"]='application/vnd.google-apps.document'
     ##
     #'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     media = MediaFileUpload(fileName, mimetype=mimeType, resumable=True)
-    request = get_service().files().create(body=body, media_body=media)
+    request = get_service(config).files().create(body=body, media_body=media)
     upload = request.execute()
     return upload
 
-def uploadFile(fileName, folder, mimeType):
+def uploadFile(config, fileName, folder, mimeType, name=None):
     body ={}
-    body["name"]=fileName
+    if name==None:
+        body["name"]=fileName
+    else:
+        body["name"]=name
     body["parents"]=[folder]
     media = MediaFileUpload(fileName, mimetype=mimeType, resumable=True)
-    request = get_service().files().create(body=body, media_body=media)
+    request = get_service(config).files().create(body=body, media_body=media)
     upload = request.execute()
-    id =upload["id"]
-    body ={}
-    body["name"]=fileName.split("/")[-1]
-    update_request = get_service().files().update(fileId=id, body=body)
-    update = update_request.execute()
-    return update
+#    id =upload["id"]
+#    body ={}
+#    body["name"]=fileName.split("/")[-1]
+#    update_request = get_service(config).files().update(fileId=id, body=body)
+#    update = update_request.execute()
+    return upload
 
 
 #### Navigate Drive folders
 
-def folder_contents(parent, mimeType='application/vnd.google-apps.folder', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)"):
+def protected_execute_contents(config, query, fields, max_tries=4, wait_time=0.2):
+    results = []
+    for i in range(max_tries):
+        try:
+            results = get_service(config).files().list(fields=fields, q=query).execute()
+            break
+        except (HttpError, TypeError) as e  :
+            if i+1<max_tries:
+                sleep(wait_time)
+                wait_time = 2* wait_time
+            else:
+                raise e
+        except client.HttpAccessTokenRefreshError:
+            initialise(config)            
+    return results
+
+def folder_contents(config, parent, mimeType='application/vnd.google-apps.folder', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)"):
     if mimeType=="*":
         q = "trashed = false and '"+parent+"' in parents"
     else:
         q = "trashed = false and mimeType = '"+mimeType+"' and '"+parent+"' in parents" 
-    results = get_service().files().list(
-        fields=fields, q=q).execute()
+    ## Catch HttpError 403 - user rate limit - use protected method
+    results = protected_execute_contents(config, q, fields)
+
+    #results = get_service(config).files().list(fields=fields, q=q).execute()
     items = results.get('files', [])
     return items
 
 
-def folder_item(parent, name, mimeType='application/vnd.google-apps.folder', ):
-    if mimeType=="*":
-        q = "name = '"+name+"' and '"+parent+"' in parents"
+def folder_item(config, parent, name, mimeType='application/vnd.google-apps.folder', ):
+    if remote_library:
+        if mimeType=="*":
+            q = "name = '"+name+"' and '"+parent+"' in parents"
+        else:
+            q = "mimeType = '"+mimeType+"' and name = '"+name+"' and '"+parent+"' in parents"
+        results = protected_execute(config, q)
+        items = results.get('files', [])
+        try:
+            return items[0]
+        except:
+            raise FileNotFoundError("'"+name+"' was not found")
     else:
-        q = "mimeType = '"+mimeType+"' and name = '"+name+"' and '"+parent+"' in parents"
-    results = protected_execute(q)
-    items = results.get('files', [])
-    try:
-        return items[0]
-    except:
-        raise FileNotFoundError("'"+name+"' was not found")
+        raise FileNotFoundError("'"+name+"' was not found. No remote library")
 
-def ls_list(pathlist, parent='root', create_if_absent=False):
+def ls_list(config, pathlist, parent='root', create_if_absent=False):
     try:
-        next_level = folder_item(parent, pathlist[0])
+        next_level = folder_item(config, parent, pathlist[0])
     except FileNotFoundError as ex:
         if create_if_absent:
-            next_level = create_folder(parent, pathlist[0])
+            next_level = create_folder(config, parent, pathlist[0])
         else:
             raise ex   
     if len(pathlist)==1:
         return next_level
     else:
-        return ls_list(pathlist[1:], parent = next_level['id'], create_if_absent=create_if_absent)
+        return ls_list(config, pathlist[1:], parent = next_level['id'], create_if_absent=create_if_absent)
 
-def folder(path, parent='root', create_if_absent=False):
+def folder(config, path, parent='root', create_if_absent=False):
     path_parts = path.split("/")
     if parent == 'root':
         path_parts = path_parts[1:]
-    return ls_list(path_parts, parent=parent, create_if_absent=create_if_absent)
+    return ls_list(config, path_parts, parent=parent, create_if_absent=create_if_absent)
 
-def gd_folder_files(path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
-        foldr = folder(path, parent)
-        contents = folder_contents(foldr["id"], mimeType=mimeType, fields=fields)
+def gd_folder_files(config, path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
+        foldr = folder(config, path, parent)
+        contents = folder_contents(config, foldr["id"], mimeType=mimeType, fields=fields)
         return contents
 
-def gd_folder_item(path, filename, parent='root', mimeType='*'):
-        foldr = folder(path, parent)
-        contents = folder_item(foldr["id"], filename, mimeType=mimeType)
+def gd_folder_item(config, path, filename, parent='root', mimeType='*'):
+        foldr = folder(config, path, parent)
+        contents = folder_item(config, foldr["id"], filename, mimeType=mimeType)
         return contents
 
-def gd_path_equivalent(path):
+def gd_path_equivalent(config, path):
+    if MULTI_TENANTED:
+        tenant_extension = "/"+config.tenant
+    else:
+        tenant_extension = ""
     if path.lower().find("templates")==0:
-        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+"/Templates")
+        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+tenant_extension+"/Templates")
     elif path.lower().find("flows")==0:
-        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+"/Flows")
+        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+tenant_extension+"/Flows")
     elif path.lower().find("branding")==0:
-        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+"/Branding")
+        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+tenant_extension+"/Branding")
     elif path.lower().find("test_data")==0:
-        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+"/Test Data")
+        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+tenant_extension+"/Test Data")
     elif path.lower().find("transforms")==0:
-        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+"/Transforms")
+        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+tenant_extension+"/Transforms")
     elif path.lower().find("output")==0:
-        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+"/Output")
+        remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+tenant_extension+"/Output")
     else:
         remote_equiv = None    
     return remote_equiv
 
+def gd_mimetype_equivalent(ftype):
+    if ftype == "gdoc":
+        mimetype_equiv = 'application/vnd.google-apps.document'
+    elif ftype == ".docx":
+        mimetype_equiv = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    elif ftype == ".txt":
+        mimetype_equiv = "text/plain"
+    elif ftype == ".flo":
+        mimetype_equiv = "text/json"
+    elif ftype == ".xml":
+        mimetype_equiv = "text/xml"
+    elif ftype == ".json":
+        mimetype_equiv = "text/json"
+    elif ftype == ".pdf":
+        mimetype_equiv = "application/pdf"
+    elif ftype == ".zip":
+        mimetype_equiv = "application/zip"
+    else:
+        mimetype_equiv = "application/octet-stream"
+    return mimetype_equiv
 
-def create_folder(parent_id, name):
+
+def create_folder(config, parent_id, name):
     folder_metadata = {
       'name' : name,
       'parents' : [parent_id],
       'mimeType' : 'application/vnd.google-apps.folder'
     }
-    folder = get_service().files().create(body=folder_metadata, fields='id').execute()
+    folder = get_service(config).files().create(body=folder_metadata, fields='id').execute()
     return folder
 
-def folder_file(path, name, parent='root', mimeType='*'):
-    foldr = folder(path, parent)
-    return folder_item(foldr["id"], name, mimeType=mimeType)
+def folder_file(config, path, name, parent='root', mimeType='*'):
+    foldr = folder(config, path, parent)
+    return folder_item(config, foldr["id"], name, mimeType=mimeType)
     
 def get_remote_txt_content(data_folder, data_file):
     data_doc_id = folder_file(data_folder, data_file)["id"]
@@ -239,10 +261,11 @@ def get_xml_content(local_data_folder, remote_data_folder, data_file):
         content = content.decode("UTF-8")
     return strip_xml_dec(content)
 
-def gd_build_folders():
+def gd_build_folders(config):
     folders = [
             "templates", 
             "templates/Sandbox", 
+            "templates/Demo Examples", 
             "transforms",
             "flows",
             "branding",
@@ -250,5 +273,8 @@ def gd_build_folders():
             "output",
             ]
     for subfolder in folders:
-        path = gd_path_equivalent(subfolder) 
-        folder(path, create_if_absent=True)  
+        path = gd_path_equivalent(config, subfolder) 
+        folder(config, path, create_if_absent=True)  
+
+
+

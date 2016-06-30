@@ -16,6 +16,7 @@ urlpatterns = [
 #    url(r'^(?P<shelf>.+)/home/$', views.dash, name='home'),
     url(r'^test/$', views.test, name='test'),
 #    url(r'^(?P<shelf>.+)/home/$', views.dash, name='home'),
+    url(r'^test-nav/$', views.test, name='test'),
     url(r'^test-result-get/$', views.test_result_get, name='test_result_get'),
     url(r'^test-result-post/$', views.test_result_post, name='test_result_post'),
     url(r'^library/$', views.library, name='library'),

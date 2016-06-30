@@ -3,24 +3,39 @@ import os
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from .forms import MergeForm, SimpleMergeForm, RefreshForm, UploadZipForm
+from django import forms
+from .forms import MergeForm, SimpleMergeForm, RefreshForm, UploadZipForm, TestNavForm
 from .models import MergeJob, RefreshJob
-from merge.resource_utils import combined_folder_files as folder_files, local_folder_files, count_local_files, process_local_files
+from merge.resource_utils import combined_folder_files as folder_files, local_folder_files, count_local_files, process_local_files, gd_populate_folders
 from merge.views import merge_raw_wrapped,getParamDefault 
 from merge.config import install_display_name, remote_library
-from merge.gd_service import GDriveAccessException, initialise as library_initialise, get_credentials_ask, get_credentials_store
+from merge.gd_service import GDriveAccessException, initialise as library_initialise, get_credentials_ask, get_credentials_store, ensure_initialised
 from merge.gd_resource_utils import gd_build_folders
+from docmerge.settings import MULTI_TENANTED
+from merge.models import ClientConfig
+from merge.flow import json_serial
 
+
+def get_user_config(user):
+    config = ClientConfig()
+    if MULTI_TENANTED:
+        tenant = user.profile.company
+    else:
+        tenant = "."
+    config.tenant = tenant
+    ensure_initialised(config)    
+    return config
 
 @login_required 
 def dash(request):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     widgets = []
-    nrequests_1d = count_local_files("requests", days_ago=0, days_recent=1)
-    nrequests_7d = count_local_files("requests", days_ago=0, days_recent=7)
-    nrequests_30d = count_local_files("requests", days_ago=0, days_recent=30)
-    recent_requests = local_folder_files("requests", days_recent=1)
+    config = get_user_config(request.user)
+    nrequests_1d = count_local_files(config, "requests", days_ago=0, days_recent=1)
+    nrequests_7d = count_local_files(config, "requests", days_ago=0, days_recent=7)
+    nrequests_30d = count_local_files(config, "requests", days_ago=0, days_recent=30)
+    recent_requests = local_folder_files(config, "requests", days_recent=1)
     recent_requests = sorted(recent_requests, key=lambda k: k['mtime'])
     if recent_requests:
         latest_request = recent_requests[-1] 
@@ -46,90 +61,134 @@ def dash(request):
 
 
     widgets.append({"title":"Service Status", "glyph":"glyphicon glyphicon-info-sign", "status":status, "reason":reason})
-    #Todo protect against SSLError AND BrokenPipeError
-    #files = {"files":local_folder_files("templates",fields="files(id, name, mimeType, trashed)")}
+    files = {"files":local_folder_files(config, "templates/Demo Examples",fields="files(id, name, mimeType, trashed)")}
+    template_subfolder = "/Demo Examples"
     quickTestJob=MergeJob(
         template_folder="templates",
+        template_subfolder="Demo Examples",
         template="Library.md",
         output_folder="output",
         data_folder="test_data",
-#        payload = json.dumps(files),
-        payload = [{"test":"this"}],
+        data_root="",
+        payload = json.dumps(files, default = json_serial),
+#        payload = [{"test":"this"}],
         payload_type = "json",
         branding_folder="branding",
-        flow = "md.txt",
+        flow = "md.flo",
         )
     mergeForm = MergeForm(instance=quickTestJob)
+    mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
+    mergeForm.fields['flow'].choices=[("md.flo","md.flo")]
+    mergeForm.fields['data_root'].initial=""
+    mergeForm.fields['template'].choices=[("Library.md","Library.md")]
     return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm, "install_display_name": install_display_name})
+
+
+def clean_subfolder(subfolder):
+    if len(subfolder)>0 and subfolder[-1] =="/":
+        subfolder=subfolder[:-1]
+    elif subfolder != "" and subfolder.find("/")!=0:
+        subfolder = "/"+subfolder
+    return subfolder
+
+def make_test_forms(config, mergeJob, template_subfolder):
+        mergeForm = SimpleMergeForm(instance=mergeJob)
+        advMergeForm = MergeForm(instance=mergeJob)
+        navForm = TestNavForm(instance=mergeJob)
+        files = folder_files(config, "test_data")
+        files = sorted(files, key=lambda k: k['ext']+k['name']) 
+        mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
+        items = folder_files(config, "templates"+template_subfolder)
+        files = []
+        folders = []
+        if template_subfolder:
+            parent = template_subfolder[:template_subfolder.rfind("/")+1]
+            folders.append({"name":parent, "ext":".."})
+        for item in items:
+            if item["isdir"]:
+                item["name"]=template_subfolder+"/"+item["name"]
+                folders.append(item)
+            else:
+                files.append(item)
+        folders = sorted(folders, key=lambda k: k['ext']+k['name']) 
+        print("folders",folders)
+        files = sorted(files, key=lambda k: k['ext']+k['name']) 
+        mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
+        navForm.fields['template_subfolder'].choices=[(folder["name"],folder["name"]) for folder in folders]
+        mergeForm.fields['template_subfolder'].widget = forms.HiddenInput()
+        mergeForm.fields['data_root'].widget = forms.HiddenInput()
+        mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in files]
+        files = folder_files(config, "flows")
+        files = sorted(files, key=lambda k: k['ext']+k['name']) 
+        mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
+        return navForm, mergeForm, advMergeForm
 
 @login_required 
 def test(request):
+    config = get_user_config(request.user)
     warning = None
     try:
         params = request.GET
-        template_subfolder = getParamDefault(params, "template_subfolder", "")
-        if template_subfolder != "":
-            template_subfolder = "/"+template_subfolder
+        template_subfolder = clean_subfolder(getParamDefault(params, "template_subfolder", ""))
         mergeJob=MergeJob(
-        	template_folder="templates/",
+            template_folder="templates/",
             template_subfolder = template_subfolder,
-        	#template="AddParty_v3.md",
-        	output_folder="output",
-        	data_folder="test_data",
+            #template="AddParty_v3.md",
+            output_folder="output",
+            data_folder="test_data",
             branding_folder="branding",
             xform_folder="transforms",
-        	flow = "md.txt",
+            flow = "md.txt",
             data_root = "docroot"
-        	)
-
-        mergeForm = SimpleMergeForm(instance=mergeJob)
-        advMergeForm = MergeForm(instance=mergeJob)
-        files = folder_files("test_data")
-        files = sorted(files, key=lambda k: k['ext']+k['name']) 
-        mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
-        files = folder_files("templates"+template_subfolder)
-        files = sorted(files, key=lambda k: k['ext']+k['name']) 
-        mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in files]
-        files = folder_files("flows")
-        files = sorted(files, key=lambda k: k['ext']+k['name']) 
-        mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
+            )
+        navForm, mergeForm, advMergeForm = make_test_forms(config, mergeJob, template_subfolder)
     except GDriveAccessException:
         warning = "Not yet connected to a library"
-    return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, "install_display_name": install_display_name, "warning":warning})
+    return render(request, 'dash/test.html', {"sub_title": template_subfolder, "navForm": navForm, "mergeForm": mergeForm, "advMergeForm": advMergeForm, "install_display_name": install_display_name, "warning":warning, "hideforms":"N"})
 
 def test_result(mergeForm, request, method="POST"):
-    mergeForm =  MergeForm(request.GET)
-    params = request.GET
-    print(params)
-    template_subfolder = getParamDefault(params, "template_subfolder", "")
-    mergeJob=MergeJob(
-        template_folder="templates/",
-        template_subfolder = mergeForm["template_subfolder"].value(),
-        template=mergeForm["template"].value(),
-        output_folder="output",
-        data_folder="test_data",
-        data_file=mergeForm["data_file"].value(),
-        branding_folder="branding",
-        branding_file=mergeForm["branding_file"].value(),
-        xform_folder="transforms",
-        xform_file=mergeForm["xform_file"].value(),
-        flow = mergeForm["flow"].value(),
-        identifier = mergeForm["identifier"].value(),
-        data_root = mergeForm["data_root"].value(),
-    )
-    mergeForm = SimpleMergeForm(instance=mergeJob)
-    advMergeForm = MergeForm(instance=mergeJob)
-    files = folder_files("test_data")
-    files = sorted(files, key=lambda k: k['ext']+k['name']) 
-    mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
-    files = folder_files("templates"+template_subfolder)
-    files = sorted(files, key=lambda k: k['ext']+k['name']) 
-    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in files]
-    files = folder_files("flows")
-    files = sorted(files, key=lambda k: k['ext']+k['name']) 
-    mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
-    json_response = merge_raw_wrapped(request, method=method)
-    return render(request, 'dash/test.html', {"mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response, "install_display_name": install_display_name})
+    config = get_user_config(request.user)
+    warning = None
+    try:
+        params = request.GET
+        hideforms = getParamDefault(params, "hide_forms", "N")
+        template_subfolder = clean_subfolder(getParamDefault(params, "template_subfolder", ""))
+        mergeJob=MergeJob(
+            template_folder="templates/",
+            template_subfolder = mergeForm["template_subfolder"].value(),
+            template=mergeForm["template"].value(),
+            output_folder="output",
+            data_folder="test_data",
+            data_file=mergeForm["data_file"].value(),
+            branding_folder="branding",
+            branding_file=mergeForm["branding_file"].value(),
+            xform_folder="transforms",
+            xform_file=mergeForm["xform_file"].value(),
+            flow = mergeForm["flow"].value(),
+            identifier = mergeForm["identifier"].value(),
+            data_root = mergeForm["data_root"].value(),
+        )
+        navForm, mergeForm, advMergeForm = make_test_forms(config, mergeJob, template_subfolder)
+
+    #    mergeForm = SimpleMergeForm(instance=mergeJob)
+    #    advMergeForm = MergeForm(instance=mergeJob)
+    #    navForm = TestNavForm(instance=mergeJob)
+    #    files = folder_files(config, "test_data")
+    #    files = sorted(files, key=lambda k: k['ext']+k['name']) 
+    #    mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
+    #    files = folder_files(config, "templates"+template_subfolder)
+    #    files = sorted(files, key=lambda k: k['ext']+k['name']) 
+    #    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in files]
+    #    mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
+    #    mergeForm.fields['template_subfolder'].widget = forms.HiddenInput()
+    #    navForm.fields['template_subfolder'].choices=[(folder["name"],folder["name"]) for folder in folders]
+    #    files = folder_files(config, "flows")
+    #    files = sorted(files, key=lambda k: k['ext']+k['name']) 
+    #    mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
+        json_response = merge_raw_wrapped(request, method=method)
+    except GDriveAccessException:
+        warning = "Not yet connected to a library"
+    return render(request, 'dash/test.html', {"sub_title": template_subfolder, "navForm":navForm, "mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response, "install_display_name": install_display_name, "hideforms":hideforms})
 
 @login_required 
 def test_result_get(request):
@@ -149,8 +208,13 @@ def refresh_form(local):
     else:
         return None
 
+
+
+
+
 @login_required 
 def library_folder(request):
+    config = get_user_config(request.user)
     params = request.GET
     lib_root = getParamDefault(params, "root", "")
     lib_folders = getParamDefault(params, "folders", "templates").split(",")
@@ -160,8 +224,7 @@ def library_folder(request):
         for folder in lib_folders:
             folder_name =(lib_root+"/"+folder).replace("Templates", "templates")
             subfolder = folder_name[folder_name.find("/")+1:]
-            files = folder_files(folder_name, fields="files(id, name, mimeType)")
-            print(files)
+            files = folder_files(config, folder_name, fields="files(id, name, mimeType)")
             if lib_root.find("/")>=0:
                 parent_root = lib_root[:lib_root.rfind("/")]
                 parent_folder = lib_root[lib_root.rfind("/")+1:]
@@ -177,6 +240,7 @@ def library_folder(request):
 
 @login_required 
 def library(request):
+    config = get_user_config(request.user)
     widgets = []
     warning = None
     authuri = None
@@ -185,23 +249,24 @@ def library(request):
     if redirect.find("?")>=0:
         redirect = redirect[:redirect.find("?")]
     if "code" in params: #Auth code
-        get_credentials_store(params["code"], redirect)
-        library_initialise()
-        gd_build_folders()
+        get_credentials_store(config, params["code"], redirect)
+        library_initialise(config)
+        gd_build_folders(config)
+        gd_populate_folders(config)
     try:
-        files = folder_files("templates",fields="files(id, name, mimeType)")
+        files = folder_files(config, "templates",fields="files(id, name, mimeType)")
         files = sorted(files, key=lambda k: ('..' if k['isdir'] else k['ext'])+k['name']) 
         widgets.append({"title":"Templates", "path":"templates", "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form("templates")})
-        files = folder_files("flows",fields="files(id, name, mimeType)")
+        files = folder_files(config, "flows",fields="files(id, name, mimeType)")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
         widgets.append({"title":"Flows",  "path":"flows", "files":files, "glyph":"glyphicon glyphicon-tasks", "refreshForm": refresh_form("flows")})
-        files = folder_files("transforms",fields="files(id, name, mimeType)")
+        files = folder_files(config, "transforms",fields="files(id, name, mimeType)")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
         widgets.append({"title":"Transforms",  "path":"transforms", "files":files, "glyph":"glyphicon glyphicon-transfer", "refreshForm": refresh_form("transforms")})
-        files = folder_files("test_data",fields="files(id, name, mimeType)")
+        files = folder_files(config, "test_data",fields="files(id, name, mimeType)")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
         widgets.append({"title":"Test Data",  "path":"test_data", "files":files, "glyph":"glyphicon glyphicon-tags", "refreshForm": refresh_form("test_data")})
-        files = folder_files("branding",fields="files(id, name, mimeType)")
+        files = folder_files(config, "branding",fields="files(id, name, mimeType)")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
         widgets.append({"title":"Branding",  "path":"branding", "files":files, "glyph":"glyphicon glyphicon-certificate", "refreshForm": refresh_form("branding")})
     except GDriveAccessException:
@@ -212,22 +277,25 @@ def library(request):
 
 @login_required 
 def library_link(request):
-    library_initialise()
+    config = get_user_config(request.user)
+    library_initialise(config)
     return render(request, 'dash/library_link.html', {"install_display_name": install_display_name})
 
 @login_required 
 def archive(request):
+    config = get_user_config(request.user)
     widgets = []
-    files = local_folder_files("requests",fields="files(id, name, mimeType, modifiedTime)")
+    files = local_folder_files(config, "requests",fields="files(id, name, mimeType, modifiedTime)")
     files = sorted(files, key=lambda k: k['mtime'], reverse=True) 
     widgets.append({"title":"Merge Requests", "files":files[:10], "path":"requests", "glyph":"glyphicon glyphicon-hand-up"})
-    files = local_folder_files("output",fields="files(id, name, mimeType, modifiedTime)")
+    files = local_folder_files(config, "output",fields="files(id, name, mimeType, modifiedTime)")
     files = sorted(files, key=lambda k: k['mtime'], reverse=True) 
     widgets.append({"title":"Documents", "files":files, "glyph":"glyphicon glyphicon-file"})
     return render(request, 'dash/archive.html', {"widgets":widgets, "install_display_name": install_display_name})
 
 @login_required 
 def account(request):
+    config = get_user_config(request.user)
     widgets = []
     widgets.append({"title":"Configuration", "glyph":"glyphicon glyphicon-cog"})
     widgets.append({"title":"Users", "glyph":"glyphicon glyphicon-user"})

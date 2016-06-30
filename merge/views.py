@@ -13,6 +13,21 @@ from traceback import format_exc
 from dash.forms import UploadZipForm
 from .config import remote_library, gdrive_root, local_root
 from tokenapi.decorators import token_required
+from .gd_service import ensure_initialised
+from .gd_resource_utils import gd_path_equivalent
+from docmerge.settings import MULTI_TENANTED
+from merge.models import ClientConfig
+
+
+def get_user_config(user):
+    config = ClientConfig()
+    if MULTI_TENANTED:
+        tenant = user.profile.company
+    else:
+        tenant = "."
+    config.tenant = tenant
+    ensure_initialised(config)    
+    return config
 
 def getParamDefault(params, key, default, preserve_plus=False):
     try:
@@ -30,6 +45,7 @@ def getParamDefault(params, key, default, preserve_plus=False):
         return default
 
 def merge_raw(request, method="POST"):
+    config = get_user_config(request.user)
     if method=="GET":
         params = request.GET
     else:
@@ -38,33 +54,38 @@ def merge_raw(request, method="POST"):
     protocol, uri = abs_uri.split("://")
     site = protocol+"://"+uri.split("/")[0]+"/"
     id = getParamDefault(params, "identifier", str(randint(0,10000)))
-    flowFolder = getParamDefault(params, "flow_folder", "/"+gdrive_root+"/Flows")
+    if MULTI_TENANTED:
+        tenant_extension = "/"+config.tenant
+    else:
+        tenant_extension = ""
+
+    flowFolder = getParamDefault(params, "flow_folder", "/"+gdrive_root+tenant_extension+"/Flows")
     flow = getParamDefault(params, "flow", "md")
-    remoteTemplateFolder = getParamDefault(params, "template_folder", "/"+gdrive_root+"/Templates")
-    remoteOutputFolder = getParamDefault(params, "output_folder", "/"+gdrive_root+"/Output")
+    remoteTemplateFolder = getParamDefault(params, "template_folder", "/"+gdrive_root+tenant_extension+"/Templates")
+    remoteOutputFolder = getParamDefault(params, "output_folder", "/"+gdrive_root+tenant_extension+"/Output")
     template_subfolder = getParamDefault(params, "template_subfolder", None)
     output_subfolder = getParamDefault(params, "output_subfolder", None)
     payload = getParamDefault(params, "payload", None, preserve_plus=True)
     payload_type = getParamDefault(params, "payload_type", None)
     test_case = getParamDefault(params, "test_case", None)
-    data_folder = getParamDefault(params, "data_folder", "/"+gdrive_root+"/Test Data")
+    data_folder = getParamDefault(params, "data_folder", "/"+gdrive_root+tenant_extension+"/Test Data")
     data_file = getParamDefault(params, "data_file", None)
-    data_root = getParamDefault(params, "data_root", None)
-    branding_folder = getParamDefault(params, "branding_folder", "/"+gdrive_root+"/Branding")
+    data_root = getParamDefault(params, "data_root", "docroot")
+    branding_folder = getParamDefault(params, "branding_folder", "/"+gdrive_root+tenant_extension+"/Branding")
     branding_file = getParamDefault(params, "branding_file", None)
-    xform_folder = getParamDefault(params, "xform_folder", "/"+gdrive_root+"/Transforms")
+    xform_folder = getParamDefault(params, "xform_folder", "/"+gdrive_root+tenant_extension+"/Transforms")
     xform_file = getParamDefault(params, "xform_file", None)
     templateName = getParamDefault(params, "template", "AddParty.md")
     email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
     templateName = templateName.replace("\\", "/")
     if template_subfolder:
         template_subfolder = template_subfolder.replace("\\", "/")
-    subs = getData(test_case=test_case, payload=payload, payload_type=payload_type, params = params, local_data_folder="test_data", remote_data_folder = data_folder, data_file=data_file, xform_folder = xform_folder, xform_file=xform_file)
+    subs = getData(config, test_case=test_case, payload=payload, payload_type=payload_type, params = params, local_data_folder="test_data", remote_data_folder = data_folder, data_file=data_file, xform_folder = xform_folder, xform_file=xform_file)
     if data_root:
         if data_root in subs:
             subs = subs[data_root]
-        else:
-            raise ValueError("Invalid data_root: " + data_root)
+#        else:
+#            raise ValueError("Invalid data_root: " + data_root)
     if branding_file:
         branding_subs = getData(local_data_folder = "branding", remote_data_folder = branding_folder, data_file=branding_file)
         subs["branding"]= branding_subs
@@ -77,7 +98,7 @@ def merge_raw(request, method="POST"):
     #]    
     subs["site"]= site
 #    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload)    
-    return mergeDocument(flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
+    return mergeDocument(config, flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
                         remoteOutputFolder, output_subfolder, email=email, payload=payload)    
 
 
@@ -140,8 +161,8 @@ def merge_raw_wrapped(request, method="POST"):
     except Exception as ex:
         return error_response(ex)
 
-#@csrf_exempt
-@token_required
+@csrf_exempt
+#@token_required
 def merge(request):
     return JsonResponse(merge_raw_wrapped(request))
     
@@ -159,11 +180,12 @@ def merge_get(request):
     return JsonResponse(merge_raw_wrapped(request, method="GET"))
 
 def file_raw(request):
+    config = get_user_config(request.user)
     params = request.GET
     filename = getParamDefault(params, "name", None)
     download = getParamDefault(params, "download", "false")
     subfolder = getParamDefault(params, "path", "output")
-    filepath = get_local_dir(subfolder)
+    filepath = get_local_dir(subfolder, config)
     #file_content=""
     #with open(filepath+filename) as file:
     #    for line in file:
@@ -188,26 +210,30 @@ def file_raw(request):
         return response
     else:
         cwd = get_working_dir()
-        return HttpResponse(get_local_txt_content(cwd, subfolder, filename))
+        return HttpResponse(get_local_txt_content(cwd, config, subfolder, filename))
 
 def file(request):
     return file_raw(request)
 
 
 def file_link(request):
+    config = get_user_config(request.user)
     params = request.GET
     filename = getParamDefault(params, "name", None)
     subfolder = getParamDefault(params, "path", "output")
-    response = {"remote":remote_link(filename, subfolder)}
+    response = {"remote":remote_link(config, filename, subfolder)}
     return JsonResponse(response)
 
 
 
 def refresh(request):
+    config = get_user_config(request.user)
     if remote_library:
         try:
             params = request.GET
             local = getParamDefault(params, "local", "templates")
+            remote_default = gd_path_equivalent(config, local)
+            """
             if local.find("templates")==0:
                 remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Templates")
             elif local.find("flows")==0:
@@ -220,10 +246,9 @@ def refresh(request):
                 remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Transforms")
             else:
                 remote_default = None    
-            print("GDrive:", gdrive_root)
-            print("refresh:", local, remote_default)
+            """
             remote = getParamDefault(params, "remote", remote_default)
-            files = refresh_files(remote, local)
+            files = refresh_files(config, remote, local)
             response = {"refreshed_files":files}
         except Exception as ex:
             response = error_response(ex)
@@ -232,6 +257,7 @@ def refresh(request):
     return JsonResponse(response)
 
 def zip(request):
+    config = get_user_config(request.user)
     try:
         params = request.GET
         abs_uri = request.build_absolute_uri()            
@@ -239,7 +265,10 @@ def zip(request):
         site = protocol+"://"+uri.split("/")[0]+"/"
         folders = getParamDefault(params, "folders", "templates,flows,transforms,test_data,branding")
         zip_file_name = getParamDefault(params, "name", "backup")
-        target_dir = os.path.join(get_working_dir(),local_root)
+        if MULTI_TENANTED:
+            zip_file_name = config.tenant+"_"+zip_file_name
+#        target_dir = os.path.join(get_working_dir(),local_root)
+        target_dir = get_local_dir(".", config)
         zip_file_name = zip_local_dirs(target_dir, zip_file_name, selected_subdirs = folders.split(","))
         link = site+"file/?name="+zip_file_name.split(os.path.sep)[-1]+"&path=."
         response = {"zip_files":zip_file_name, "link":link}
@@ -248,6 +277,7 @@ def zip(request):
     return JsonResponse(response)
 
 def download_zip(request):
+    config = get_user_config(request.user)
     try:
         params = request.GET
         abs_uri = request.build_absolute_uri()            
@@ -255,7 +285,9 @@ def download_zip(request):
         site = protocol+"://"+uri.split("/")[0]+"/"
         folders = getParamDefault(params, "folders", "templates,flows,transforms,test_data,branding")
         zip_file_name = getParamDefault(params, "name", "backup")
-        target_dir = os.path.join(get_working_dir(),local_root)
+        if MULTI_TENANTED:
+            zip_file_name = config.tenant+"_"+zip_file_name
+        target_dir = get_local_dir(".", config)
         zip_file_full = zip_local_dirs(target_dir, zip_file_name, selected_subdirs = folders.split(","))
         zip_file_name = os.path.split(zip_file_full)[1]
         link = site+"file/?name="+zip_file_full.split(os.path.sep)[-1]+"&path=."
@@ -270,14 +302,17 @@ def download_zip(request):
 
 @csrf_exempt
 def upload_zip(request):
+    config = get_user_config(request.user)
     form = UploadZipForm(request.POST, request.FILES)
-    target = os.path.join(get_working_dir(),local_root,request.FILES['file']._name)
-    handle_uploaded_zip(request.FILES['file'], target)
+    target_dir = get_local_dir(".", config)
+    target_parent = get_local_dir("..", config)
+    target = os.path.join(target_dir,request.FILES['file']._name)
+    handle_uploaded_zip(request.FILES['file'], target, target_parent)
     return JsonResponse({"file":target})
 
-def handle_uploaded_zip(f, target):
+def handle_uploaded_zip(f, target, target_parent):
     with open(target, 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
     zfile = zipfile.ZipFile(target)
-    zfile.extractall(os.path.join(get_working_dir()))
+    zfile.extractall(target_parent)

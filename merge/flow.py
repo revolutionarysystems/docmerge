@@ -8,13 +8,14 @@ import os
 import json
 import time
 from .gd_resource_utils import (folder_file, folder, uploadAsGoogleDoc, uploadFile, 
-    exportFile, getFile, file_content_as)
+    exportFile, getFile, file_content_as, gd_path_equivalent)
 from .merge_utils import (substituteVariablesDocx, substituteVariablesDocx_direct, substituteVariablesPlain,
     convert_markdown, convert_pdf, convert_pdf_abiword, email_file, 
     combine_docx, combine_docx_direct, extract_regex_matches_docx,
     substituteVariablesPlainString, merge_docx_footer, merge_docx_header, preprocess_docx_template, postprocess_docx)
-from .resource_utils import (push_local_txt, push_local_txt_fullname)
-from .config import local_root
+from .resource_utils import (push_local_txt, push_local_txt_fullname,get_local_dir)
+from traceback import format_exc
+from .config import remote_library
 
 from datetime import datetime
 
@@ -27,30 +28,34 @@ def json_serial(obj):
     raise TypeError ("Type not serializable")
 
 # retrieve flow definition from library
-def get_flow_resource(flow_folder, flow_file_name):
-    flow_doc_id = folder_file(flow_folder, flow_file_name)["id"]
-    doc_content = file_content_as(flow_doc_id)
+def get_flow_resource(config, flow_folder, flow_file_name):
+    flow_doc_id = folder_file(config, flow_folder, flow_file_name)["id"]
+    doc_content = file_content_as(config, flow_doc_id)
     str_content = '{"flow":'+doc_content.decode("utf-8")+'}'
     return json.loads(str_content)["flow"]
 
 # retrieve flow definition locally
-def get_flow_local(cwd, flow_local_folder, flow_file_name):
+def get_flow_local(cwd, config, flow_local_folder, flow_file_name):
     try:
-        with open(cwd+"/"+local_root+"/"+flow_local_folder+"/"+flow_file_name, "r") as flow_file:
+        full_file_path = os.path.join(get_local_dir(flow_local_folder, config), flow_file_name)
+        with open(full_file_path, "r") as flow_file:
             str_content = '{"flow":'+flow_file.read()+'}'
         return json.loads(str_content)["flow"]
     except FileNotFoundError:
         return None
 
-def get_flow(cwd, flow_local_folder, flow_folder, flow_file_name):
+def get_flow(cwd, config, flow_local_folder, flow_folder, flow_file_name):
     # potential pre-processing here
-    flow = get_flow_local(cwd, flow_local_folder, flow_file_name)
+    flow = get_flow_local(cwd, config, flow_local_folder, flow_file_name)
     if flow == None:
-        flow = get_flow_resource(flow_folder, flow_file_name)
+        if remote_library:
+            flow = get_flow_resource(config, flow_folder, flow_file_name)
+        else:
+            raise FileNotFoundError("'"+flow_file_name+"' was not found locally. No remote library")
     return flow
 
 # retrieve flow definition locally
-def get_template_list_local(template_list_local_folder, template_list_file_name, subs=None):
+def get_template_list_local(config, template_list_local_folder, template_list_file_name, subs=None):
     try:
 #        print(template_list_local_folder+template_list_file_name)
         full_name = template_list_local_folder+template_list_file_name
@@ -66,7 +71,7 @@ def get_template_list_local(template_list_local_folder, template_list_file_name,
 
 
 # perform a download from Google drive, either as an export or getting content directly
-def process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs):
+def process_download(config, step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs):
 #    print("downloading")
 #    print(doc_id)
 #    print(doc_mimetype)
@@ -75,17 +80,18 @@ def process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMer
     else:
          localFileName = localMergedFileName
     if doc_mimetype == 'application/vnd.google-apps.document':         
-        outcome = exportFile(doc_id, localFileName+step["local_ext"], step["mimetype"])
+        outcome = exportFile(config, doc_id, localFileName+step["local_ext"], step["mimetype"])
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
     else:
-        outcome = getFile(doc_id, localFileName+step["local_ext"], step["mimetype"])
+        outcome = getFile(config, doc_id, localFileName+step["local_ext"], step["mimetype"])
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
 
     return outcome
 
 # Compound merge operation
-def process_compound_merge(cwd, uniq, step, template_subfolder, template_list, output_subfolder, subs):
-    template_local_folder = cwd+"/"+local_root+"/templates/"
+def process_compound_merge(cwd, config, uniq, step, template_subfolder, template_list, output_subfolder, subs):
+    template_local_folder = get_local_dir("templates", config)
+#    template_local_folder = cwd+"/"+local_root+"/templates/"
     if template_subfolder:
         template_local_folder+=template_subfolder+"/"
     else:
@@ -96,7 +102,8 @@ def process_compound_merge(cwd, uniq, step, template_subfolder, template_list, o
     local_output_folder = "output"
     localCombinedFileNameOnly = (template_subfolder[1:]+"/"+template_list.split(".")[0]).replace("//", "/")
     localCombinedFileNameOnly = localCombinedFileNameOnly.replace(" ","_").replace("/","-")
-    localCombinedFileName = cwd+"/"+local_root+"/"+local_output_folder+"/"+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
+    localCombinedFileName = os.path.join(get_local_dir(local_output_folder, config), localCombinedFileNameOnly+"_"+uniq+step["local_ext"])
+#    localCombinedFileName = cwd+"/"+local_root+"/"+local_output_folder+"/"+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
     template_list_content = get_template_list_local(template_local_folder, template_list, subs=subs)
     if not template_list_content:
         raise FileNotFoundError("'"+template_list+"' could not be found")
@@ -106,7 +113,7 @@ def process_compound_merge(cwd, uniq, step, template_subfolder, template_list, o
         if file_name[0]=="-":
             output_files.append("pagebreak")
         else:
-            localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, uniq, template_subfolder, file_name, output_subfolder)
+            localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, config, uniq, template_subfolder, file_name, output_subfolder)
             if step["local_ext"]==".docx":
                 outcome = substituteVariablesDocx(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
                 output_files.append(outcome["file"])
@@ -128,8 +135,9 @@ def process_compound_merge(cwd, uniq, step, template_subfolder, template_list, o
     return outcome
 
 # Compound merge operation
-def process_compound_merge2(cwd, uniq, step, template_subfolder, template_list, output_subfolder, subs):
-    template_local_folder = cwd+"/"+local_root+"/templates/"
+def process_compound_merge2(cwd, config, uniq, step, template_subfolder, template_list, output_subfolder, subs):
+    template_local_folder = get_local_dir("templates", config)
+#    template_local_folder = cwd+"/"+local_root+"/templates/"
     if template_subfolder:
         template_local_folder+=template_subfolder+"/"
     else:
@@ -140,7 +148,8 @@ def process_compound_merge2(cwd, uniq, step, template_subfolder, template_list, 
     local_output_folder = "output"
     localCombinedFileNameOnly = (template_subfolder[1:]+"/"+template_list.split(".")[0]).replace("//", "/")
     localCombinedFileNameOnly = localCombinedFileNameOnly.replace(" ","_").replace("/","-")
-    localCombinedFileName = cwd+"/"+local_root+"/"+local_output_folder+"/"+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
+    localCombinedFileName = os.path.join(get_local_dir(local_output_folder, config), localCombinedFileNameOnly+"_"+uniq+step["local_ext"])
+#    localCombinedFileName = cwd+"/"+local_root+"/"+local_output_folder+"/"+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
     template_list_content = get_template_list_local(template_local_folder, template_list, subs=subs)
     if not template_list_content:
         raise FileNotFoundError("'"+template_list+"' could not be found")
@@ -150,9 +159,13 @@ def process_compound_merge2(cwd, uniq, step, template_subfolder, template_list, 
         if file_name[0]=="-":
             output_files.append("pagebreak")
         else:
-            localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, uniq, template_subfolder, file_name, output_subfolder)
+            localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, config, uniq, template_subfolder, file_name, output_subfolder)
             if step["local_ext"]==".docx":
-                outcome = substituteVariablesDocx_direct(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+                preprocess_docx_template(localTemplateFileName+step["local_ext"], localTemplateFileName+"_"+step["local_ext"])
+                outcome = substituteVariablesDocx_direct(localTemplateFileName+"_"+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+                postprocess_docx(localMergedFileName+step["local_ext"])
+
+#                outcome = substituteVariablesDocx_direct(localTemplateFileName+"_"+step["local_ext"], localMergedFileName+step["local_ext"], subs)
                 output_files.append(outcome["file"])
     outcome = combine_docx_direct(output_files, localCombinedFileName)
     outcome["link"] = subs["site"]+"/file/?name="+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
@@ -172,16 +185,16 @@ def process_compound_merge2(cwd, uniq, step, template_subfolder, template_list, 
     return outcome
 
 # perform a merge operation, either using more complex docx logic, or as plain text
-def process_merge(cwd, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs):
+def process_merge(cwd, config, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs):
     try: #Allow "step to override template"
-        localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, uniq, template_subfolder, step["template"], output_subfolder)
+        localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, config, uniq, template_subfolder, step["template"], output_subfolder)
     except KeyError: #No rederivation of names if no step["template"]
         pass        
     if step["local_ext"]==".docx":
-        outcome = substituteVariablesDocx(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+        outcome = substituteVariablesDocx(config, localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
     else:
-        outcome = substituteVariablesPlain(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+        outcome = substituteVariablesPlain(config, localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
     try:
         if step["footer"]=="true":
@@ -198,28 +211,28 @@ def process_merge(cwd, uniq, step, localTemplateFileName, template_subfolder, lo
     return outcome
 
 # perform a merge operation, either using more complex docx logic, or as plain text
-def process_merge2(cwd, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs):
+def process_merge2(cwd, config, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs):
     try: #Allow "step to override template"
-        localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, uniq, template_subfolder, step["template"], output_subfolder)
+        localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, config, uniq, template_subfolder, step["template"], output_subfolder)
     except KeyError: #No rederivation of names if no step["template"]
         pass        
     if step["local_ext"]==".docx":
-        preprocess_docx_template(localTemplateFileName+step["local_ext"], localTemplateFileName+".prep"+step["local_ext"])
-        outcome = substituteVariablesDocx_direct(localTemplateFileName+".prep"+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+        preprocess_docx_template(localTemplateFileName+step["local_ext"], localTemplateFileName+"_"+step["local_ext"])
+        outcome = substituteVariablesDocx_direct(config, localTemplateFileName+"_"+step["local_ext"], localMergedFileName+step["local_ext"], subs)
         postprocess_docx(localMergedFileName+step["local_ext"])
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
     else:
-        outcome = substituteVariablesPlain(localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+        outcome = substituteVariablesPlain(config, localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
     try:
         if step["footer"]=="true":
-            merge_docx_footer(localMergedFileName+step["local_ext"], subs)
+            merge_docx_footer(config, localMergedFileName+step["local_ext"], subs)
     except KeyError:
         pass
 
     try:
         if step["header"]=="true":
-            merge_docx_header(localMergedFileName+step["local_ext"], subs)
+            merge_docx_header(config, localMergedFileName+step["local_ext"], subs)
     except KeyError:
         pass
 
@@ -228,12 +241,13 @@ def process_merge2(cwd, uniq, step, localTemplateFileName, template_subfolder, l
 
 
 # convert markdown format to html
-def process_markdown(step, localMergedFileName):
+def process_markdown(config, step, localMergedFileName, localMergedFileNameOnly, subs):
     outcome = convert_markdown(localMergedFileName+step["local_ext"], localMergedFileName+".html")  
+    outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".html"
     return outcome
 
 # convert to pdf
-def process_pdf(step, localMergedFileName, localMergedFileNameOnly, subs):
+def process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs):
     flavour = "soffice"
     try:
         if step["flavour"]=="abiword":
@@ -241,55 +255,56 @@ def process_pdf(step, localMergedFileName, localMergedFileNameOnly, subs):
     except KeyError:
         pass
 
-    output_dir = localMergedFileName[:localMergedFileName.rfind("/")]
+    output_dir = localMergedFileName[:localMergedFileName.rfind(os.path.sep)]
     
     if flavour == "abiword":
         outcome = convert_pdf_abiword(localMergedFileName+step["local_ext"], localMergedFileName+".pdf", outdir=output_dir)  
     else:
         outcome = convert_pdf(localMergedFileName+step["local_ext"], localMergedFileName+".pdf", outdir=output_dir)  
-    outcome["link"] = subs["site"]+"/file/?name="+localMergedFileNameOnly+".pdf"
+    outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".pdf"
     return outcome
 
 
 # upload to Google drive, optionally converting to Google Drive format
-def process_upload(step, localFileName, subfolder, upload_id):
+def process_upload(config, step, localFileName, subfolder, upload_id):
     if subfolder:
         upload_folder = folder(subfolder, upload_id, create_if_absent=True)
         upload_id=upload_folder["id"]
 
     if step["convert"]=="gdoc":
-        return uploadAsGoogleDoc(localFileName+step["local_ext"], upload_id, step["mimetype"])
+        return uploadAsGoogleDoc(config, localFileName+step["local_ext"], upload_id, step["mimetype"])
     else:
-        return uploadFile(localFileName+step["local_ext"], upload_id, step["mimetype"])
+        return uploadFile(config, localFileName+step["local_ext"], upload_id, step["mimetype"])
 
 
 # extract text fragments using regex, output as xml (for now)
-def process_extract(step, localFileName, subs):
+def process_extract(config, step, localFileName, subs):
     extract = extract_regex_matches_docx(localFileName+step["local_ext"], step["regex"], wrap=".xml", root_tag=step["root_tag"], child_tag=step["child_tag"])
     extract_file_name = localFileName+".xml"
     push_local_txt_fullname(extract_file_name, extract)
     return {"file":extract_file_name, "link":subs["site"]+"file/?name="+extract_file_name.split("/")[-1]+"&path="+step["folder"]}
 
 # send email
-def process_email(step, localFileName, you, credentials):
+def process_email(config, step, localFileName, you, credentials):
     return email_file(localFileName, step["from"], you, step["subject"], credentials) 
 
 # push file to resource library
-def process_push(cwd, step, localFileName, template_local_folder, subs, payload=""):
+def process_push(cwd, config, step, localFileName, template_local_folder, subs, payload=""):
     file_name = push_local_txt(cwd, step["folder"], localFileName+step["local_ext"], payload)  
     return {"file":file_name, "link":subs["site"]+"file/?name="+file_name.split("/")[-1]+"&path="+template_local_folder}
     #return {"file":file_name}
 
 # push file to local
-def process_payload_dump(cwd, step, localFileName, subs, payload=""):
+def process_payload_dump(cwd, config, step, localFileName, subs, payload=""):
     if step["type"]=="json":
         payload = json.dumps(subs, default = json_serial, indent=4, sort_keys=True)
-    file_name = push_local_txt(cwd, step["folder"], localFileName.replace("output", step["folder"])+step["local_ext"], payload)  
+    file_name = push_local_txt(cwd, config, step["folder"], localFileName.replace("output", step["folder"])+step["local_ext"], payload)  
     return {"file":file_name, "link":subs["site"]+"file/?name="+file_name.split("/")[-1]+"&path="+step["folder"]}
     #return {"file":file_name}
 
-def localNames(cwd, uniq, template_subfolder, template_name, output_subfolder):
-    template_local_folder = cwd+"/"+local_root+"/templates/"
+def localNames(cwd, config, uniq, template_subfolder, template_name, output_subfolder):
+    template_local_folder = get_local_dir("templates", config)+"/"
+#    template_local_folder = cwd+"/"+local_root+"/templates/"
     if template_subfolder:
         template_local_folder+=template_subfolder+"/"
         if not os.path.exists(template_local_folder):
@@ -304,13 +319,14 @@ def localNames(cwd, uniq, template_subfolder, template_name, output_subfolder):
         local_output_folder+=output_subfolder+"/"
         if not os.path.exists(local_output_folder):
             os.makedirs(local_output_folder)
-    localMergedFileName = (cwd+"/"+local_root+"/"+local_output_folder+"/"+localMergedFileNameOnly).replace("//", "/") #for now, avoid creating output folders
+    localMergedFileName = os.path.join(get_local_dir(local_output_folder, config), localMergedFileNameOnly).replace("//", "/")
+#    localMergedFileName = (cwd+"/"+local_root+"/"+local_output_folder+"/"+localMergedFileNameOnly).replace("//", "/") #for now, avoid creating output folders
     return localTemplateFileName, localMergedFileName, localMergedFileNameOnly
 
 
 # Process all steps in the flow: grab the template document, construct local path names and then invoke steps in turn
-def process_flow(cwd, flow, template_remote_folder, template_subfolder, template_name, uniq, subs, output_folder, output_subfolder, you, email_credentials, payload=None, require_template=True):
-    localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, uniq, template_subfolder, template_name, output_subfolder)
+def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, template_name, uniq, subs, output_folder, output_subfolder, you, email_credentials, payload=None, require_template=True):
+    localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, config, uniq, template_subfolder, template_name, output_subfolder)
     outcomes = []
     overall_outcome = {}
     doc_id = None
@@ -326,53 +342,59 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
 
             if step["step"]=="download":
                 if doc_id ==None and require_template:
-                    doc = folder_file(template_remote_folder, template_name)
+                    if template_subfolder:
+                        local_folder = template_remote_folder+template_subfolder
+                    else:
+                        local_folder = template_remote_folder
+                    download_folder = gd_path_equivalent(config, local_folder.replace("\\","/"))
+
+                    doc = folder_file(config, download_folder, template_name)
                     doc_id = doc["id"]
                     doc_mimetype = doc["mimeType"]
-                outcome = process_download(step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
+                outcome = process_download(config, step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
 
             if step["step"]=="merge":
-                outcome = process_merge(cwd, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
+                outcome = process_merge(cwd, config, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
 
             if step["step"]=="compound_merge": #template_name is a list of template names in a json file
-                outcome = process_compound_merge(cwd, uniq, step, template_subfolder, template_name, output_subfolder, subs)
+                outcome = process_compound_merge(cwd, config, uniq, step, template_subfolder, template_name, output_subfolder, subs)
 
             if step["step"]=="merge2":
-                outcome = process_merge2(cwd, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
+                outcome = process_merge2(cwd, config, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
 
             if step["step"]=="compound_merge2": #template_name is a list of template names in a json file
-                outcome = process_compound_merge2(cwd, uniq, step, template_subfolder, template_name, output_subfolder, subs)
+                outcome = process_compound_merge2(cwd, config, uniq, step, template_subfolder, template_name, output_subfolder, subs)
 
             if step["step"]=="markdown":
-                outcome = process_markdown(step, localMergedFileName)
+                outcome = process_markdown(config, step, localMergedFileName, localMergedFileNameOnly, subs)
 
             if step["step"]=="pdf":
-                outcome = process_pdf(step, localMergedFileName, localMergedFileNameOnly, subs)
+                outcome = process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs)
 
             if step["step"]=="upload":
                 if local_folder=="templates":
                     localFileName = localTemplateFileName
-                    upload_id = folder(template_remote_folder)["id"]
+                    upload_id = folder(config, template_remote_folder)["id"]
                     upload_subfolder = template_subfolder
                 else:
                     localFileName = localMergedFileName
-                    upload_id = folder(output_folder)["id"]
+                    upload_id = folder(config, output_folder)["id"]
                     upload_subfolder = None
-                outcome = process_upload(step, localFileName, upload_subfolder, upload_id)
+                outcome = process_upload(config, step, localFileName, upload_subfolder, upload_id)
                 doc_id = outcome["id"]
                 doc_mimetype = outcome["mimeType"]
 
             if step["step"]=="email":
-                outcome = process_email(step, localMergedFileName, you, email_credentials)
+                outcome = process_email(config, step, localMergedFileName, you, email_credentials)
 
             if step["step"]=="push":
-                outcome = process_push(cwd, step, localTemplateFileName, "templates/"+template_subfolder+"/", subs, payload=payload)
+                outcome = process_push(cwd, config, step, localTemplateFileName, "templates/"+template_subfolder+"/", subs, payload=payload)
 
             if step["step"]=="payload":
-                outcome = process_payload_dump(cwd, step, localMergedFileName, subs, payload=payload)
+                outcome = process_payload_dump(cwd, config, step, localMergedFileName, subs, payload=payload)
 
             if step["step"]=="extract":
-                outcome = process_extract(step, localMergedFileName, subs)
+                outcome = process_extract(config, step, localMergedFileName, subs)
 
             step_end_time = time.time()
             outcomes.append({"step":step["name"], "success": True, "outcome":outcome, "time": step_end_time-step_time})
@@ -382,9 +404,12 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
                     overall_outcome[key]=outcome[key]
                     overall_outcome[key+"_"+step["name"].replace(" ","_")]=outcome[key]
         except Exception as ex:
-            outcomes.append({"step":step["name"], "success": False, "outcome": {"exception":str(ex)}})
+            step_end_time = time.time()
+            outcomes.append({"step":step["name"], "success": False, "outcome": {"exception":str(ex)}, "time": step_end_time-step_time})
+            step_time = step_end_time
             overall_outcome["success"]=False
             overall_outcome["messages"].append("Exception in step: "+step["name"]+".  "+str(ex))
+            overall_outcome["traceback"]=format_exc(8)
             if not("critical" in step.keys() and step["critical"]=="false"):
                 break
 #                raise ex
@@ -413,7 +438,7 @@ def process_flow(cwd, flow, template_remote_folder, template_subfolder, template
         state = "success"
     else:
         state="fail"
-    push_local_txt(cwd, "requests", localMergedFileNameOnly+"."+state+".json", request_record_str)
+    push_local_txt(cwd, config, "requests", localMergedFileNameOnly+"."+state+".json", request_record_str)
 
     return overall_outcome
 

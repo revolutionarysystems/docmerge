@@ -1,4 +1,6 @@
+from merge.models import ClientConfig
 from merge.resource_utils import refresh_files
+from merge.gd_service import ensure_initialised
 #from merge.flow import get_flow_local, get_flow
 #from merge.xml4doc import getData
 """
@@ -10,7 +12,11 @@ def run1():
         print(file)
 """
 def run():
-    files = refresh_files("/Echo Publish Resources/Templates/Experiments", "templates/Experiments")
+    config = ClientConfig()
+    config.tenant="ECV"
+    ensure_initialised(config)
+
+    files = refresh_files(config, "/Echo Publish Demo/Flows", "flows")
     #files = refresh_files("/Doc Merge/Flows", "flows/")
     for file in files:
         print(file)

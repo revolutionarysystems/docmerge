@@ -1,4 +1,5 @@
-{% extends 'dash/base.html' %}
+{% load relative_path %}
+{% extends './base.html' %}
 
 {% block content %}
         <h2><a href="">Home</a></h2>
@@ -26,6 +27,7 @@
                     <h3><a href=""><span class="glyphicon glyphicon-check"></span> Quick Test</a></h3>
                     <form id = "quickTest" method="GET" class="query-form" action="/test-result-get/">
                             {{ mergeForm.as_p }}
+                            <input type="hidden" value="Y" name="hide_forms">
                     <button id="quickTestButton" type="submit" class="save btn btn-warning">Test</button>
                     </form>
                 </div>

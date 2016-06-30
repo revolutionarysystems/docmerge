@@ -5,9 +5,13 @@ import string
 import zipfile
 import tempfile
 import shutil
+from django.conf import settings
 from docx import Document
 #  from docx.text.paragraph import Paragraph
-from django.template import Template, Context
+from django.template import Context,Template,Engine
+#from django.template import Context
+#from .relative_path import Template
+from django.conf import settings
 from markdown import markdown
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -19,6 +23,8 @@ import lxml.etree as etree
 from .resource_utils import (
     get_working_dir, strip_xml_dec, get_xml_dec, get_output_dir, get_local_dir, get_local_txt_content)
 from .config import install_name
+
+
 
 def replaceParams(txt, subs):
     for key in subs.keys():
@@ -32,20 +38,26 @@ def removePara(para):
         p.getparent().remove(p)
         p._p = p._element = None
 
-def substituteVariablesPlain(fileNameIn, fileNameOut, subs):
+def get_engine(config):
+    engine = Engine(
+        dirs = ['resources/templates/', os.path.join(settings.BASE_DIR, 'resources/'+config.tenant+'/templates/').replace('\\', '/'),],
+        )
+    return engine
+
+def substituteVariablesPlain(config, fileNameIn, fileNameOut, subs):
     c = Context(subs)
     fileIn = open(fileNameIn, "r")
     fullText = fileIn.read()
-    t = Template(fullText)
+    t = get_engine(config).from_string(fullText)
     xtxt = t.render(c)
     fileOut = open(fileNameOut, "w")
     fileOut.write(xtxt)
     return {"file":fileNameOut}
     
-def substituteVariablesPlainString(stringIn, subs):
+def substituteVariablesPlainString(config, stringIn, subs):
     c = Context(subs)
     fullText = stringIn
-    t = Template(fullText)
+    t = get_engine(config).from_string(fullText)
     xtxt = t.render(c)
     return xtxt
     
@@ -175,7 +187,7 @@ def postprocess_docx(file_name_in):
     doc_in.save(file_name_in)
 
 
-def substituteVariablesDocx(file_name_in, fileNameOut, subs):
+def substituteVariablesDocx(config, file_name_in, fileNameOut, subs):
     c = Context(subs)
     doc_in = Document(docx=file_name_in)
     doc_temp = Document()
@@ -198,7 +210,7 @@ def substituteVariablesDocx(file_name_in, fileNameOut, subs):
         fullText+= paraText+str(i)+"+para+"
         i+=1
     fullText = preprocess(fullText)
-    t = Template(fullText)
+    t = get_engine(context).from_string(fullText)
     xtxt = t.render(c)
     xtxt = apply_sequence(xtxt)
     xParaTxts = xtxt.split("+para+")
@@ -297,15 +309,15 @@ def email_file(baseFileName, me, you, subject, credentials):
     server.quit()
     return {"email":you.replace(" ","+")}
 
-def merge_docx_footer(full_local_filename, subs):
-    merge_docx_header_footer(full_local_filename, subs, "footer1")
-    return merge_docx_header_footer(full_local_filename, subs, "footer2")
+def merge_docx_footer(config, full_local_filename, subs):
+    merge_docx_header_footer(config, full_local_filename, subs, "footer1")
+    return merge_docx_header_footer(config, full_local_filename, subs, "footer2")
 
-def merge_docx_header(full_local_filename, subs):
-    merge_docx_header_footer(full_local_filename, subs, "header1")
-    return merge_docx_header_footer(full_local_filename, subs, "header2")
+def merge_docx_header(config, full_local_filename, subs):
+    merge_docx_header_footer(config, full_local_filename, subs, "header1")
+    return merge_docx_header_footer(config, full_local_filename, subs, "header2")
 
-def merge_docx_header_footer(full_local_filename, subs, xmlname):
+def merge_docx_header_footer(config, full_local_filename, subs, xmlname):
     docx_filename = full_local_filename
     f = open(docx_filename, 'rb')
     zip = zipfile.ZipFile(f)
@@ -314,7 +326,7 @@ def merge_docx_header_footer(full_local_filename, subs, xmlname):
 ###
     xml_content = xml_content.decode("UTF-8")
     try:
-        xml_content = substituteVariablesPlainString(xml_content, subs)
+        xml_content = substituteVariablesPlainString(config, xml_content, subs)
     except:
         pass
     tmp_dir = tempfile.mkdtemp()
@@ -330,23 +342,19 @@ def merge_docx_header_footer(full_local_filename, subs, xmlname):
     shutil.rmtree(tmp_dir)
     return({"file":docx_filename})
 
-def docx_subfile(zip, tmp_dir, subs, filename):
+def docx_subfile(config, zip, tmp_dir, subs, filename):
     try:
         xml_content = zip.read(filename)
         xml_content = xml_content.decode("UTF-8")
-        #xml_content = xml_content.decode("ISO-8859-1")
         xml_content = preprocess(xml_content)
         xml_content = xml_content.replace("&quot;", '"')
-        xml_content_subs = str(substituteVariablesPlainString(xml_content, subs))
+        xml_content_subs = str(substituteVariablesPlainString(config, xml_content, subs))
         with io.open(os.path.join(tmp_dir,filename), 'w', encoding="UTF-8") as f:
-#        with io.open(os.path.join(tmp_dir,filename), 'w', encoding="UTF-8") as f:
             f.write(xml_content_subs)
     except KeyError:
         pass
 
-def substituteVariablesDocx_direct(file_name_in, file_name_out, subs):
-
-
+def substituteVariablesDocx_direct(config, file_name_in, file_name_out, subs):
     docx_filename = file_name_in
     f = open(docx_filename, 'rb')
     zip = zipfile.ZipFile(f)
@@ -357,7 +365,7 @@ def substituteVariablesDocx_direct(file_name_in, file_name_out, subs):
     candidates = ["word/document.xml","word/header1.xml","word/header2.xml","word/footer1.xml","word/footer2.xml"]
     for filename in filenames:
         if filename in candidates:
-            docx_subfile(zip, tmp_dir, subs, filename)
+            docx_subfile(config, zip, tmp_dir, subs, filename)
 
     with zipfile.ZipFile(file_name_out, "w") as docx:
         for filename in filenames:

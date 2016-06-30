@@ -67,8 +67,8 @@ ROOT_URLCONF = 'docmerge.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['docmerge/templates',],
-        'APP_DIRS': True,
+        'DIRS': ['resources/templates/', os.path.join(BASE_DIR, 'resources/templates/').replace('\\', '/'),],
+#        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -76,9 +76,17 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'loaders': [
+                'merge.relative_path.FileSystem19',
+                'merge.relative_path.AppDirectories19',
+            ],
+            'libraries': {
+                'relative_path': 'merge.relative_path',
+            },
         },
     },
 ]
+
 
 
 WSGI_APPLICATION = 'docmerge.wsgi.application'
@@ -112,6 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_PROFILE_MODULE = "dash.UserProfile"
 
 AUTHENTICATION_BACKENDS = [
     'tokenapi.backends.TokenBackend',
@@ -162,3 +171,6 @@ DATETIME_INPUT_FORMATS = [
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join('.', 'static')
+
+
+MULTI_TENANTED = True

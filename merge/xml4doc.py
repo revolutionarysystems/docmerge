@@ -112,13 +112,13 @@ def alternate_values(doc):
     return doc
 
 
-def xform_xml(content, local_folder, remote_folder, xform_file):
+def xform_xml(config, content, local_folder, remote_folder, xform_file):
 #    print(type(content))
     if type(content) is bytes:
         content = content.decode("UTF-8")
     content = strip_xml_dec(content)
     dom = etree.fromstring(content)
-    xslt = etree.fromstring(get_xml_content(local_folder, remote_folder, xform_file))
+    xslt = etree.fromstring(get_xml_content(config, local_folder, remote_folder, xform_file))
     transform = etree.XSLT(xslt)
     newdom = transform(dom)
     return etree.tostring(newdom, pretty_print=True).decode("utf-8")
@@ -135,7 +135,7 @@ def dictify(par_dict, node_name, node_value):
         dictify(par_dict[root], remainder, node_value)
 
 
-def getData(test_case = None, payload=None, payload_type="xml", params = None, data_file=None, remote_data_folder = None, local_data_folder = None, xform_folder = None, xform_file = None):
+def getData(config, test_case = None, payload=None, payload_type="xml", params = None, data_file=None, remote_data_folder = None, local_data_folder = None, xform_folder = None, xform_file = None):
     data = None
     if payload and payload_type.lower()=="xml":
         if xform_file:
@@ -148,11 +148,11 @@ def getData(test_case = None, payload=None, payload_type="xml", params = None, d
         for key in params.keys():
             dictify(data, key, params[key])
     elif data_file:
-        doc_xml = get_xml_content(local_data_folder, remote_data_folder, data_file)
+        doc_xml = get_xml_content(config, local_data_folder, remote_data_folder, data_file)
 #        data_doc_id = folder_file(data_folder, data_file)["id"]
 #        doc_xml = file_content_as(data_doc_id)
         if xform_file:
-            doc_xml = xform_xml(doc_xml, "transforms", xform_folder, xform_file)
+            doc_xml = xform_xml(config, doc_xml, "transforms", xform_folder, xform_file)
         data = xmltodict.parse(doc_xml) 
     if data == None: #default
         data = xmltodict.parse(xml)
