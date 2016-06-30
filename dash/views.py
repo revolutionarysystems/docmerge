@@ -305,6 +305,10 @@ def account(request):
     zipform = UploadZipForm()
     return render(request, 'dash/account.html', {"widgets":widgets, "install_display_name": install_display_name, "zipform":zipform})
 
+def guide(request):
+    return render(request, 'dash/guide.html')
+
+
 @login_required 
 def links(request):
     return render(request, 'dash/links.html', {})

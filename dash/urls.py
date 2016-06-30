@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^archive/$', views.archive, name='archive'),
     url(r'^account/$', views.account, name='account'),
     url(r'^links/$', views.links, name='links'),
+    url(r'^guide/$', views.guide, name='guide'),
     url(r'^accounts/login/$', auth_views.login),
     url(r'^accounts/logout/$', views.logout_view),
  #   url(r'^(?P<shelf>\w+)/$', views.dash, name='dash'),
