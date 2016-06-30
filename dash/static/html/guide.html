@@ -1,0 +1,133 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Guide to Echo Publish.md</title><style></style></head><body id="preview">
+<h1><a id="Welcome_to_Echo_Publish_0"></a>Welcome to Echo Publish</h1>
+<p><strong>Echo Publish</strong> is a web service for generating and publishing formatted documents through the merging of templates and data. Manage your company’s outgoing mail with ease.</p>
+<h2><a id="Templates__Data__Documents_4"></a>Templates + Data = Documents</h2>
+<p>It really is that simple.</p>
+<ol>
+<li>Create <strong>templates</strong> in using familiar tools - at the moment this means Google Docs, but more options are planned.</li>
+<li>Call the Echo Publish service, providing the <strong>data</strong> you need to be merged into your templates.</li>
+<li>Receive links to the finished <strong>documents</strong>. They can be linked to, archived, downloaded or whatever you choose.</li>
+</ol>
+<h2><a id="Lets_get_started_11"></a>Let’s get started</h2>
+<p>You will have received a username and password.
+Go to our trial website: <code>http://playpen.echopublish.com</code>. You will be asked to login. When done, you should see a web page looking like this:</p>
+<p><img src="http://playpen.echopublish.com/static/images/logged_in.png" alt="" title="Logged in"></p>
+<p>The main pages are:</p>
+<ul>
+<li>Home - dashboard showing status and service status</li>
+<li>Test - a built-in test harness for you to test your templates</li>
+<li>Library - access to all your Echo Publish resources</li>
+<li>Archive - access to your merged documents</li>
+<li>Account - access to manage your account with Echo Publish</li>
+<li>Links - Helpful (we hope!) links</li>
+</ul>
+<h3><a id="Google_Drive_26"></a>Google Drive</h3>
+<p>Echo Publish makes use of Google Drive to store all the resources that you will create and use to manage your templates and publishing options. To use Echo Publish you should have an account with Google (if you don’t have one, you will need to create one). All the files that are created will be kept in a separate folder in your Google Drive, called “Echo Publish Demo”.</p>
+<p>Click over to the “Library” page of the Echo Publish website.</p>
+<p>It should look like this.</p>
+<p><img src="http://playpen.echopublish.com/static/images/library_before.png" alt="" title="Library unlinked"></p>
+<p>Click on the link that says “Click here to link to Google Drive”. At this point Google takes over, asking permission to access your Google Drive files.</p>
+<p>When you grant permission, Echo Publish will set up a starter set of resources in your Google Drive account. This may take a couple of minutes, so please be patient.</p>
+<p>When done, Echo Publish will return with a view of your library. It should look a bit like this:</p>
+<p><img src="http://playpen.echopublish.com/static/images/library_after.png" alt="" title="Library linked"></p>
+<p>We’ll be coming back to talk about the library, but next, we’ll do a quick health test on the whole set up.</p>
+<h3><a id="Home_45"></a>Home</h3>
+<p>On the home page you will see a Quick Test panel. This will use Echo Publish to generate a document listing the templates in the Demo Examples folder.
+Click this button: if all is well, you should see a page like this:</p>
+<p><img src="http://playpen.echopublish.com/static/images/self_test_outcome.png" alt="" title="Self test outcome"></p>
+<p>If not, get in touch with us please!</p>
+<p>You will see that Echo Publish has carried out these operations:</p>
+<ul>
+<li>Dumped the payload data it used - this is very useful for debugging your templates.</li>
+<li>Merged the data to a format called “markdown”, a simple way of creating enriched text.</li>
+<li>Converted the markdown format to HTML.</li>
+<li>Returned to you links to the results of each of those stages.</li>
+</ul>
+<p>Take a moment to examine those outputs. Echo Publish has:</p>
+<ol>
+<li>Used a <strong>template</strong> called &quot;<a href="http://Library.md">Library.md</a>&quot;</li>
+<li>Merged this with <strong>data</strong>.</li>
+<li>Returned links to <strong>documents</strong>.</li>
+</ol>
+<p>Remember: <strong>Templates + Data = Documents</strong></p>
+<h3><a id="Test_66"></a>Test</h3>
+<p>The test page provides a test harness and allows you to test your templates using test data files or suitable payloads.
+The page looks like this:</p>
+<p><img src="http://playpen.echopublish.com/static/images/test_1.png" alt="" title="Test page initial"></p>
+<p>The form in the top part of the page allows for navigation through your template folders. Use the dropdown to choose the folder to navigate to.
+The lower form offers (in the initial state) three input fields.</p>
+<ul>
+<li>
+<p>Choice of templates</p>
+<p>A template is a document or a document structure that typically contains placeholder or tags that define how the supplied test data should be merged to create the finished documents. You can create these in your Google Drive folder.</p>
+</li>
+<li>
+<p>Choice of test data files</p>
+<p>Usually the data that is merged into templates will be supplied dynamically through the merge request that your systems will issue to Echo Protect. For testing purposes, it will be useful to have predefined data sets in xml or json form to merge with your templates. You can create these in your Google Drive folder.</p>
+</li>
+<li>
+<p>Choice of flow</p>
+<p>A flow definition is a set of steps that Echo Publish will carry out when the merge process is called. For example the <code>md.flo</code> definition is used to merge markdown <code>*.md</code> files, and (in the default configuration) will do the following steps: <strong>dump the data</strong> file supplied as a dictionary for debug purposes; <strong>merge</strong> the data with the template to provide a merged markdown file; <strong>convert</strong> the markdown file to html. Other flows will contain other steps, and you can create your own using Echo Publish’s collection of basic steps, which contains merge steps, transformation steps, upload and download options, and more.</p>
+</li>
+</ul>
+<p><strong>Try it out:</strong> use the top form to navigate to “Demo Examples”, then try using the Fact Sheet template with the “FS_Devs.xml” test data. This is a docx template, so use the <code>docx.flo</code> flow definition.</p>
+<p>Your page should look like this:</p>
+<p><img src="http://playpen.echopublish.com/static/images/test_2.png" alt="" title="Test page filled"></p>
+<p>And on completion, you should see something like this:</p>
+<p><img src="http://playpen.echopublish.com/static/images/test_3.png" alt="" title="Test page completed"></p>
+<p>As before, you’ll see the result of each step in the flow. Click on the links and explore the outputs.</p>
+<p>Successful submission of a test case returns a summary of the flow steps, and links to the outputs of those steps.</p>
+<p>Remember <strong>this is only a test harness</strong>, for use in creating your own templates. In production use you will be calling a <code>merge</code> API from your own systems, and getting back from Echo Publish, links to these outputs which you can use in the way that your application needs.</p>
+<h3><a id="Library_103"></a>Library</h3>
+<p>The Library page is where you can see Echo Publish resources.  It reflects the state of your Google Drive folders, but also shows which of those resources Echo Publish has itself downloaded for efficiency of access, and whether or not those are fresh or not. Each type of asset has a Refresh button displayed: clicking this will cause Echo Publish to fetch the latest version from your Google Drive account. (This will mean that it does NOT have to make a call to Google Drive to fetch the resource when merging, and so will be more efficient.)</p>
+<p>The Library page looks like this:</p>
+<p><img src="http://playpen.echopublish.com/static/images/library_after.png" alt="" title="Library linked"></p>
+<p>This reflects the Google Drive folders that Echo Publish has set up, which might look like this on the Google Drive website:</p>
+<p><img src="http://playpen.echopublish.com/static/images/drive_1.png" alt="" title="GDrive top"></p>
+<p><img src="http://playpen.echopublish.com/static/images/drive_2.png" alt="" title="GDrive templates"></p>
+<p>The library holds the following types of resource:</p>
+<ul>
+<li>
+<p><strong>Templates</strong></p>
+<p>Documents or a document structures that define the finished documents.</p>
+</li>
+<li>
+<p><strong>Flows</strong></p>
+<p>JSON files that define steps in the merge process.</p>
+</li>
+<li>
+<p><strong>Transforms</strong></p>
+<p>XSLT transformation definitions that can be used on XML input data.</p>
+</li>
+<li>
+<p><strong>Test Data</strong></p>
+<p>XML or JSON files to supply data for testing the templates.</p>
+</li>
+<li>
+<p><strong>Branding</strong></p>
+<p>XML or JSON files that supply additional data to be incorporated into the documents. As the name suggests, “branding” files can supply data that can turn generic “white-label” templates into “branded” templates by incorporating company names, contact details, logos, colour schemes and so on.</p>
+</li>
+</ul>
+<h3><a id="Archive_140"></a>Archive</h3>
+<p>The archive page provides access to the 10 most recent merge requests and the most recently produced documents, each list sorted to show most recent first.</p>
+<p><img src="http://playpen.echopublish.com/static/images/archive.png" alt="" title="Archive"></p>
+<ul>
+<li>
+<p><strong>Merge Requests</strong></p>
+<p>The file name will indicate success or failure. Clicking on the link provided will show the input parameters of the request, and the detailed outcome.</p>
+</li>
+<li>
+<p><strong>Documents</strong></p>
+<p>The documents produced by merge requests. Clicking on the link provided will either show or download the document (according to document type).</p>
+</li>
+</ul>
+<h3><a id="Account_154"></a>Account</h3>
+<p>The account page shows/will show details of the user’s account.</p>
+<p>It also allows for download of the resources into a zip file for backup purposes, and for upload of a previous backup zip file.</p>
+<p><img src="http://playpen.echopublish.com/static/images/account.png" alt="" title="Account"></p>
+<h3><a id="Links_162"></a>Links</h3>
+<p>Links to access Echo Publish help files and other support materials.</p>
+<h2><a id="Calling_Echo_Publish_API_167"></a>Calling Echo Publish API</h2>
+<p>Tbd</p>
+
+</body></html>
