@@ -87,7 +87,7 @@ def merge_raw(request, method="POST"):
 #        else:
 #            raise ValueError("Invalid data_root: " + data_root)
     if branding_file:
-        branding_subs = getData(local_data_folder = "branding", remote_data_folder = branding_folder, data_file=branding_file)
+        branding_subs = getData(config, local_data_folder = "branding", remote_data_folder = branding_folder, data_file=branding_file)
         subs["branding"]= branding_subs
         subs["AgreementDate"]=datetime.now()
     subs["docs"]=[templateName]
@@ -233,20 +233,6 @@ def refresh(request):
             params = request.GET
             local = getParamDefault(params, "local", "templates")
             remote_default = gd_path_equivalent(config, local)
-            """
-            if local.find("templates")==0:
-                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Templates")
-            elif local.find("flows")==0:
-                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Flows")
-            elif local.find("branding")==0:
-                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Branding")
-            elif local.find("test_data")==0:
-                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Test Data")
-            elif local.find("transforms")==0:
-                remote_default = local.replace(local.split("/")[0],"/"+gdrive_root+"/Transforms")
-            else:
-                remote_default = None    
-            """
             remote = getParamDefault(params, "remote", remote_default)
             files = refresh_files(config, remote, local)
             response = {"refreshed_files":files}

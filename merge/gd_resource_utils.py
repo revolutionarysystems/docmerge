@@ -215,11 +215,11 @@ def gd_mimetype_equivalent(ftype):
     elif ftype == ".txt":
         mimetype_equiv = "text/plain"
     elif ftype == ".flo":
-        mimetype_equiv = "text/json"
+        mimetype_equiv = "application/json"
     elif ftype == ".xml":
-        mimetype_equiv = "text/xml"
+        mimetype_equiv = "application/xml"
     elif ftype == ".json":
-        mimetype_equiv = "text/json"
+        mimetype_equiv = "application/json"
     elif ftype == ".pdf":
         mimetype_equiv = "application/pdf"
     elif ftype == ".zip":

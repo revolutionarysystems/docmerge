@@ -14,7 +14,7 @@ from merge.gd_resource_utils import gd_build_folders
 from docmerge.settings import MULTI_TENANTED
 from merge.models import ClientConfig
 from merge.flow import json_serial
-
+from django.core.urlresolvers import reverse
 
 def get_user_config(user):
     config = ClientConfig()
@@ -26,17 +26,31 @@ def get_user_config(user):
     ensure_initialised(config)    
     return config
 
+def get_library_uri(request):
+    abs_uri= request.build_absolute_uri()
+    protocol, uri = abs_uri.split("://")
+    site = protocol+"://"+uri.split("/")[0]
+    uri =  site+reverse('library')
+    if uri.find("?")>=0:
+        uri = uri[:uri.find("?")]
+    return uri
+
+
 @login_required 
 def dash(request):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     widgets = []
+    warning = None
+    authuri = None
     config = get_user_config(request.user)
     nrequests_1d = count_local_files(config, "requests", days_ago=0, days_recent=1)
     nrequests_7d = count_local_files(config, "requests", days_ago=0, days_recent=7)
     nrequests_30d = count_local_files(config, "requests", days_ago=0, days_recent=30)
     recent_requests = local_folder_files(config, "requests", days_recent=1)
     recent_requests = sorted(recent_requests, key=lambda k: k['mtime'])
+    mergeForm=None
+    redirect = get_library_uri(request)
     if recent_requests:
         latest_request = recent_requests[-1] 
     else:
@@ -81,7 +95,15 @@ def dash(request):
     mergeForm.fields['flow'].choices=[("md.flo","md.flo")]
     mergeForm.fields['data_root'].initial=""
     mergeForm.fields['template'].choices=[("Library.md","Library.md")]
-    return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm, "install_display_name": install_display_name})
+
+    try:
+        dummy = folder_files(config, "flows")
+    except GDriveAccessException:
+        warning = "Not yet connected to a library"
+        authuri = get_credentials_ask(redirect)
+
+
+    return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm, "install_display_name": install_display_name, "warning":warning, "authuri":authuri})
 
 
 def clean_subfolder(subfolder):
@@ -98,6 +120,9 @@ def make_test_forms(config, mergeJob, template_subfolder):
         files = folder_files(config, "test_data")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
         mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
+        files = folder_files(config, "transforms")
+        files = sorted(files, key=lambda k: k['ext']+k['name']) 
+        mergeForm.fields['xform_file'].choices=[(file["name"],file["name"]) for file in files]
         items = folder_files(config, "templates"+template_subfolder)
         files = []
         folders = []
@@ -111,7 +136,6 @@ def make_test_forms(config, mergeJob, template_subfolder):
             else:
                 files.append(item)
         folders = sorted(folders, key=lambda k: k['ext']+k['name']) 
-        print("folders",folders)
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
         mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
         navForm.fields['template_subfolder'].choices=[(folder["name"],folder["name"]) for folder in folders]
@@ -238,6 +262,7 @@ def library_folder(request):
         warning = "Not yet connected to a library"
     return render(request, 'dash/library.html', {"widgets":widgets, "install_display_name": install_display_name, "warning":warning})
 
+
 @login_required 
 def library(request):
     config = get_user_config(request.user)
@@ -245,9 +270,7 @@ def library(request):
     warning = None
     authuri = None
     params=request.GET
-    redirect = request.build_absolute_uri()
-    if redirect.find("?")>=0:
-        redirect = redirect[:redirect.find("?")]
+    redirect = get_library_uri(request)
     if "code" in params: #Auth code
         get_credentials_store(config, params["code"], redirect)
         library_initialise(config)
@@ -273,7 +296,7 @@ def library(request):
         warning = "Not yet connected to a library"
         authuri = get_credentials_ask(redirect)
 
-    return render(request, 'dash/library.html', {"widgets":widgets, "install_display_name": install_display_name, "warning":warning, "authuri":authuri})
+    return render(request, 'dash/library.html', {"widgets":widgets, "install_display_name": install_display_name, "redirect": redirect, "warning":warning, "authuri":authuri})
 
 @login_required 
 def library_link(request):
@@ -307,6 +330,12 @@ def account(request):
 
 def guide(request):
     return render(request, 'dash/guide.html')
+
+def api_guide(request):
+    return render(request, 'dash/api_guide.html')
+
+def flow_guide(request):
+    return render(request, 'dash/flow_guide.html')
 
 
 @login_required 

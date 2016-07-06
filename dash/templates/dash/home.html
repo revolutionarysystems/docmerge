@@ -3,6 +3,13 @@
 
 {% block content %}
         <h2><a href="">Home</a></h2>
+            {% if warning %}
+            <h3>{{ warning }} </h3>
+            <ul>
+                <li><a href = "{{ authuri }}">Click here to link to Google Drive</a></li>
+            </ul>
+            {% endif %}
+
         <div class="row widget">
                 {% for widget in widgets %}
                 <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
@@ -25,11 +32,13 @@
                 {% endfor %}
                 <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <h3><a href=""><span class="glyphicon glyphicon-check"></span> Quick Test</a></h3>
+                    {% if mergeForm %}
                     <form id = "quickTest" method="GET" class="query-form" action="/test-result-get/">
                             {{ mergeForm.as_p }}
                             <input type="hidden" value="Y" name="hide_forms">
                     <button id="quickTestButton" type="submit" class="save btn btn-warning">Test</button>
                     </form>
+                    {% endif %}
                 </div>
         </div>
 {% endblock %}        

@@ -187,7 +187,7 @@ def refresh_files(config, path, local_dir, parent='root', mimeType='*', fields="
         print(file)
         doc_id =file["id"]
         cwd = get_working_dir()
-        localFileName = os.path.join(get_local_dir(local_dir, config), file["name"])
+        localFileName = os.path.join(get_local_dir(local_dir, config), file["name"]).replace("\\", "/").replace("/./", "/")
 #        localFileName = os.path.join(cwd, local_root, local_dir, file["name"])
         if file["mimeType"] == 'application/vnd.google-apps.folder':
             # create local 

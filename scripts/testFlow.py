@@ -189,6 +189,20 @@ chartest_TA = {
 
 }
 
+TA = {
+	"data_file":"testData3.xml",
+	"xform_file":"ITP_9yds_email.xml",
+	"flow_file":"comp_docx_a.txt",
+	"template_subfolder":"/Wizard Move in documents/Tenancy Agreements/AST",
+	"template_file":"AST.json",
+	"payload":None,
+	"uniq":"13",
+	"expected_outcomes": {}
+
+}
+
+
+
 ECVTNC = {
 	"data_file":"EchoCentral-Glanty.xml",
 	"xform_file":None,
@@ -316,23 +330,18 @@ def get(dct, item):
 		return None
 
 
-def test_data(test_case):
-	subs = getData(remote_data_folder = "/Echo Publish Demo/Test Data", local_data_folder = "test_data", 
+def test_data(config, test_case):
+	subs = getData(config, remote_data_folder = "/Echo Publish Demo/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
 	                   xform_file=test_case["xform_file"])["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
 	print(subs)
 	print(type(subs))
-	template_str = "Product {{ product|upper }} {{ licensor.name}}"
-	print(substituteVariablesPlainString(template_str, subs))
 
 #	print(subs["Request"]["Guarantors"])
 #	print(subs["Request"]["Landlords"])
 
 
-def test_flow(test_case):
-	config = ClientConfig()
-	config.tenant="ECV"
-	ensure_initialised(config)
+def test_flow(config, test_case):
 	subs = getData(config, remote_data_folder = "/Echo Publish Demo/circus/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], payload_type=get(test_case,"payload_type"), 
 	                   params=get(test_case,"params"), xform_folder = "/Echo Publish Demo/circus/Transforms", 
@@ -359,9 +368,13 @@ def test_flow(test_case):
 		pass
 
 def run():
+	config = ClientConfig()
+	config.tenant="."
+	ensure_initialised(config)
 #	test_flow(compound_TA)	test_flow(ECVInv)
 
-	test_flow(Strong)
+#	test_data(config, TA)
+	test_flow(config, TA)
 #	test_flow(Library)
 #	test_flow(ECVSL)
 #	test_flow(plain_TA)

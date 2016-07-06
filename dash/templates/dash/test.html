@@ -12,12 +12,8 @@
         <div class="row widget">
             <div>
             	{% if hideforms == "N" %}
-	 	<h3><a href=""><span class="glyphicon glyphicon-question-sign"></span> Request</a></h2>
-	        <form id="nav" method="GET" class="query-form" action="/test-nav">
-	                {{ navForm.as_p }}
-	                <button type="submit" class="save btn btn-warning">Change Folder</button>
-	        </form>
-	 	<h4>{{sub_title}}</h4>
+	 	<h3>Current Folder: Templates{{sub_title}}</h3>
+	 	<h3><a href=""><span class="glyphicon glyphicon-hand-up"></span> Request</a></h2>
             	<input id="form_control" type="checkbox"/><label for="form_control">Advanced</label>
 	        <form id="basic" method="GET" class="query-form" action="/test-result-get">
 	                {{ mergeForm.as_p }}
@@ -26,6 +22,11 @@
 	        <form id="advanced" method="POST" class="query-form" action="/test-result-post/">
 	                {{ advMergeForm.as_p }}
 	                <button type="submit" class="save btn btn-warning">Request Doc</button>
+	        </form>
+	 	<h4>Change Folder</h4>
+	        <form id="nav" method="GET" class="query-form" action="/test-nav">
+	                {{ navForm.as_p }}
+	                <button type="submit" class="save btn btn-warning">Change Folder</button>
 	        </form>
 	        {% endif %}
 	        {% if merge_response %}
