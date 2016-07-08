@@ -88,11 +88,11 @@ def dash(request):
 #        payload = [{"test":"this"}],
         payload_type = "json",
         branding_folder="branding",
-        flow = "md.flo",
+        flow = "md.json",
         )
     mergeForm = MergeForm(instance=quickTestJob)
     mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
-    mergeForm.fields['flow'].choices=[("md.flo","md.flo")]
+    mergeForm.fields['flow'].choices=[("md.json","md.json")]
     mergeForm.fields['data_root'].initial=""
     mergeForm.fields['template'].choices=[("Library.md","Library.md")]
 
@@ -122,7 +122,7 @@ def make_test_forms(config, mergeJob, template_subfolder):
         mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
         files = folder_files(config, "transforms")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
-        mergeForm.fields['xform_file'].choices=[(file["name"],file["name"]) for file in files]
+        mergeForm.fields['xform_file'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
         items = folder_files(config, "templates"+template_subfolder)
         files = []
         folders = []

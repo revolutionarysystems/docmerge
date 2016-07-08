@@ -48,8 +48,12 @@ def get_engine(config):
 
         dirs = [
             os.path.join(local_root, 'templates/').replace('\\', '/'), 
-            os.path.join(settings.BASE_DIR, local_root+config.tenant+'/templates/').replace('\\', '/'),],
+            os.path.join(settings.BASE_DIR, local_root,config.tenant+'/templates/').replace('\\', '/'),],
         )
+#    dirs = [
+#            os.path.join(local_root, 'templates/').replace('\\', '/'), 
+#            os.path.join(settings.BASE_DIR, local_root,config.tenant+'/templates/').replace('\\', '/'),]
+#    print("template dirs:", dirs)
     return engine
 
 def substituteVariablesPlain(config, fileNameIn, fileNameOut, subs):

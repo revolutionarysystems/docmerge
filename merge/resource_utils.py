@@ -108,6 +108,7 @@ def gd_populate_folders(config):
             "templates", 
             "templates/Sandbox", 
             "templates/Demo Examples", 
+            "templates/Partials", 
             "transforms",
             "flows",
             "branding",
@@ -197,6 +198,8 @@ def refresh_files(config, path, local_dir, parent='root', mimeType='*', fields="
         elif file["mimeType"] == 'application/vnd.google-apps.document':
             if localFileName.find(".") < 0: # no extension
                 files_info.append(exportFile(config, doc_id, localFileName+".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+            elif localFileName.find(".docx") >= 0: # extension docx
+                files_info.append(exportFile(config, doc_id, localFileName, "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
             else:
                 files_info.append(exportFile(config, doc_id, localFileName, "text/plain"))
         else:

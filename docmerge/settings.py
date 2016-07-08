@@ -173,4 +173,5 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join('.', 'static')
 
 
-MULTI_TENANTED = False
+#MULTI_TENANTED = False
+MULTI_TENANTED = True

@@ -12,23 +12,23 @@
 <p>Every call to Echo Publish that requests a merge operation must specify a ‘flow’ name. This defines precisely what steps are to be carried out. Echo Publish comes with the most useful flows already defined, so you might not need to create your own. This guide is for those who <em>do</em> want to be able to have greater control.
 Here’s an example of a flow definition. This one is supplied as md.json in the Echo Publish installation.</p>
 <pre><code class="language-[">    {
-        name: &amp;quot;Dump payload dict&amp;quot;,
-        step: &amp;quot;payload&amp;quot;,
-        mimetype: &amp;quot;text/plain&amp;quot;,
-        local_ext: &amp;quot;.payload.dict&amp;quot;,
-        type: &amp;quot;json&amp;quot;,
-        folder: &amp;quot;dump&amp;quot;
+        name: &quot;Dump payload dict&quot;,
+        step: &quot;payload&quot;,
+        mimetype: &quot;text/plain&quot;,
+        local_ext: &quot;.payload.dict&quot;,
+        type: &quot;json&quot;,
+        folder: &quot;dump&quot;
     },
     {
-        name: &amp;quot;Merge markdown&amp;quot;,
-        step: &amp;quot;merge&amp;quot;,
-        mimetype: &amp;quot;text/plain&amp;quot;,
-        local_ext: &amp;quot;.md&amp;quot;
+        name: &quot;Merge markdown&quot;,
+        step: &quot;merge&quot;,
+        mimetype: &quot;text/plain&quot;,
+        local_ext: &quot;.md&quot;
     },
     {
-        name: &amp;quot;Convert markdown to html&amp;quot;,
-        step: &amp;quot;markdown&amp;quot;,
-        local_ext: &amp;quot;.md&amp;quot;
+        name: &quot;Convert markdown to html&quot;,
+        step: &quot;markdown&quot;,
+        local_ext: &quot;.md&quot;
     }
 ]
 </code></pre>
