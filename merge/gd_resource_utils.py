@@ -177,7 +177,7 @@ def folder(config, path, parent='root', create_if_absent=False):
     return ls_list(config, path_parts, parent=parent, create_if_absent=create_if_absent)
 
 def gd_folder_files(config, path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
-        foldr = folder(config, path, parent)
+        foldr = folder(config, path.replace("/./", "/"), parent)
         contents = folder_contents(config, foldr["id"], mimeType=mimeType, fields=fields)
         return contents
 
@@ -215,11 +215,11 @@ def gd_mimetype_equivalent(ftype):
     elif ftype == ".txt":
         mimetype_equiv = "text/plain"
     elif ftype == ".flo":
-        mimetype_equiv = "text/json"
+        mimetype_equiv = "application/json"
     elif ftype == ".xml":
-        mimetype_equiv = "text/xml"
+        mimetype_equiv = "application/xml"
     elif ftype == ".json":
-        mimetype_equiv = "text/json"
+        mimetype_equiv = "application/json"
     elif ftype == ".pdf":
         mimetype_equiv = "application/pdf"
     elif ftype == ".zip":
@@ -266,6 +266,7 @@ def gd_build_folders(config):
             "templates", 
             "templates/Sandbox", 
             "templates/Demo Examples", 
+            "templates/Partials", 
             "transforms",
             "flows",
             "branding",

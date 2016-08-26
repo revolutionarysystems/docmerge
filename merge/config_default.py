@@ -1,8 +1,9 @@
 install_name="docmerge"
-install_display_name="Development"
+install_display={"name":"Development","about":["Default configuration", "We welcome feedback: please get in touch.","Contact: publish@echo-central.com"]}
 gdrive_root ="Doc Merge"
 local_root ="merge"
 email_credentials = {"username":"", "password":"", "server":""}
 email_default_recipient=""
 remote_library = True
+library_page = "dash/library_rev.html"
 extend_path = True

@@ -13,8 +13,8 @@
     <body>
         <div class="page-header">
             <h1><a href="/"><img id="logo" src="{% static 'echo-reflect-roundel-orange.png' %}"/></a>Echo Publish</h1>
-            <h3>Installation: {{ install_display_name }}</h3>
-            <h3><a href ="/home/" title="Take me home">Home</a> - <a href ="/test/" title="Test Document Flow">Test</a> - <a href ="/library/" title="Library of Documents and Other Resources">Library</a> - <a href ="/archive/" title="Archive of Requests and Documents">Archive</a> - <a href ="/account/" title="Account Settings and Status">Account</a> - <a href ="/links/" title="Helpful Links">Links</a><span class="user">
+            <h3>Installation: {{ install_display.name }}</h3>
+            <h3><a href ="/home/" title="Take me home">Home</a> - <a href ="/test/" title="Test Document Flow">Test</a> - <a href ="/library/" title="Library of Documents and Other Resources">Library</a> - <a href ="/archive/" title="Archive of Requests and Documents">Archive</a> - <a href ="/account/" title="Account Settings and Status">Account</a> - <a href ="/links/" title="Helpful Links">Help</a><span class="user">
             {% if user.username %}
             Logged in as: {{ user.username }} of {{user.profile.company}}. <a href="../accounts/logout">Logout</a></span></h3>
             {% else %}
@@ -32,13 +32,9 @@
                         <h2>About Echo Publish</h2>
                         <p>Echo Publish is a web service for generating and publishing formatted documents through the merging of templates and data.
                         <ul>
-                            <li>This is a Beta release.</li>
-                            <li>Some features are not yet fully live.</li>
-                            <li>You may encounter bugs: please get in touch.</li>
-                            <li>You may have questions: please get in touch.</li>
-                            <li>We welcome feedback: please get in touch.</li>
-                            <li>Contact: publish@echo-central.com</li>
-                            <li>(c) Echo Central Ventures 2016</li>
+                            {% for about_message in install_display.about %}
+                            <li>{{ about_message }}</li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </div>

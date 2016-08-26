@@ -108,6 +108,7 @@ def gd_populate_folders(config):
             "templates", 
             "templates/Sandbox", 
             "templates/Demo Examples", 
+            "templates/Partials", 
             "transforms",
             "flows",
             "branding",
@@ -122,6 +123,8 @@ def gd_populate_folders(config):
             for file in files:
                 if file.find("_.docx")<0: #No preprocess files
                     filepath = os.path.join(get_local_dir(subfolder, config), file)
+                    ## touch local files so they are not immediately stale
+                    os.utime(filepath, None)
                     barename, ext = os.path.splitext(file)
                     if ext == ".docx": 
                         upload_name = barename
@@ -152,6 +155,8 @@ def combined_folder_files(config, path, parent='root', mimeType='*', fields="nex
         else:
             file["is_remote"]="X"
         combined_files[file["name"]]=file
+        file["location"]="On server only"
+        file["status_symbol"]="<"
     if remote_library:
         if path[-1] == "/":
             path = path[:-1]
@@ -159,20 +164,31 @@ def combined_folder_files(config, path, parent='root', mimeType='*', fields="nex
         for file in remote_files:
             if file["name"] in combined_files.keys():
                 combined_files[file["name"]]["mimeType"]=file["mimeType"]
+                combined_files[file["name"]]["location"]="In library and on server - up-to-date"
+                combined_files[file["name"]]["status_symbol"]="="
             elif file["name"]+".docx" in combined_files.keys():
                 file["name"]=file["name"]+".docx"
                 combined_files[file["name"]]["mimeType"]=file["mimeType"]
+                combined_files[file["name"]]["location"]="In library and on server - up-to-date"
+                combined_files[file["name"]]["status_symbol"]="="
             else:
                 combined_files[file["name"]]=file
                 combined_files[file["name"]]["is_local"]="N"
+                combined_files[file["name"]]["location"]="In library only"
+                combined_files[file["name"]]["status_symbol"]=">"
             combined_files[file["name"]]["is_remote"]="Y"
             combined_files[file["name"]]["id"]=file["id"]
             combined_files[file["name"]]["modifiedTime"]=iso8601.parse_date(file["modifiedTime"])
-            if "mtime" in combined_files[file["name"]].keys():
-                if combined_files[file["name"]]["modifiedTime"] > combined_files[file["name"]]["mtime"]: #remote time > local time:
-                    combined_files[file["name"]]["is_local"]="R"
             combined_files[file["name"]]["isdir"]=file["mimeType"]=="application/vnd.google-apps.folder"
             combined_files[file["name"]]["ext"] = os.path.splitext(file["name"])[-1].lower()
+            if "mtime" in combined_files[file["name"]].keys():
+                if combined_files[file["name"]]["modifiedTime"] > combined_files[file["name"]]["mtime"]: #remote time > local time:
+                    combined_files[file["name"]]["is_local"]="S"
+                    combined_files[file["name"]]["location"]="In library and on server - but out-of-date on server"
+                    if combined_files[file["name"]]["isdir"]:
+                        combined_files[file["name"]]["status_symbol"]="="
+                    else:
+                        combined_files[file["name"]]["status_symbol"]=">"
     for file in combined_files.values():
         if file["name"].find("_.docx")<0: # No "hidden" files
             response.append(file)
@@ -187,7 +203,7 @@ def refresh_files(config, path, local_dir, parent='root', mimeType='*', fields="
         print(file)
         doc_id =file["id"]
         cwd = get_working_dir()
-        localFileName = os.path.join(get_local_dir(local_dir, config), file["name"])
+        localFileName = os.path.join(get_local_dir(local_dir, config), file["name"]).replace("\\", "/").replace("/./", "/")
 #        localFileName = os.path.join(cwd, local_root, local_dir, file["name"])
         if file["mimeType"] == 'application/vnd.google-apps.folder':
             # create local 
@@ -197,6 +213,8 @@ def refresh_files(config, path, local_dir, parent='root', mimeType='*', fields="
         elif file["mimeType"] == 'application/vnd.google-apps.document':
             if localFileName.find(".") < 0: # no extension
                 files_info.append(exportFile(config, doc_id, localFileName+".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+            elif localFileName.find(".docx") >= 0: # extension docx
+                files_info.append(exportFile(config, doc_id, localFileName, "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
             else:
                 files_info.append(exportFile(config, doc_id, localFileName, "text/plain"))
         else:

@@ -189,6 +189,20 @@ chartest_TA = {
 
 }
 
+TA = {
+	"data_file":"testData3.xml",
+	"xform_file":"ITP_9yds_email.xml",
+	"flow_file":"comp_docx_a.txt",
+	"template_subfolder":"/Wizard Move in documents/Tenancy Agreements/AST",
+	"template_file":"AST.json",
+	"payload":None,
+	"uniq":"13",
+	"expected_outcomes": {}
+
+}
+
+
+
 ECVTNC = {
 	"data_file":"EchoCentral-Glanty.xml",
 	"xform_file":None,
@@ -261,6 +275,19 @@ Sample = {
 	"expected_outcomes": {}
 }
 
+Welcome = {
+	"data_file":"EchoPublish.xml",
+	"xform_file":None,
+	"flow_file":"md2.flo",
+	"template_subfolder":"",
+	"template_file":"Demo Examples/Welcome",
+	"payload":None,
+	"uniq":"1.3",
+	"expected_outcomes": {}
+}
+
+
+
 Strong = {
 	"data_file":"strongman.xml",
 	"xform_file":None,
@@ -299,8 +326,8 @@ Library = {
 EPDemo = {
 	"data_file":"sample.xml",
 	"xform_file":None,
-	"flow_file":"docx_2.flo",
-	"template_subfolder":"/Demo Examples",
+	"flow_file":"docx.flo",
+	"template_subfolder":"",
 	"template_file":"Sample Document",
 	"payload":None,
 	"uniq":"122",
@@ -316,34 +343,30 @@ def get(dct, item):
 		return None
 
 
-def test_data(test_case):
-	subs = getData(remote_data_folder = "/Echo Publish Demo/Test Data", local_data_folder = "test_data", 
+def test_data(config, test_case):
+	subs = getData(config, remote_data_folder = "/Echo Publish Demo/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], xform_folder = "/Doc Merge/Transforms", 
 	                   xform_file=test_case["xform_file"])["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
 	print(subs)
 	print(type(subs))
-	template_str = "Product {{ product|upper }} {{ licensor.name}}"
-	print(substituteVariablesPlainString(template_str, subs))
 
 #	print(subs["Request"]["Guarantors"])
 #	print(subs["Request"]["Landlords"])
 
 
-def test_flow(test_case):
-	config = ClientConfig()
-	config.tenant="ECV"
-	ensure_initialised(config)
-	subs = getData(config, remote_data_folder = "/Echo Publish Demo/circus/Test Data", local_data_folder = "test_data", 
+def test_flow(config, test_case):
+	remote = "/Doc Merge"
+	subs = getData(config, remote_data_folder = remote+"/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], payload_type=get(test_case,"payload_type"), 
-	                   params=get(test_case,"params"), xform_folder = "/Echo Publish Demo/circus/Transforms", 
+	                   params=get(test_case,"params"), xform_folder = remote+"/Transforms", 
 	                   xform_file=test_case["xform_file"])["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
 	subs["site"]="localhost:8001"
 	cwd = get_working_dir()
-	flow = get_flow(cwd, config, "flows", "/Echo Publish Demo/circus/Flows", test_case["flow_file"])
-	outcomes = process_flow(cwd, config, flow, "/Echo Publish Demo/circus/Templates", 
+	flow = get_flow(cwd, config, "flows", remote+"/Flows", test_case["flow_file"])
+	outcomes = process_flow(cwd, config, flow, remote+"/Templates", 
 		test_case["template_subfolder"], 
 		test_case["template_file"], 
-		test_case["uniq"], subs, "/Echo Publish Demo/circus/Output", None, None, None, 
+		test_case["uniq"], subs, remote+"/Output", None, None, None, 
 		payload=test_case["payload"])
 #	assert (outcomes["success"]==(test_case["expected_outcomes"]["success"]))
 	#assert (len(outcomes["steps"])==(len(test_case["expected_outcomes"]["steps"])))
@@ -359,9 +382,14 @@ def test_flow(test_case):
 		pass
 
 def run():
+
+	config = ClientConfig()
+	config.tenant="ECV"
+	ensure_initialised(config)
 #	test_flow(compound_TA)	test_flow(ECVInv)
 
-	test_flow(Strong)
+#	test_data(config, TA)
+	test_flow(config, Welcome)
 #	test_flow(Library)
 #	test_flow(ECVSL)
 #	test_flow(plain_TA)

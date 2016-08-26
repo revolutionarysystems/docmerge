@@ -8,13 +8,14 @@ from .forms import MergeForm, SimpleMergeForm, RefreshForm, UploadZipForm, TestN
 from .models import MergeJob, RefreshJob
 from merge.resource_utils import combined_folder_files as folder_files, local_folder_files, count_local_files, process_local_files, gd_populate_folders
 from merge.views import merge_raw_wrapped,getParamDefault 
-from merge.config import install_display_name, remote_library
+from merge.config import install_display, remote_library
+from merge.config import install_display, remote_library, library_page
 from merge.gd_service import GDriveAccessException, initialise as library_initialise, get_credentials_ask, get_credentials_store, ensure_initialised
 from merge.gd_resource_utils import gd_build_folders
 from docmerge.settings import MULTI_TENANTED
 from merge.models import ClientConfig
 from merge.flow import json_serial
-
+from django.core.urlresolvers import reverse
 
 def get_user_config(user):
     config = ClientConfig()
@@ -26,17 +27,31 @@ def get_user_config(user):
     ensure_initialised(config)    
     return config
 
+def get_library_uri(request):
+    abs_uri= request.build_absolute_uri()
+    protocol, uri = abs_uri.split("://")
+    site = protocol+"://"+uri.split("/")[0]
+    uri =  site+reverse('library')
+    if uri.find("?")>=0:
+        uri = uri[:uri.find("?")]
+    return uri
+
+
 @login_required 
 def dash(request):
     if not request.user.is_authenticated():
         return redirect('/login/?next=%s' % request.path)
     widgets = []
+    warning = None
+    authuri = None
     config = get_user_config(request.user)
     nrequests_1d = count_local_files(config, "requests", days_ago=0, days_recent=1)
     nrequests_7d = count_local_files(config, "requests", days_ago=0, days_recent=7)
     nrequests_30d = count_local_files(config, "requests", days_ago=0, days_recent=30)
     recent_requests = local_folder_files(config, "requests", days_recent=1)
     recent_requests = sorted(recent_requests, key=lambda k: k['mtime'])
+    mergeForm=None
+    redirect = get_library_uri(request)
     if recent_requests:
         latest_request = recent_requests[-1] 
     else:
@@ -74,14 +89,22 @@ def dash(request):
 #        payload = [{"test":"this"}],
         payload_type = "json",
         branding_folder="branding",
-        flow = "md.flo",
+        flow = "md.json",
         )
     mergeForm = MergeForm(instance=quickTestJob)
     mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
-    mergeForm.fields['flow'].choices=[("md.flo","md.flo")]
+    mergeForm.fields['flow'].choices=[("md.json","md.json")]
     mergeForm.fields['data_root'].initial=""
     mergeForm.fields['template'].choices=[("Library.md","Library.md")]
-    return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm, "install_display_name": install_display_name})
+
+    try:
+        dummy = folder_files(config, "flows")
+    except GDriveAccessException:
+        warning = "Not yet connected to a library"
+        authuri = get_credentials_ask(redirect)
+
+
+    return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm, "install_display": install_display, "warning":warning, "authuri":authuri})
 
 
 def clean_subfolder(subfolder):
@@ -97,13 +120,19 @@ def make_test_forms(config, mergeJob, template_subfolder):
         navForm = TestNavForm(instance=mergeJob)
         files = folder_files(config, "test_data")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
-        mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
+        mergeForm.fields['data_file'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
+        files = folder_files(config, "transforms")
+        files = sorted(files, key=lambda k: k['ext']+k['name']) 
+        mergeForm.fields['xform_file'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
         items = folder_files(config, "templates"+template_subfolder)
         files = []
         folders = []
         if template_subfolder:
             parent = template_subfolder[:template_subfolder.rfind("/")+1]
             folders.append({"name":parent, "ext":".."})
+            folders.append({"name":template_subfolder, "ext":"."})
+        else:
+            folders.append({"name":"/", "ext":"."})
         for item in items:
             if item["isdir"]:
                 item["name"]=template_subfolder+"/"+item["name"]
@@ -111,22 +140,25 @@ def make_test_forms(config, mergeJob, template_subfolder):
             else:
                 files.append(item)
         folders = sorted(folders, key=lambda k: k['ext']+k['name']) 
-        print("folders",folders)
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
         mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
+        navForm.fields['template_subfolder'].label = "Template folder"
         navForm.fields['template_subfolder'].choices=[(folder["name"],folder["name"]) for folder in folders]
         mergeForm.fields['template_subfolder'].widget = forms.HiddenInput()
         mergeForm.fields['data_root'].widget = forms.HiddenInput()
-        mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in files]
+        mergeForm.fields['template'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
         files = folder_files(config, "flows")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
-        mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
+        mergeForm.fields['flow'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
         return navForm, mergeForm, advMergeForm
 
 @login_required 
 def test(request):
     config = get_user_config(request.user)
     warning = None
+    navForm = None
+    mergeForm = None
+    advMergeForm = None
     try:
         params = request.GET
         template_subfolder = clean_subfolder(getParamDefault(params, "template_subfolder", ""))
@@ -144,11 +176,14 @@ def test(request):
         navForm, mergeForm, advMergeForm = make_test_forms(config, mergeJob, template_subfolder)
     except GDriveAccessException:
         warning = "Not yet connected to a library"
-    return render(request, 'dash/test.html', {"sub_title": template_subfolder, "navForm": navForm, "mergeForm": mergeForm, "advMergeForm": advMergeForm, "install_display_name": install_display_name, "warning":warning, "hideforms":"N"})
+    return render(request, 'dash/test.html', {"sub_title": template_subfolder, "navForm": navForm, "mergeForm": mergeForm, "advMergeForm": advMergeForm, "install_display": install_display, "warning":warning, "hideforms":"N"})
 
 def test_result(mergeForm, request, method="POST"):
     config = get_user_config(request.user)
     warning = None
+    navForm = None
+    advMergeForm = None
+    json_response = merge_raw_wrapped(request, method=method)
     try:
         params = request.GET
         hideforms = getParamDefault(params, "hide_forms", "N")
@@ -188,7 +223,7 @@ def test_result(mergeForm, request, method="POST"):
         json_response = merge_raw_wrapped(request, method=method)
     except GDriveAccessException:
         warning = "Not yet connected to a library"
-    return render(request, 'dash/test.html', {"sub_title": template_subfolder, "navForm":navForm, "mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response, "install_display_name": install_display_name, "hideforms":hideforms})
+    return render(request, 'dash/test.html', {"sub_title": template_subfolder, "navForm":navForm, "mergeForm": mergeForm, "advMergeForm": advMergeForm, 'merge_response': json_response, "install_display": install_display, "hideforms":hideforms})
 
 @login_required 
 def test_result_get(request):
@@ -220,6 +255,10 @@ def library_folder(request):
     lib_folders = getParamDefault(params, "folders", "templates").split(",")
     widgets = []
     warning = None
+    if remote_library:
+        remote = "Connected to Google Drive"
+    else:
+        remote = "Not connected to Google Drive"
     try:
         for folder in lib_folders:
             folder_name =(lib_root+"/"+folder).replace("Templates", "templates")
@@ -236,7 +275,9 @@ def library_folder(request):
             widgets.append({"path":os.path.join("templates", subfolder), "subfolder": subfolder, "title": folder_name, "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form(folder_name.replace("Templates", "templates"))})
     except GDriveAccessException:
         warning = "Not yet connected to a library"
-    return render(request, 'dash/library.html', {"widgets":widgets, "install_display_name": install_display_name, "warning":warning})
+        remote = "Not connected to Google Drive"
+    return render(request, library_page, {"widgets":widgets, "install_display": install_display, "warning":warning, "remote":remote})
+
 
 @login_required 
 def library(request):
@@ -245,9 +286,11 @@ def library(request):
     warning = None
     authuri = None
     params=request.GET
-    redirect = request.build_absolute_uri()
-    if redirect.find("?")>=0:
-        redirect = redirect[:redirect.find("?")]
+    redirect = get_library_uri(request)
+    if remote_library:
+        remote = "Connected to Google Drive"
+    else:
+        remote = "Not connected to Google Drive"
     if "code" in params: #Auth code
         get_credentials_store(config, params["code"], redirect)
         library_initialise(config)
@@ -272,14 +315,15 @@ def library(request):
     except GDriveAccessException:
         warning = "Not yet connected to a library"
         authuri = get_credentials_ask(redirect)
+        remote = "Not connected to Google Drive"
 
-    return render(request, 'dash/library.html', {"widgets":widgets, "install_display_name": install_display_name, "warning":warning, "authuri":authuri})
+    return render(request, library_page, {"widgets":widgets, "install_display": install_display, "redirect": redirect, "warning":warning, "authuri":authuri, "remote":remote})
 
 @login_required 
 def library_link(request):
     config = get_user_config(request.user)
     library_initialise(config)
-    return render(request, 'dash/library_link.html', {"install_display_name": install_display_name})
+    return render(request, 'dash/library_link.html', {"install_display": install_display})
 
 @login_required 
 def archive(request):
@@ -290,8 +334,8 @@ def archive(request):
     widgets.append({"title":"Merge Requests", "files":files[:10], "path":"requests", "glyph":"glyphicon glyphicon-hand-up"})
     files = local_folder_files(config, "output",fields="files(id, name, mimeType, modifiedTime)")
     files = sorted(files, key=lambda k: k['mtime'], reverse=True) 
-    widgets.append({"title":"Documents", "files":files, "glyph":"glyphicon glyphicon-file"})
-    return render(request, 'dash/archive.html', {"widgets":widgets, "install_display_name": install_display_name})
+    widgets.append({"title":"Documents", "files":files[:500], "glyph":"glyphicon glyphicon-file"})
+    return render(request, 'dash/archive.html', {"widgets":widgets, "install_display": install_display})
 
 @login_required 
 def account(request):
@@ -303,12 +347,23 @@ def account(request):
     widgets.append({"title":"Credit", "glyph":"glyphicon glyphicon-star"})
     widgets.append({"title":"Backup", "glyph":"glyphicon glyphicon-sort"})
     zipform = UploadZipForm()
-    return render(request, 'dash/account.html', {"widgets":widgets, "install_display_name": install_display_name, "zipform":zipform})
+    return render(request, 'dash/account.html', {"widgets":widgets, "install_display": install_display, "zipform":zipform})
 
-@login_required 
+def guide(request):
+    return render(request, 'dash/guide.html', {"install_display": install_display})
+
+def api_guide(request):
+    return render(request, 'dash/api_guide.html', {"install_display": install_display})
+
+def flow_guide(request):
+    return render(request, 'dash/flow_guide.html', {"install_display": install_display})
+
+def template_guide(request):
+    return render(request, 'dash/template_guide.html', {"install_display": install_display})
+
 def links(request):
-    return render(request, 'dash/links.html', {})
+    return render(request, 'dash/links.html', {"install_display": install_display})
 
 def logout_view(request):
     logout(request)
-    return render(request, 'registration/loggedout.html')
+    return render(request, 'registration/loggedout.html', {"install_display": install_display})

@@ -1,32 +1,33 @@
 {% extends 'dash/base.html' %}
 
 {% block content %}
-	<h2><a href="">Test Document Merge Flow</a></h2>
+	<h2><a href="">Test a Document Template</a></h2>
         {% if warning %}
             <h3>{{ warning }} </h3>
             <ul>
                 <li><a href = "../link">Click here to link to Google Drive</a></li>
             </ul>
-        {% endif %}
+        {% else %}    
 
         <div class="row widget">
             <div>
             	{% if hideforms == "N" %}
-	 	<h3><a href=""><span class="glyphicon glyphicon-question-sign"></span> Request</a></h2>
-	        <form id="nav" method="GET" class="query-form" action="/test-nav">
-	                {{ navForm.as_p }}
-	                <button type="submit" class="save btn btn-warning">Change Folder</button>
-	        </form>
-	 	<h4>{{sub_title}}</h4>
-            	<input id="form_control" type="checkbox"/><label for="form_control">Advanced</label>
-	        <form id="basic" method="GET" class="query-form" action="/test-result-get">
-	                {{ mergeForm.as_p }}
-	                <button type="submit" class="save btn btn-warning">Request Doc</button>
-	        </form>
-	        <form id="advanced" method="POST" class="query-form" action="/test-result-post/">
-	                {{ advMergeForm.as_p }}
-	                <button type="submit" class="save btn btn-warning">Request Doc</button>
-	        </form>
+		 	<h3>Current template folder: {% if sub_title %}{{sub_title}}{% else %}/{% endif %}</h3>
+		 	<h3><a href=""><span class="glyphicon glyphicon-folder-open"></span> Choose template folder</a></h2>
+		        <form id="nav" method="GET" class="query-form" action="/test-nav">
+		                {{ navForm.as_p }}
+		                <button type="submit" class="save btn btn-warning">Change folder</button>
+		        </form>
+	            	<input id="form_control" type="checkbox"/><label for="form_control">Advanced</label>
+		 	<h3><a href=""><span class="glyphicon glyphicon-hand-up"></span> Request document merge</a></h2>
+		        <form id="basic" method="GET" class="query-form" action="/test-result-get">
+		                {{ mergeForm.as_p }}
+		                <button type="submit" class="save btn btn-warning">Request Doc</button>
+		        </form>
+		        <form id="advanced" method="POST" class="query-form" action="/test-result-post/">
+		                {{ advMergeForm.as_p }}
+		                <button type="submit" class="save btn btn-warning">Request Doc</button>
+		        </form>
 	        {% endif %}
 	        {% if merge_response %}
 	 	<h3><a href=""><span class="glyphicon glyphicon-info-sign"></span> Result</a></h2>
@@ -69,4 +70,5 @@
 		 -->
             </div>
         </div>
+        {% endif %}
 {% endblock %}        

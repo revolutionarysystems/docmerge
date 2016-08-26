@@ -12,6 +12,7 @@ from django.template import Context,Template,Engine
 #from django.template import Context
 #from .relative_path import Template
 from django.conf import settings
+import django.template.exceptions
 from markdown import markdown
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -22,9 +23,13 @@ import lxml.etree as etree
 
 from .resource_utils import (
     get_working_dir, strip_xml_dec, get_xml_dec, get_output_dir, get_local_dir, get_local_txt_content)
-from .config import install_name
+from .config import install_name, local_root
 
-
+class TemplateError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
 
 def replaceParams(txt, subs):
     for key in subs.keys():
@@ -40,8 +45,15 @@ def removePara(para):
 
 def get_engine(config):
     engine = Engine(
-        dirs = ['resources/templates/', os.path.join(settings.BASE_DIR, 'resources/'+config.tenant+'/templates/').replace('\\', '/'),],
+
+        dirs = [
+            os.path.join(local_root, 'templates/').replace('\\', '/'), 
+            os.path.join(settings.BASE_DIR, local_root,config.tenant+'/templates/').replace('\\', '/'),],
         )
+#    dirs = [
+#            os.path.join(local_root, 'templates/').replace('\\', '/'), 
+#            os.path.join(settings.BASE_DIR, local_root,config.tenant+'/templates/').replace('\\', '/'),]
+#    print("template dirs:", dirs)
     return engine
 
 def substituteVariablesPlain(config, fileNameIn, fileNameOut, subs):
@@ -50,6 +62,7 @@ def substituteVariablesPlain(config, fileNameIn, fileNameOut, subs):
     fullText = fileIn.read()
     t = get_engine(config).from_string(fullText)
     xtxt = t.render(c)
+    xtxt = apply_sequence(xtxt)
     fileOut = open(fileNameOut, "w")
     fileOut.write(xtxt)
     return {"file":fileNameOut}
@@ -59,6 +72,7 @@ def substituteVariablesPlainString(config, stringIn, subs):
     fullText = stringIn
     t = get_engine(config).from_string(fullText)
     xtxt = t.render(c)
+    xtxt = apply_sequence(xtxt)
     return xtxt
     
 def preprocess(text):
@@ -184,12 +198,14 @@ def postprocess_docx(file_name_in):
     for p in doc_in.paragraphs:
         if p.text.strip()=="[##]":
             removePara(p)
+        if p.text.find("[##]")>=0:
+            p.text = p.text.replace("[##]","")
     doc_in.save(file_name_in)
 
 
 def substituteVariablesDocx(config, file_name_in, fileNameOut, subs):
     c = Context(subs)
-    doc_in = Document(docx=file_name_in)
+    doc_in = Document(docx=file_name_in.replace("/./", "/").replace("\\.\\", "\\").replace("\\", "/"))
     doc_temp = Document()
     paras=doc_in.paragraphs
     fullText="" 
@@ -210,7 +226,7 @@ def substituteVariablesDocx(config, file_name_in, fileNameOut, subs):
         fullText+= paraText+str(i)+"+para+"
         i+=1
     fullText = preprocess(fullText)
-    t = get_engine(context).from_string(fullText)
+    t = get_engine(config).from_string(fullText)
     xtxt = t.render(c)
     xtxt = apply_sequence(xtxt)
     xParaTxts = xtxt.split("+para+")
@@ -245,10 +261,8 @@ def substituteVariablesDocx(config, file_name_in, fileNameOut, subs):
 
 def print_doc(doc):
     paras=doc.paragraphs
-    print("...")
     for para in paras[14:20]:
         print(para.text)
-    print("...")
 
 def combine_docx(file_names, file_name_out):
     combined_document = Document(file_names[0])
@@ -348,11 +362,16 @@ def docx_subfile(config, zip, tmp_dir, subs, filename):
         xml_content = xml_content.decode("UTF-8")
         xml_content = preprocess(xml_content)
         xml_content = xml_content.replace("&quot;", '"')
-        xml_content_subs = str(substituteVariablesPlainString(config, xml_content, subs))
+        try:
+            xml_content_subs = str(substituteVariablesPlainString(config, xml_content, subs))
+        except django.template.exceptions.TemplateSyntaxError:
+            raise TemplateError("Error in Template Structure: "+filename)
+
         with io.open(os.path.join(tmp_dir,filename), 'w', encoding="UTF-8") as f:
             f.write(xml_content_subs)
     except KeyError:
         pass
+
 
 def substituteVariablesDocx_direct(config, file_name_in, file_name_out, subs):
     docx_filename = file_name_in
@@ -433,19 +452,16 @@ def copy_docx_media(tmp_dir_from, tmp_dir_to, filenames_from, filenames_to, rel_
     for filename in filenames_from:
         if filename.find("word/media/")==0:
 #            filename=filename.replace("/",os.sep)
-            print("media file:",tmp_dir_from, tmp_dir_to,  filename)
             source = os.path.join(tmp_dir_from,filename)
             dest = os.path.join(tmp_dir_to,filename)
             if not os.path.exists(os.path.split(dest)[0]):
                 os.makedirs(os.path.split(dest)[0])
-            print(filenames_to)
             if filename in filenames_to:
                 oldfilename = filename
                 i = 1
                 while filename in filenames_to:
                     filename = "word/media/image"+"{0:0>2}".format(i)+".png"
                     i+=1
-                print(oldfilename,">",filename)
                 renames.append((os.path.split(oldfilename)[1],os.path.split(filename)[1]))
                 dest = os.path.join(tmp_dir_to,filename)
             else:
@@ -482,8 +498,6 @@ def combine_docx_direct(file_names_to_combine, file_name_out):
             main_xml_content = main_xml_content[:insertion_point]+break_xml+main_xml_content[insertion_point:]
             insertion_point+=len(break_xml)
         else:    
-            print()
-            print("next file:", file)
             sub_xml_content = get_docx_content(file)
             sub_xml_paras = sub_xml_content["paras"]
             abs_num, num, sub_num_xml = sub_xml_content["numbering"]
@@ -507,7 +521,6 @@ def combine_docx_direct(file_names_to_combine, file_name_out):
 
 #            rel_renames = []
             for rename in renames:
-                print(rename)
                 sub_xml_paras = sub_xml_paras.replace(rename[0],rename[1])
                 for element in rel_elements:
                     if element.attrib["Target"]=="media/"+rename[1]:
@@ -538,9 +551,7 @@ def combine_docx_direct(file_names_to_combine, file_name_out):
                 for scheme in main_num.values():
                     main_number_xml+=scheme
                 main_number_xml+=main_number_xml_post
-            #print(main_number_xml)
     rels_xml = "\n".join([rel_xml_dec,etree.tostring(rel_dom).decode("utf8")])
-    print(rels_xml)
 
 
 
