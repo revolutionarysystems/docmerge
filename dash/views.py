@@ -346,6 +346,7 @@ def account(request):
     widgets.append({"title":"Reports", "glyph":"glyphicon glyphicon-list-alt"})
     widgets.append({"title":"Credit", "glyph":"glyphicon glyphicon-star"})
     widgets.append({"title":"Backup", "glyph":"glyphicon glyphicon-sort"})
+    widgets.append({"title":"Archive", "glyph":"glyphicon glyphicon-file"})
     zipform = UploadZipForm()
     return render(request, 'dash/account.html', {"widgets":widgets, "install_display": install_display, "zipform":zipform})
 

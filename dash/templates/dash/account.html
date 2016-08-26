@@ -17,6 +17,11 @@
                 </form>
                 </div>
                 {% endif %}
+                {% if widget.title == "Archive" %}
+                     <form id = "quickTest" method="GET" class="query-form" action="/cull/" target="_blank">
+                     {{ widget.refreshForm.as_p }}
+                    <button id="quickTestButton" type="submit" class="save btn btn-warning">Cull</button>
+                {% endif %}
                 </div>
                 {% endfor %}
         </div>
