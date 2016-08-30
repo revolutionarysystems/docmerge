@@ -202,6 +202,15 @@ div.content.container{
    margin-top: -4rem;
 }
 
+#refresh > p , #refreshAll > p {
+    display: none;
+}
+
+/*#refresh button, #refreshAll button{
+   float: right; 
+   margin-top: -4rem;
+}*/
+
 
 #logo {
     height: 5.5rem;

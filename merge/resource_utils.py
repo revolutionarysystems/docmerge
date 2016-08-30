@@ -195,12 +195,13 @@ def combined_folder_files(config, path, parent='root', mimeType='*', fields="nex
     return response
 
 
-def refresh_files(config, path, local_dir, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
+def refresh_files(config, path, local_dir, recursive = False, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
+    #print("refreshing:", path, local_dir)
     foldr = folder(config, path, parent)
     files = folder_contents(config, foldr["id"], mimeType=mimeType, fields=fields)
     files_info=[]
     for file in files:
-        print(file)
+#        print(file)
         doc_id =file["id"]
         cwd = get_working_dir()
         localFileName = os.path.join(get_local_dir(local_dir, config), file["name"]).replace("\\", "/").replace("/./", "/")
@@ -209,7 +210,13 @@ def refresh_files(config, path, local_dir, parent='root', mimeType='*', fields="
             # create local 
             if not os.path.exists(localFileName):
                 os.makedirs(localFileName) #actually a directory
+            #print("subfolder")
+            #print("remote", "/".join([path,file["name"]]))
+            #print("local", localFileName)
             files_info.append({"folder": localFileName})
+            if recursive:
+                deep_files = refresh_files(config, "/".join([path,file["name"]]), localFileName, recursive=recursive)
+                files_info = files_info+deep_files
         elif file["mimeType"] == 'application/vnd.google-apps.document':
             if localFileName.find(".") < 0: # no extension
                 files_info.append(exportFile(config, doc_id, localFileName+".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))

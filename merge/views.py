@@ -231,10 +231,11 @@ def refresh(request):
     if remote_library:
         try:
             params = request.GET
+            recursive = getParamDefault(params, "all", "false")
             local = getParamDefault(params, "local", "templates")
             remote_default = gd_path_equivalent(config, local)
             remote = getParamDefault(params, "remote", remote_default)
-            files = refresh_files(config, remote, local)
+            files = refresh_files(config, remote, local, recursive=(recursive=="true"))
             response = {"refreshed_files":files}
         except Exception as ex:
             response = error_response(ex)

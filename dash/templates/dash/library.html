@@ -15,9 +15,16 @@
                         <!--div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12"-->
                             <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
                     {% if widget.refreshForm %}
-                    <form id = "quickTest" method="GET" class="query-form" action="/refresh/" target="_blank">
+                    <form id = "refresh" method="GET" class="query-form" action="/refresh/" target="_blank">
                             {{ widget.refreshForm.as_p }}
-                    <button id="quickTestButton" type="submit" class="save btn btn-warning">Refresh</button>
+                    <button type="submit" class="save btn btn-warning">Refresh</button>
+                    <button type="submit" class="save btn btn-warning" name="all" value="true">Refresh All</button>
+                    </form>
+                    <!--form id = "refreshAll" method="GET" class="query-form" action="/refresh/" target="_blank">
+                            {{ widget.refreshForm.as_p }}
+                             <input type="hidden" name="all" value="true">
+                    <button type="submit" class="save btn btn-warning">Refresh All</button>
+                    </form-->
                     {% endif %}
                     {% if "emplate" in widget.title %}
                     <a href="../test/?template_subfolder={{ widget.subfolder }}" target="_blank">Test</a>
