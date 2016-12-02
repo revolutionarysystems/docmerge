@@ -68,7 +68,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': ['resources/templates/', os.path.join(BASE_DIR, 'resources/templates/').replace('\\', '/'),],
-#        'APP_DIRS': True,
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -76,12 +76,14 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            'loaders': [
-                'merge.relative_path.FileSystem19',
-                'merge.relative_path.AppDirectories19',
-            ],
+ #           'loaders': [
+ #               'merge.relative_path.FileSystem19',
+ #               'merge.relative_path.AppDirectories19',
+ #               'django.template.loaders.app_directories.Loader',
+ #           ],
             'libraries': {
                 'relative_path': 'merge.relative_path',
+                'mathfilters': 'merge.templatetags.mathfilters',
             },
         },
     },
@@ -173,5 +175,5 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join('.', 'static')
 
 
-MULTI_TENANTED = False
-#MULTI_TENANTED = True
+#MULTI_TENANTED = False
+MULTI_TENANTED = True

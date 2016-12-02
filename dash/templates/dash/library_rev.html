@@ -1,0 +1,109 @@
+{% extends 'dash/base.html' %}
+
+{% block content %}
+        <h2><a href="">Resource Library</a><h4>({{remote}})<h4></h2>
+            {% if warning %}
+            <h3>{{ warning }} </h3>
+            <ul>
+                <li><a href = "{{ authuri }}">Click here to link to Google Drive</a></li>
+            </ul>
+            {% endif %}
+            <!--div class="row widget"-->
+            <div class="grid" data-masonry='{ "itemSelector": ".grid-item", "columnWidth": ".grid-item"}'>
+                    {% for widget in widgets %}
+                    <div class="grid-item widget">
+                        <!--div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12"-->
+                            <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
+                    {% if widget.refreshForm %}
+                    <div><a href = "/refresh/?local={{widget.path}}&remote=" title = "Refresh the files in this folder only" target="_blank">Refresh</a>
+                    <span> - </span><a href = "/refresh/?local={{widget.path}}&remote=&all=true" target="_blank" title = "Refresh the files in this folder and all sub-folders">Refresh All</a>
+                    {% endif %}
+                    {% if "emplate" in widget.title %}
+                    <span> - </span><a href="../test/?template_subfolder={{ widget.subfolder }}" target="_blank" title = "Test the templates in this folder">Test</a>
+                    {% endif %}
+                    </div>
+                        <table>
+                        {% for file in widget.files %}
+                            <tr>
+                            {% if file.isdir %}
+                                {% if file.is_remote == 'Y' %}
+                                    <td class="libcell"><a title = "Click to open folder in Library (Google Drive)" href="https://drive.google.com/drive/u/0/folders/{{ file.id }}" target="_blank">lib</a></td>
+                                {% else %}
+                                    <td class="libcell" colspan="1"/>
+                                {% endif %}
+                                <td class="libcell" title="{{file.location}}">
+                                {{ file.status_symbol }}
+                                </td>
+                                {% if file.is_local == 'Y' %}
+                                        <td class="libcell"><a title = "Click to open folder on Server" href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}">srv</a></td>
+                                {% elif file.is_local == 'S' %}
+                                            <td class="libcell"><a title = "Click to open folder on Server" href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}">srv</a></td>
+                                {% else %}
+                                            <td class="libcell"/>
+                                {% endif %}
+                                <!--td class="libcell" colspan=3>
+                                {% if file.name == ".." %}
+                                    {% if file.parent.folder %}
+                                        <a href="../library_folder/?root={{ file.parent.root}}&folders={{ file.parent.folder }}" >.. (Parent folder)</a> 
+                                    {% else %}
+                                        <a href="../library/" >Open Parent</a>
+                                    {% endif %}
+                                {% else %}
+                                    {% if file.is_remote == "Y" %}
+                                            {% if file.is_local == "N" %}
+                                                    <span><strong> {{ file.name }}</strong></span>
+                                            {% else %}
+                                                    <a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" >{{ file.name }}</a>
+                                            {% endif %}
+                                    {% else %}
+                                            <span >{{ file.name }}</span>
+                                    {% endif %}
+                                {% endif %}
+                                </td-->
+                                <!--td class="libcell"-->
+                                {% if file.name == ".." %}
+                                    {% if file.parent.folder %}
+                                        <a href="../library_folder/?root={{ file.parent.root}}&folders={{ file.parent.folder }}" >..</a> 
+                                        <td class="libcell"><a href="../library_folder/?root={{ file.parent.root}}&folders={{ file.parent.folder }}" >(Parent folder)</a></td>
+                                    {% else %}
+                                        <a href="../library/" >..</a>
+                                        <td class="libcell"><a href="../library" >(Parent folder)</a></td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if file.is_local == 'N' %}
+                                        <td class="libcell nb">{{ file.name }}</td>
+                                    {% else %}
+                                        <td class="libcell">{{ file.name }}</td>
+                                    {% endif %}
+                                {% endif %}
+                                </td>
+                            {% else %} <!--file, not folder -->
+                                {% if file.is_remote == 'Y' %}
+                                    <td class="libcell"><a title = "File in Library (Google Drive) - last modified {{ file.modifiedTime }}" href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">lib</a></td>
+                                {% else %}
+                                        <td class="libcell" colspan="1"/>
+                                {% endif %}
+                                <td class="libcell" title="{{file.location}}">
+                                {#{ file.is_remote}}-{{file.is_local}#}
+                                {{ file.status_symbol }}
+                                </td>
+                                {% if file.is_local == 'Y' %}
+                                <td class="libcell"><a title = "File on Server - {{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">srv</a></td>
+                                {% elif file.is_local == 'S' %}
+                                <td class="libcell"><a title = "File on Server - {{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">srv </a></td>
+                                {% else %}
+                                <td class="libcell"/>
+                                {% endif %}
+                                {% if file.is_local == 'Y' %}
+                                <td class="libcell">{{ file.name }}</td>
+                                {% else %}
+                                <td class="libcell nb">{{ file.name }}</td>
+                                {% endif %}
+                            {% endif %}
+                            <tr>
+                        {% endfor %}
+                        </table>
+                    </div>
+                {% endfor %}
+        </div>
+{% endblock %}        

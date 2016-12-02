@@ -1,3 +1,4 @@
+import re
 import os
 import zipfile
 from django.shortcuts import render
@@ -73,8 +74,12 @@ def merge_raw(request, method="POST"):
     data_root = getParamDefault(params, "data_root", "docroot")
     branding_folder = getParamDefault(params, "branding_folder", "/"+gdrive_root+tenant_extension+"/Branding")
     branding_file = getParamDefault(params, "branding_file", None)
+    if branding_file == "None":
+        branding_file = None
     xform_folder = getParamDefault(params, "xform_folder", "/"+gdrive_root+tenant_extension+"/Transforms")
     xform_file = getParamDefault(params, "xform_file", None)
+    if xform_file == "None":
+        xform_file = None
     templateName = getParamDefault(params, "template", "AddParty.md")
     email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
     templateName = templateName.replace("\\", "/")
@@ -288,26 +293,58 @@ def download_zip(request):
 #    return JsonResponse(response)
 
 @csrf_exempt
-def upload_zip(request):
+def upload_zip(request) :
     config = get_user_config(request.user)
     form = UploadZipForm(request.POST, request.FILES)
     target_dir = get_local_dir(".", config)
     target_parent = get_local_dir("..", config)
     target = os.path.join(target_dir,request.FILES['file']._name)
-    handle_uploaded_zip(request.FILES['file'], target, target_parent)
-    return JsonResponse({"file":target})
+    success, message = handle_uploaded_zip(request.FILES['file'], target, target_parent, config.tenant+"/")
+    return JsonResponse({"file":target, "success":success, "message": message})
 
-def handle_uploaded_zip(f, target, target_parent):
+def handle_uploaded_zip(f, target, target_parent, account):
     with open(target, 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
     zfile = zipfile.ZipFile(target)
-    zfile.extractall(target_parent)
+    if account ==".":
+        zfile.extractall(target_parent)
+        return True, "uploaded"
+    else:
+        try:
+            zfile.extractall(target_parent,[account])
+            return True, "uploaded to "+account
+        except:
+            return False, "no content for "+account
+
+def to_days(timeparam):
+    p = re.compile("^(?P<magnitude>[0-9]+)(?P<unit>[dDhHmM])$")
+    m=p.match(timeparam)
+    try:
+        magnitude = m.group('magnitude')
+        unit = m.group('unit')
+        magnum = int(magnitude)
+        if unit.lower()=="d":
+            return magnum
+        elif unit.lower()=="h":
+            return magnum / 24.0
+        elif unit.lower()=="m":
+            return magnum / 1440.0
+    except:
+        raise ValueError("Invalid time period: " + timeparam)
+
 
 def cull_outputs(request):
     config = get_user_config(request.user)
-    files = process_local_files(config, "dump", days_ago=1, days_recent=1000, action="delete")
-    files += process_local_files(config, "output", days_ago=1, days_recent=1000, action="delete")
-    files += process_local_files(config, "requests", days_ago=2, days_recent=1000, action="delete")
+    params = request.GET
+    retain_dump = getParamDefault(params, "retain_dump", "1D")
+    retain_output = getParamDefault(params, "retain_output", "1D")
+    retain_requests = getParamDefault(params, "retain_requests", "62D")
+    retain_dump_days = to_days(retain_dump)
+    retain_output_days = to_days(retain_output)
+    retain_requests_days = to_days(retain_requests)
+    files = process_local_files(config, "dump", days_ago=retain_dump_days, days_recent=1000, action="delete")
+    files += process_local_files(config, "output", days_ago=retain_output_days, days_recent=1000, action="delete")
+    files += process_local_files(config, "requests", days_ago=retain_requests_days, days_recent=1000, action="delete")
     return JsonResponse({"files_culled":len(files)})
 

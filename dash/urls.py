@@ -3,13 +3,6 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 
-
-
-url(r'^accounts/login/$', auth_views.login),
- 
-url(r'^accounts/login/$', auth_views.login),
-
-
 urlpatterns = [
     url(r'^$', views.dash, name='dash'),
     url(r'^home/$', views.dash, name='home'),
@@ -29,7 +22,8 @@ urlpatterns = [
     url(r'^api-guide/$', views.api_guide, name='api_guide'),
     url(r'^flow-guide/$', views.flow_guide, name='flow_guide'),
     url(r'^template-guide/$', views.template_guide, name='template_guide'),
-    url(r'^accounts/login/$', auth_views.login),
-    url(r'^accounts/logout/$', views.logout_view),
+    url(r'^login/', auth_views.login, name='login'),
+    url(r'^accounts/login/', auth_views.login, name='login'),
+    url(r'^accounts/logout/', views.logout_view),
  #   url(r'^(?P<shelf>\w+)/$', views.dash, name='dash'),
 ]

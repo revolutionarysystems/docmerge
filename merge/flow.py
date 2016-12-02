@@ -9,10 +9,11 @@ import json
 import time
 from .gd_resource_utils import (folder_file, folder, uploadAsGoogleDoc, uploadFile, 
     exportFile, getFile, file_content_as, gd_path_equivalent)
-from .merge_utils import (substituteVariablesDocx, substituteVariablesDocx_direct, substituteVariablesPlain,
+from .merge_utils import (substituteVariablesDocx, substituteVariablesDocx_direct, substituteVariablesPlain, substituteVariablesPlainString,
     convert_markdown, convert_pdf, convert_pdf_abiword, email_file, 
     combine_docx, combine_docx_direct, extract_regex_matches_docx,
-    substituteVariablesPlainString, merge_docx_footer, merge_docx_header, preprocess_docx_template, postprocess_docx)
+    substituteVariablesPlainString, merge_docx_footer, merge_docx_header, preprocess_docx_template, 
+    postprocess_docx, watermark_pdf)
 from .resource_utils import (push_local_txt, push_local_txt_fullname,get_local_dir)
 from traceback import format_exc
 from .config import remote_library
@@ -291,7 +292,12 @@ def process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs
     else:
         return {}
 
-
+def wmark_pdf(config, step, localMergedFileName, template_subfolder, subs):
+    if template_subfolder:
+        watermark_name = os.path.join(get_local_dir("templates", config),template_subfolder,step["watermark"])
+    else:
+        watermark_name = os.path.join(get_local_dir("templates", config),step["watermark"])
+    return watermark_pdf(localMergedFileName+".pdf", watermark_name)
 
 '''
 # upload to Google drive, optionally converting to Google Drive format
@@ -323,7 +329,8 @@ def process_extract(config, step, localFileName, subs):
     return {"file":extract_file_name, "link":subs["site"]+"file/?name="+extract_file_name.split("/")[-1]+"&path="+step["folder"]}
 
 # send email
-def process_email(config, step, localFileName, you, credentials):
+def process_email(config, step, localFileName, you, credentials, subs):
+    you = substituteVariablesPlainString(config, you, subs) #Placeholder replacement for email address
     return email_file(localFileName, step["from"], you, step["subject"], credentials) 
 
 # push file to resource library
@@ -408,6 +415,9 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
             if step["step"]=="pdf":
                 outcome = process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs)
 
+            if step["step"]=="watermark_pdf":
+                outcome = wmark_pdf(config, step, localMergedFileName, template_subfolder, subs)
+
             if step["step"]=="upload":
                 if local_folder=="templates":
                     localFileName = localTemplateFileName
@@ -415,6 +425,12 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
                     upload_subfolder = template_subfolder
                 else:
                     localFileName = localMergedFileName
+                    if output_folder==None:
+                        output_folder = "output"
+                    print("output_folder")
+                    print(output_folder)
+                    output_folder = gd_path_equivalent(config, output_folder)
+                    print(output_folder)
                     upload_id = folder(config, output_folder)["id"]
                     upload_subfolder = None
                 outcome = process_upload(config, step, localFileName, upload_subfolder, upload_id)
@@ -422,7 +438,7 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
                 doc_mimetype = outcome["mimeType"]
 
             if step["step"]=="email":
-                outcome = process_email(config, step, localMergedFileName, you, email_credentials)
+                outcome = process_email(config, step, localMergedFileName, you, email_credentials, subs)
 
             if step["step"]=="push":
                 outcome = process_push(cwd, config, step, localTemplateFileName, "templates/"+template_subfolder+"/", subs, payload=payload)

@@ -206,6 +206,13 @@ div.content.container{
     display: none;
 }
 
+.refresh.query-form > p {
+    display: none;
+}
+
+.grid .widget a {
+    ###
+}
 /*#refresh button, #refreshAll button{
    float: right; 
    margin-top: -4rem;

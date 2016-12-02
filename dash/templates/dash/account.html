@@ -1,3 +1,4 @@
+{#% load relative_path %#}
 {% extends 'dash/base.html' %}
 
 {% block content %}
@@ -18,6 +19,9 @@
                 </div>
                 {% endif %}
                 {% if widget.title == "Archive" %}
+                    <li>Output files: {{widget.usage.output}}</li>
+                    <li>Request files: {{widget.usage.requests}}</li>
+                    <li>Dump files: {{widget.usage.dump}}</li>
                      <form id = "quickTest" method="GET" class="query-form" action="/cull/" target="_blank">
                      {{ widget.refreshForm.as_p }}
                     <button id="quickTestButton" type="submit" class="save btn btn-warning">Cull</button>

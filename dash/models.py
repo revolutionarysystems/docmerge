@@ -19,7 +19,7 @@ class MergeJob(models.Model):
     branding_folder = models.CharField(max_length=100)
     branding_file = models.CharField(max_length=100, choices=[("--","--")])
     xform_folder = models.CharField(max_length=100)
-    xform_file = models.CharField(max_length=100, choices=[("--","--")])
+    xform_file = models.CharField(max_length=100, choices=[("--","--"),("None","None")])
 
 class RefreshJob(models.Model):
 

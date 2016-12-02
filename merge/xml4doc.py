@@ -1,12 +1,15 @@
+import os
+import base64
 import xmltodict
 import iso8601
 import json
 import datetime
 #from .testData import xml0, xml1
 from .gd_resource_utils import folder_file,file_content_as
-from .resource_utils import strip_xml_dec,get_xml_content
+from .resource_utils import strip_xml_dec,get_xml_content,get_json_content, get_local_dir
 import lxml.etree as etree
 import re
+from random import randint
 
 xml = '''
 '''
@@ -88,16 +91,27 @@ def force_lists(doc):
             doc[key]=goodlist
     return doc
 
-def alternate_values(doc):
+def write_image_file(key, imgbytes, config):
+    extension = key[key.rfind("."):]
+    filename = key.replace(extension,"_"+str(randint(0,100000))+extension)
+    filepath = os.path.join(get_local_dir("dump", config),filename)
+    imgbytes = base64.b64decode(imgbytes.encode("UTF-8"))
+    with open(filepath, "wb") as image_file_copy:
+        image_file_copy.write(imgbytes)
+        image_file_copy.close()
+    return filepath
+
+
+def alternate_values(doc, config, prefix=None):    
     newValues = {}
     for key in doc.keys():
         node = doc[key]
         if isinstance(node, dict):
-            alternate_values(node)
+            alternate_values(node, config, prefix=key)
         elif isinstance(node, list):
             for item in node:
                 if isinstance(item, dict):
-                    alternate_values(item)
+                    alternate_values(item, config, prefix=key)
         else:
             if key.find("UserId")>=0:
                 value = doc[key].replace("-","")
@@ -107,6 +121,14 @@ def alternate_values(doc):
             if looks_like_boolean != None:
                 key_bool = key+"_bool"
                 newValues[key_bool]=looks_like_boolean
+            if key.find(".")>0:
+            #if key[-4:]=="_img":
+                if prefix:
+                    ext_key = ".".join([prefix, key])
+                else:
+                    ext_key = key
+                #newValues[key.replace("img","file")]=write_image_file(ext_key, doc[key], config)
+                newValues[key.replace(".","_")+"_file"]=write_image_file(ext_key, doc[key], config)
     for newKey in newValues.keys():
         doc[newKey]=newValues[newKey]
     return doc
@@ -135,29 +157,35 @@ def dictify(par_dict, node_name, node_value):
         dictify(par_dict[root], remainder, node_value)
 
 
-def getData(config, test_case = None, payload=None, payload_type="xml", params = None, data_file=None, remote_data_folder = None, local_data_folder = None, xform_folder = None, xform_file = None):
+def getData(config, test_case = None, payload=None, payload_type="xml", params = None, data_file=None, remote_data_folder = None, local_data_folder = None, xform_folder = None, xform_file = None, prefix=None):
     data = None
     if payload and payload_type.lower()=="xml":
         if xform_file:
                 payload = xform_xml(config, payload, "transforms", xform_folder, xform_file)
         data = xmltodict.parse(payload)
-    elif payload and payload_type=="json":
+    elif payload and payload_type.lower()=="json":
+        payload = payload.replace("\\", "\\\\")
         data = json.loads(payload)
     elif payload_type == "params" and params:
         data = {}
         for key in params.keys():
             dictify(data, key, params[key])
     elif data_file:
-        doc_xml = get_xml_content(config, local_data_folder, remote_data_folder, data_file)
+        if data_file.find(".json")>=0:
+            payload_file = get_json_content(config, local_data_folder, remote_data_folder, data_file)
+            payload_file = payload_file.replace("\\", "\\\\")
+            data = json.loads(payload_file)
+        else:
+            doc_xml = get_xml_content(config, local_data_folder, remote_data_folder, data_file)
 #        data_doc_id = folder_file(data_folder, data_file)["id"]
 #        doc_xml = file_content_as(data_doc_id)
-        if xform_file:
-            doc_xml = xform_xml(config, doc_xml, "transforms", xform_folder, xform_file)
-        data = xmltodict.parse(doc_xml) 
+            if xform_file:
+                doc_xml = xform_xml(config, doc_xml, "transforms", xform_folder, xform_file)
+            data = xmltodict.parse(doc_xml) 
     if data == None: #default
         data = xmltodict.parse(xml)
     data = force_lists(data)
-    data = alternate_values(data)
+    data = alternate_values(data, config, prefix=prefix)
     return data
 
 #print(json.dumps(getData(), indent=2))

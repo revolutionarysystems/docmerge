@@ -121,9 +121,11 @@ def make_test_forms(config, mergeJob, template_subfolder):
         files = folder_files(config, "test_data")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
         mergeForm.fields['data_file'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
+        advMergeForm.fields['data_file'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
         files = folder_files(config, "transforms")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
-        mergeForm.fields['xform_file'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
+        mergeForm.fields['xform_file'].choices=[("","---"),("None","None")]+[(file["name"],file["name"]) for file in files]
+        advMergeForm.fields['xform_file'].choices=[("","---"),("None","None")]+[(file["name"],file["name"]) for file in files]
         items = folder_files(config, "templates"+template_subfolder)
         files = []
         folders = []
@@ -141,15 +143,22 @@ def make_test_forms(config, mergeJob, template_subfolder):
                 files.append(item)
         folders = sorted(folders, key=lambda k: k['ext']+k['name']) 
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
-        mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
+        mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder),(".",".")]
+        advMergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder),(".",".")]
         navForm.fields['template_subfolder'].label = "Template folder"
         navForm.fields['template_subfolder'].choices=[(folder["name"],folder["name"]) for folder in folders]
         mergeForm.fields['template_subfolder'].widget = forms.HiddenInput()
-        mergeForm.fields['data_root'].widget = forms.HiddenInput()
+        #mergeForm.fields['data_root'].widget = forms.HiddenInput()
         mergeForm.fields['template'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
+        advMergeForm.fields['template'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
         files = folder_files(config, "flows")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
         mergeForm.fields['flow'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
+        advMergeForm.fields['flow'].choices=[("","---")]+[(file["name"],file["name"]) for file in files]
+        files = folder_files(config, "branding")
+        files = sorted(files, key=lambda k: k['ext']+k['name']) 
+        mergeForm.fields['branding_file'].choices=[("","---"),("None","None")]+[(file["name"],file["name"]) for file in files]
+        advMergeForm.fields['branding_file'].choices=[("","---"),("None","None")]+[(file["name"],file["name"]) for file in files]
         return navForm, mergeForm, advMergeForm
 
 @login_required 
@@ -341,12 +350,15 @@ def archive(request):
 def account(request):
     config = get_user_config(request.user)
     widgets = []
+    nrequests = count_local_files(config, "requests", days_ago=0, days_recent=1000)
+    noutput = count_local_files(config, "output", days_ago=0, days_recent=1000)
+    ndump = count_local_files(config, "dump", days_ago=0, days_recent=1000)
     widgets.append({"title":"Configuration", "glyph":"glyphicon glyphicon-cog"})
     widgets.append({"title":"Users", "glyph":"glyphicon glyphicon-user"})
     widgets.append({"title":"Reports", "glyph":"glyphicon glyphicon-list-alt"})
     widgets.append({"title":"Credit", "glyph":"glyphicon glyphicon-star"})
     widgets.append({"title":"Backup", "glyph":"glyphicon glyphicon-sort"})
-    widgets.append({"title":"Archive", "glyph":"glyphicon glyphicon-file"})
+    widgets.append({"title":"Archive", "glyph":"glyphicon glyphicon-file", "usage":{"requests":nrequests, "output":noutput, "dump":ndump}})
     zipform = UploadZipForm()
     return render(request, 'dash/account.html', {"widgets":widgets, "install_display": install_display, "zipform":zipform})
 

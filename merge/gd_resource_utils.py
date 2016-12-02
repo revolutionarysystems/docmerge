@@ -203,6 +203,8 @@ def gd_path_equivalent(config, path):
         remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+tenant_extension+"/Transforms")
     elif path.lower().find("output")==0:
         remote_equiv = path.replace(path.split("/")[0],"/"+gdrive_root+tenant_extension+"/Output")
+    elif path.lower().find("output")>0:
+        remote_equiv = "/"+gdrive_root+tenant_extension+"/Output"
     else:
         remote_equiv = None    
     return remote_equiv
@@ -260,6 +262,12 @@ def get_xml_content(local_data_folder, remote_data_folder, data_file):
     if type(content) is bytes:
         content = content.decode("UTF-8")
     return strip_xml_dec(content)
+
+def get_json_content(local_data_folder, remote_data_folder, data_file):
+    content = get_txt_content(local_data_folder, remote_data_folder, data_file)
+    if type(content) is bytes:
+        content = content.decode("UTF-8")
+    return content
 
 def gd_build_folders(config):
     folders = [

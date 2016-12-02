@@ -92,11 +92,14 @@ def process_local_files(config, subfolder, days_ago=7, days_recent=365, action="
     to_process = []
     for f in os.listdir(path):
         full = os.path.join(path, f)
-        if os.stat(full).st_mtime < now - days_ago * 86400 and os.stat(full).st_mtime >= now - days_recent * 86400:
-            if os.path.isfile(full):
-                to_process.append(f)
-                if action == "delete":
-                    os.remove(full)
+        try:
+            if os.stat(full).st_mtime < now - days_ago * 86400 and os.stat(full).st_mtime >= now - days_recent * 86400:
+                if os.path.isfile(full):
+                    to_process.append(f)
+                    if action == "delete":
+                        os.remove(full)
+        except FileNotFoundError:
+            pass # temp files can exist, don't count if file no longer there
     return to_process
 
 def count_local_files(config, subfolder, days_ago=7, days_recent=365):
@@ -253,6 +256,12 @@ def get_xml_content(config, local_data_folder, remote_data_folder, data_file):
     if type(content) is bytes:
         content = content.decode("UTF-8")
     return strip_xml_dec(content)
+
+def get_json_content(config, local_data_folder, remote_data_folder, data_file):
+    content = get_txt_content(config, local_data_folder, remote_data_folder, data_file)
+    if type(content) is bytes:
+        content = content.decode("UTF-8")
+    return content
 
 def zip_local_dirs(path, zip_file_name, selected_subdirs = ["templates", "flows", "transforms", "test_data", "branding"]):
     zip_name = os.path.join(path,zip_file_name+".zip")

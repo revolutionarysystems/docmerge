@@ -14,21 +14,15 @@
                     <div class="grid-item widget">
                         <!--div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12"-->
                             <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
+                    <div>                            
                     {% if widget.refreshForm %}
-                    <form id = "refresh" method="GET" class="query-form" action="/refresh/" target="_blank">
-                            {{ widget.refreshForm.as_p }}
-                    <button type="submit" class="save btn btn-warning">Refresh</button>
-                    <button type="submit" class="save btn btn-warning" name="all" value="true">Refresh All</button>
-                    </form>
-                    <!--form id = "refreshAll" method="GET" class="query-form" action="/refresh/" target="_blank">
-                            {{ widget.refreshForm.as_p }}
-                             <input type="hidden" name="all" value="true">
-                    <button type="submit" class="save btn btn-warning">Refresh All</button>
-                    </form-->
+                    <a href = "/refresh/?local={{widget.path}}&remote=" title = "Refresh the files in this folder only" target="_blank">Refresh</a>
+                    <span> - </span><a href = "/refresh/?local={{widget.path}}&remote=&all=true" target="_blank" title = "Refresh the files in this folder and all sub-folders">Refresh All</a>
                     {% endif %}
-                    {% if "emplate" in widget.title %}
-                    <a href="../test/?template_subfolder={{ widget.subfolder }}" target="_blank">Test</a>
+                    {% if "emplate" in widget.title %}{% if widget.refreshForm %}
+                    <span> - </span>{% endif %} <a href="../test/?template_subfolder={{ widget.subfolder }}" target="_blank" title = "Test the templates in this folder">Test</a>
                     {% endif %}
+                    </div>
                     </form>
                         <table>
                         {% for file in widget.files %}

@@ -4,6 +4,7 @@ from merge.xml4doc import *
 from merge.models import ClientConfig
 import string
 from merge.gd_service import ensure_initialised
+#import merge.mathfilters
 
 creds = {"username":"andrewcaelliott@gmail.com", "password":"napier", "server":"smtp.gmail.com:587"}
 
@@ -324,13 +325,25 @@ Library = {
 
 
 EPDemo = {
-	"data_file":"sample.xml",
+	"data_file":"adaptive_img.json",
 	"xform_file":None,
 	"flow_file":"docx.flo",
-	"template_subfolder":"",
-	"template_file":"Sample Document",
+	"template_subfolder":"Demo Examples",
+	"template_file":"InvoiceAdaptive8",
 	"payload":None,
-	"uniq":"122",
+	"uniq":"134",
+	"branding_file":"testco.json",
+	"expected_outcomes": {}
+}
+
+EPDemo2 = {
+	"data_file":"liontamer2.xml",
+	"xform_file":None,
+	"flow_file":"docx-wm.flo",
+	"template_subfolder":"Demo Examples",
+	"template_file":"Job Description",
+	"payload":None,
+	"uniq":"134",
 	"expected_outcomes": {}
 }
 
@@ -359,15 +372,26 @@ def test_flow(config, test_case):
 	subs = getData(config, remote_data_folder = remote+"/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], payload_type=get(test_case,"payload_type"), 
 	                   params=get(test_case,"params"), xform_folder = remote+"/Transforms", 
-	                   xform_file=test_case["xform_file"])["docroot"]#	flow1 = get_flow("/Doc Merge/Flows", "docx")
+	                   xform_file=test_case["xform_file"])
+	subs = subs["docroot"]
 	subs["site"]="localhost:8001"
+	branding_folder="Branding"
+	try:
+		branding_file= test_case["branding_file"]
+		branding_subs = getData(config, local_data_folder = "branding", remote_data_folder = branding_folder, data_file=branding_file, prefix="branding")
+		subs["branding"]= branding_subs
+	except:
+		branding_file=None
+
 	cwd = get_working_dir()
+	print (subs)
 	flow = get_flow(cwd, config, "flows", remote+"/Flows", test_case["flow_file"])
 	outcomes = process_flow(cwd, config, flow, remote+"/Templates", 
 		test_case["template_subfolder"], 
 		test_case["template_file"], 
 		test_case["uniq"], subs, remote+"/Output", None, None, None, 
 		payload=test_case["payload"])
+
 #	assert (outcomes["success"]==(test_case["expected_outcomes"]["success"]))
 	#assert (len(outcomes["steps"])==(len(test_case["expected_outcomes"]["steps"])))
 	for step in outcomes["steps"]:
@@ -383,18 +407,19 @@ def test_flow(config, test_case):
 
 def run():
 
+
 	config = ClientConfig()
 	config.tenant="ECV"
 	ensure_initialised(config)
 #	test_flow(compound_TA)	test_flow(ECVInv)
 
 #	test_data(config, TA)
-	test_flow(config, Welcome)
+#	test_flow(config, Welcome)
 #	test_flow(Library)
-#	test_flow(ECVSL)
+#	test_flow(ECVTNC_2)
 #	test_flow(plain_TA)
 #	test_flow(plain_TA_S7)
-#	test_data(EPDemo)
+	test_flow(config, EPDemo2)
 
 
 

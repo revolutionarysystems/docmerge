@@ -18,13 +18,13 @@
 		                {{ navForm.as_p }}
 		                <button type="submit" class="save btn btn-warning">Change folder</button>
 		        </form>
-	            	<input id="form_control" type="checkbox"/><label for="form_control">Advanced</label>
 		 	<h3><a href=""><span class="glyphicon glyphicon-hand-up"></span> Request document merge</a></h2>
+	            	<input id="form_control" type="checkbox"/><label for="form_control">Advanced</label>
 		        <form id="basic" method="GET" class="query-form" action="/test-result-get">
 		                {{ mergeForm.as_p }}
 		                <button type="submit" class="save btn btn-warning">Request Doc</button>
 		        </form>
-		        <form id="advanced" method="POST" class="query-form" action="/test-result-post/">
+		        <form id="advanced" method="GET" class="query-form" action="/test-result-get/">
 		                {{ advMergeForm.as_p }}
 		                <button type="submit" class="save btn btn-warning">Request Doc</button>
 		        </form>

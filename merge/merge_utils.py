@@ -20,6 +20,8 @@ from email.mime.text import MIMEText
 import difflib
 from subprocess import check_output
 import lxml.etree as etree
+import PyPDF2
+#import merge.mathfilters
 
 from .resource_utils import (
     get_working_dir, strip_xml_dec, get_xml_dec, get_output_dir, get_local_dir, get_local_txt_content)
@@ -49,6 +51,14 @@ def get_engine(config):
         dirs = [
             os.path.join(local_root, 'templates/').replace('\\', '/'), 
             os.path.join(settings.BASE_DIR, local_root,config.tenant+'/templates/').replace('\\', '/'),],
+
+        libraries={
+                'relative_path': 'merge.relative_path',
+                'mathfilters': 'merge.templatetags.mathfilters',
+        },
+
+            ## add options for relative path names
+            ## add options for maths
         )
 #    dirs = [
 #            os.path.join(local_root, 'templates/').replace('\\', '/'), 
@@ -78,7 +88,7 @@ def substituteVariablesPlainString(config, stringIn, subs):
 def preprocess(text):
     text = text.replace("{% #A", "{% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'")    
     text = text.replace("{% #a", "{% cycle 'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm' 'n' 'o' 'p' 'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z'")    
-    text = text.replace("{% #9", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' '23' '24' '25' '26' '27' '28' '29' '30' '31' '32' '33' '34' '35' '36' '37' '38' '39' '40' '41' '42' '43' '44' '45' '46' '47' '48' '49'")    
+    text = text.replace("{% #9", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' '23' '24' '25' '26' '27' '28' '29' '30' '31' '32' '33' '34' '35' '36' '37' '38' '39' '40' '41' '42' '43' '44' '45' '46' '47' '48' '49' ")    
     text = text.replace("{% #I", "{% cycle 'I' 'II' 'III' 'IV' 'V' 'VI' 'VII' 'VIII' 'IX' 'X' 'XI' 'XII' 'XIII' 'XIV' 'XV' 'XVI' 'XVII' 'XVIII' 'XIX' 'XX'")    
     text = text.replace("{% #i", "{% cycle 'i' 'ii' 'iii' 'iv' 'v' 'vi' 'vii' 'viii' 'ix' 'x' 'xi' 'xii' 'xiii' 'xiv' 'xv' 'xvi' 'xvii' 'xviii' 'xix' 'xx'")    
     return text
@@ -174,6 +184,7 @@ def extract_regex_matches_docx(file_name_in, regex, wrap=None, root_tag="list", 
     #            literal = m.group('literal')
 
 
+
 def preprocess_docx_template(file_name_in, file_name_out):
     timestamp_template = os.stat(file_name_in).st_mtime
     prep_file_exists = False
@@ -193,6 +204,18 @@ def preprocess_docx_template(file_name_in, file_name_out):
                     run.text = "[##]"+txt
         doc_in.save(file_name_out)
 
+def process_newlines(para):
+    runs = para.runs
+    for run in runs:
+        txt = run.text
+        if (txt.find("\\n"))>=0:
+            run.text = ""
+            while (txt.find("\\n"))>=0:
+                run.add_text(txt[:txt.find("\\n")])
+                run.add_break()
+                txt = txt[txt.find("\\n")+2:]
+            run.add_text(txt)
+
 def postprocess_docx(file_name_in):
     doc_in = Document(docx=file_name_in)
     for p in doc_in.paragraphs:
@@ -200,6 +223,13 @@ def postprocess_docx(file_name_in):
             removePara(p)
         if p.text.find("[##]")>=0:
             p.text = p.text.replace("[##]","")
+        process_newlines(p)
+    for t in doc_in.tables:
+        for r in t.rows:
+            for c in r.cells:
+                for p in c.paragraphs:
+                    process_newlines(p)
+
     doc_in.save(file_name_in)
 
 
@@ -312,9 +342,9 @@ def email_file(baseFileName, me, you, subject, credentials):
     password = credentials["password"]
     server = smtplib.SMTP(credentials["server"])
 
-    server.ehlo()
+#    server.ehlo()
     server.starttls()
-    server.ehlo()
+ #   server.ehlo()
     server.login(username,password)
 #    print(me)
 #    print(you.replace(" ","+"))
@@ -364,6 +394,7 @@ def docx_subfile(config, zip, tmp_dir, subs, filename):
         xml_content = xml_content.replace("&quot;", '"')
         try:
             xml_content_subs = str(substituteVariablesPlainString(config, xml_content, subs))
+            #xml_content_subs = xml_content_subs.replace("\\n", "<w:br/>")
         except django.template.exceptions.TemplateSyntaxError:
             raise TemplateError("Error in Template Structure: "+filename)
 
@@ -371,6 +402,48 @@ def docx_subfile(config, zip, tmp_dir, subs, filename):
             f.write(xml_content_subs)
     except KeyError:
         pass
+
+def build_keys_list(doc, prefix=None):
+    img_files = []
+    for key in doc.keys():
+        node = doc[key]
+        if isinstance(node, dict):
+            img_files += build_keys_list(node, prefix = key)
+        elif isinstance(node, list):
+            for item in node:
+                if isinstance(item, dict):
+                    img_files += build_keys_list(item, prefix = key)
+        else:
+            if key.rfind(".")>1:
+#            if key[-4:]=="_img":
+                if prefix:
+                    ext_key = ".".join([prefix, key])
+                else:
+                    ext_key = key
+                img_files.append((ext_key, doc[key.replace(".","_")+"_file"]))
+    print(img_files)
+    return img_files
+
+def docx_subfile_subst_images(config, zip, subs, filename):
+    image_copies = []
+    try:
+        xml_content = zip.read(filename)
+        xml_content = xml_content.decode("UTF-8")
+        xml_content = preprocess(xml_content)
+        xml_content = xml_content.replace("&quot;", '"')
+        keys_list = build_keys_list(subs)
+        for pair in keys_list:
+            target = pair[0]
+            sub = pair[1]
+            #sub = subs[key.replace("img", "file")]
+            find_snippet = xml_content.find(target)
+            if find_snippet >= 0:
+                snippet = xml_content[find_snippet-15:find_snippet+50]
+                trimsnip = snippet[snippet.find('name="')+6:snippet.find('/>')-1]
+                image_copies.append((sub, trimsnip))
+    except KeyError:
+        pass
+    return image_copies
 
 
 def substituteVariablesDocx_direct(config, file_name_in, file_name_out, subs):
@@ -382,13 +455,17 @@ def substituteVariablesDocx_direct(config, file_name_in, file_name_out, subs):
     zip.extractall(tmp_dir)
 
     candidates = ["word/document.xml","word/header1.xml","word/header2.xml","word/footer1.xml","word/footer2.xml"]
+    image_subs=[]
     for filename in filenames:
         if filename in candidates:
             docx_subfile(config, zip, tmp_dir, subs, filename)
+            image_subs+= docx_subfile_subst_images(config, zip, subs, filename)
 
     with zipfile.ZipFile(file_name_out, "w") as docx:
         for filename in filenames:
             docx.write(os.path.join(tmp_dir,filename), filename)
+        for image_sub in image_subs:
+            docx.write(image_sub[0], "word/media/"+image_sub[1])
     shutil.rmtree(tmp_dir)
 
     return({"file":file_name_out})
@@ -581,4 +658,19 @@ def convert_pdf_abiword(filename_in, filename_out, outdir = "."):
     command = "abiword --to=pdf "+filename_in+" --to-name="+filename_out
     response = shellCommand(command)
     return {"file":filename_out, "response":response, "command": command}
+
+def watermark_pdf(target, wmark):
+    optarget = target.replace(".pdf",".wm.pdf")
+    target_file = PyPDF2.PdfFileReader(open(target, "rb"))
+    wmark_file = PyPDF2.PdfFileReader(open(wmark, "rb"))
+    output_file = PyPDF2.PdfFileWriter()
+    for i in range(0, target_file.numPages):
+        pageObj = target_file.getPage(i)
+        print ("Watermarking page {} of {}".format(i+1, target_file.numPages))
+        pageObj.mergePage(wmark_file.getPage(0))
+        output_file.addPage(pageObj)
+    with open(optarget, "wb") as outputStream:
+        output_file.write(outputStream)
+    return {"filename":optarget}
+
 

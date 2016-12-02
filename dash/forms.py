@@ -25,6 +25,7 @@ class SimpleMergeForm(forms.ModelForm):
             'template_subfolder',
             'template', 'flow',
             'data_file', 'data_root',
+            'branding_file',
             'xform_file',
             )                
 #        fields = (
