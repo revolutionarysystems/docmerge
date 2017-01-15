@@ -412,7 +412,8 @@ def build_keys_list(doc, prefix=None):
         elif isinstance(node, list):
             for item in node:
                 if isinstance(item, dict):
-                    img_files += build_keys_list(item, prefix = key)
+                    img_files += build_keys_list(item, prefix=key)
+                    #img_files += build_keys_list(item, prefix=key+"."+str(node.index(item)))
         else:
             if key.rfind(".")>1:
 #            if key[-4:]=="_img":
@@ -421,26 +422,43 @@ def build_keys_list(doc, prefix=None):
                 else:
                     ext_key = key
                 img_files.append((ext_key, doc[key.replace(".","_")+"_file"]))
-    print(img_files)
     return img_files
 
-def docx_subfile_subst_images(config, zip, subs, filename):
+def docx_subfile_subst_images(config, zip, subs, tmp_dir, filename):
     image_copies = []
     try:
-        xml_content = zip.read(filename)
-        xml_content = xml_content.decode("UTF-8")
+        with io.open(os.path.join(tmp_dir,filename), 'r', encoding="UTF-8") as f:
+            xml_content = f.read()
+        #xml_content = zip.read(filename)
+        #xml_content = xml_content.decode("UTF-8")
         xml_content = preprocess(xml_content)
         xml_content = xml_content.replace("&quot;", '"')
         keys_list = build_keys_list(subs)
+        #print("keys_list")
+        #print(keys_list)
         for pair in keys_list:
             target = pair[0]
+            #print("target=",target)
             sub = pair[1]
             #sub = subs[key.replace("img", "file")]
             find_snippet = xml_content.find(target)
             if find_snippet >= 0:
-                snippet = xml_content[find_snippet-15:find_snippet+50]
+                snippet = xml_content[find_snippet-15:find_snippet+60]
                 trimsnip = snippet[snippet.find('name="')+6:snippet.find('/>')-1]
+                #print(find_snippet)
+                #print(snippet)
+                #print(trimsnip)
+                #print(sub)
+                #barefile=os.path.basename(sub)
+                #print(barefile)
+                #xml_content=xml_content.replace(target, "replaced.png",1)
+                #xml_content=xml_content.replace(trimsnip, barefile,1)
+                #print(xml_content[find_snippet-15:find_snippet+60])
+                #print()
                 image_copies.append((sub, trimsnip))
+                #image_copies.append((sub, barefile))
+        with io.open(os.path.join(tmp_dir,filename), 'w', encoding="UTF-8") as f:
+            f.write(xml_content)
     except KeyError:
         pass
     return image_copies
@@ -459,13 +477,19 @@ def substituteVariablesDocx_direct(config, file_name_in, file_name_out, subs):
     for filename in filenames:
         if filename in candidates:
             docx_subfile(config, zip, tmp_dir, subs, filename)
-            image_subs+= docx_subfile_subst_images(config, zip, subs, filename)
+            image_subs += docx_subfile_subst_images(config, zip, subs, tmp_dir, filename)
 
-    with zipfile.ZipFile(file_name_out, "w") as docx:
+    with zipfile.ZipFile(file_name_out, "a") as docx:
         for filename in filenames:
             docx.write(os.path.join(tmp_dir,filename), filename)
         for image_sub in image_subs:
-            docx.write(image_sub[0], "word/media/"+image_sub[1])
+            #print("substituting")
+            #print(image_sub[0], "word/media/"+image_sub[1])
+            res = docx.write(image_sub[0], "word/media/"+image_sub[1])
+            #print(res)
+        #print("zip content")
+        #print(docx.infolist())
+        docx.close()
     shutil.rmtree(tmp_dir)
 
     return({"file":file_name_out})
@@ -660,6 +684,8 @@ def convert_pdf_abiword(filename_in, filename_out, outdir = "."):
     return {"file":filename_out, "response":response, "command": command}
 
 def watermark_pdf(target, wmark):
+    print(">merge")
+    print(wmark)
     optarget = target.replace(".pdf",".wm.pdf")
     target_file = PyPDF2.PdfFileReader(open(target, "rb"))
     wmark_file = PyPDF2.PdfFileReader(open(wmark, "rb"))

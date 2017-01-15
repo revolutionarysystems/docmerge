@@ -337,15 +337,28 @@ EPDemo = {
 }
 
 EPDemo2 = {
-	"data_file":"liontamer2.xml",
+	"data_file":"sample2.xml",
 	"xform_file":None,
-	"flow_file":"docx-wm.flo",
-	"template_subfolder":"Demo Examples",
-	"template_file":"Job Description",
+	"flow_file":"md.flo",
+	"template_subfolder":"\\Sandbox",
+	"template_file":"num.md",
 	"payload":None,
 	"uniq":"134",
 	"expected_outcomes": {}
 }
+
+EPDemo3 = {
+	"data_file":"adaptive_img_2.json",
+	"xform_file":None,
+	"flow_file":"docx.flo",
+	"template_subfolder":"Demo Examples",
+	"template_file":"InvoiceAdaptive9",
+	"payload":None,
+	"uniq":"135",
+	"branding_file":"testco.json",
+	"expected_outcomes": {}
+}
+
 
 
 
@@ -369,11 +382,15 @@ def test_data(config, test_case):
 
 def test_flow(config, test_case):
 	remote = "/Doc Merge"
+	print("ok")
 	subs = getData(config, remote_data_folder = remote+"/Test Data", local_data_folder = "test_data", 
 	                   data_file=test_case["data_file"], payload_type=get(test_case,"payload_type"), 
 	                   params=get(test_case,"params"), xform_folder = remote+"/Transforms", 
 	                   xform_file=test_case["xform_file"])
-	subs = subs["docroot"]
+	try:
+		subs = subs["docroot"]
+	except:
+		pass
 	subs["site"]="localhost:8001"
 	branding_folder="Branding"
 	try:
@@ -384,7 +401,6 @@ def test_flow(config, test_case):
 		branding_file=None
 
 	cwd = get_working_dir()
-	print (subs)
 	flow = get_flow(cwd, config, "flows", remote+"/Flows", test_case["flow_file"])
 	outcomes = process_flow(cwd, config, flow, remote+"/Templates", 
 		test_case["template_subfolder"], 

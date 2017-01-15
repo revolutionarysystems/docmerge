@@ -10,6 +10,9 @@ from .resource_utils import strip_xml_dec,get_xml_content,get_json_content, get_
 import lxml.etree as etree
 import re
 from random import randint
+import urllib
+from urllib.request import urlretrieve
+import traceback
 
 xml = '''
 '''
@@ -32,6 +35,20 @@ def parse_as_boolean(str):
         if (str.lower()=="false"):
             return False
         return None
+    except:
+        return None
+
+def parse_as_float(str):
+    try:
+        numeric = float(str)
+        return numeric
+    except:
+        return None
+
+def parse_as_int(str):
+    try:
+        numeric = int(float(str))
+        return numeric
     except:
         return None
 
@@ -91,6 +108,13 @@ def force_lists(doc):
             doc[key]=goodlist
     return doc
 
+def write_retrieved_file(key, url, config):
+    extension = key[key.rfind("."):]
+    filename = key.replace(extension,"_"+str(randint(0,100000))+extension)
+    filepath = os.path.join(get_local_dir("dump", config),filename)
+    urllib.request.urlretrieve(url, filepath)
+    return filepath
+
 def write_image_file(key, imgbytes, config):
     extension = key[key.rfind("."):]
     filename = key.replace(extension,"_"+str(randint(0,100000))+extension)
@@ -102,7 +126,7 @@ def write_image_file(key, imgbytes, config):
     return filepath
 
 
-def alternate_values(doc, config, prefix=None):    
+def alternate_values(doc, config, prefix=None):   
     newValues = {}
     for key in doc.keys():
         node = doc[key]
@@ -111,7 +135,7 @@ def alternate_values(doc, config, prefix=None):
         elif isinstance(node, list):
             for item in node:
                 if isinstance(item, dict):
-                    alternate_values(item, config, prefix=key)
+                    alternate_values(item, config, prefix=key+"."+str(node.index(item)))
         else:
             if key.find("UserId")>=0:
                 value = doc[key].replace("-","")
@@ -121,14 +145,33 @@ def alternate_values(doc, config, prefix=None):
             if looks_like_boolean != None:
                 key_bool = key+"_bool"
                 newValues[key_bool]=looks_like_boolean
+            looks_like_float = parse_as_float(doc[key])
+            if looks_like_float != None:
+                key_float = key+"_float"
+                newValues[key_float]=looks_like_float
+            looks_like_int = parse_as_int(doc[key])
+            if looks_like_int != None:
+                key_int = key+"_int"
+                newValues[key_int]=looks_like_int
+
+
             if key.find(".")>0:
-            #if key[-4:]=="_img":
-                if prefix:
-                    ext_key = ".".join([prefix, key])
+                # embedded/referenced file
+                if doc[key].find("://")>0:
+                    #referenced file
+                    url = doc[key]
+                    if prefix:
+                        ext_key = ".".join([prefix, key])
+                    else:
+                        ext_key = key
+                    newValues[key.replace(".","_")+"_file"]=write_retrieved_file(ext_key, doc[key], config)
                 else:
-                    ext_key = key
-                #newValues[key.replace("img","file")]=write_image_file(ext_key, doc[key], config)
-                newValues[key.replace(".","_")+"_file"]=write_image_file(ext_key, doc[key], config)
+                    #embedded file
+                    if prefix:
+                        ext_key = ".".join([prefix, key])
+                    else:
+                        ext_key = key
+                    newValues[key.replace(".","_")+"_file"]=write_image_file(ext_key, doc[key], config)
     for newKey in newValues.keys():
         doc[newKey]=newValues[newKey]
     return doc

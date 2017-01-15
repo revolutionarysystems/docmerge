@@ -292,12 +292,21 @@ def process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs
     else:
         return {}
 
-def wmark_pdf(config, step, localMergedFileName, template_subfolder, subs):
+def wmark_pdf(config, step, localMergedFileName, localMergedFileNameOnly, template_subfolder, subs):
+    print("Watermark")
     if template_subfolder:
-        watermark_name = os.path.join(get_local_dir("templates", config),template_subfolder,step["watermark"])
+        print(get_local_dir("templates", config))
+        print(template_subfolder[1:])
+        print(step["watermark"])
+        watermark_name = os.path.join(get_local_dir("templates", config),template_subfolder[1:],step["watermark"])
+        print(watermark_name)
+        print("====")
     else:
         watermark_name = os.path.join(get_local_dir("templates", config),step["watermark"])
-    return watermark_pdf(localMergedFileName+".pdf", watermark_name)
+    watermark_pdf(localMergedFileName+".pdf", watermark_name)
+    outcome = {"file":localMergedFileName+".wm.pdf"}
+    outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".wm.pdf"
+    return outcome
 
 '''
 # upload to Google drive, optionally converting to Google Drive format
@@ -416,7 +425,7 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
                 outcome = process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs)
 
             if step["step"]=="watermark_pdf":
-                outcome = wmark_pdf(config, step, localMergedFileName, template_subfolder, subs)
+                outcome = wmark_pdf(config, step, localMergedFileName, localMergedFileNameOnly, template_subfolder, subs)
 
             if step["step"]=="upload":
                 if local_folder=="templates":
