@@ -3,13 +3,14 @@ from . import views
 
 urlpatterns = [
     url(r'^merge/', views.merge, name='merge'),
+    url(r'^bulk_merge/', views.bulk_merge, name='bulk_merge'),
     url(r'^push/', views.push, name='push'),
     url(r'^merge-get/', views.merge_get, name='merge_get'),
     url(r'^file/link/', views.file_link, name='file_link'),
     url(r'^file/', views.file, name='file'),
     url(r'^refresh/', views.refresh, name='refresh'),
     url(r'^cull/', views.cull_outputs, name='cull'),
-    url(r'^zip/', views.zip, name='zip'),
+    url(r'^zip/', views.zip_files, name='zip'),
     url(r'^upload-zip/$', views.upload_zip, name='upload_zip'),
     url(r'^download-zip/$', views.download_zip, name='download_zip'),
 ]

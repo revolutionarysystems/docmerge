@@ -293,16 +293,12 @@ def process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs
         return {}
 
 def wmark_pdf(config, step, localMergedFileName, localMergedFileNameOnly, template_subfolder, subs):
-    print("Watermark")
     if template_subfolder:
-        print(get_local_dir("templates", config))
-        print(template_subfolder[1:])
-        print(step["watermark"])
         watermark_name = os.path.join(get_local_dir("templates", config),template_subfolder[1:],step["watermark"])
-        print(watermark_name)
-        print("====")
     else:
         watermark_name = os.path.join(get_local_dir("templates", config),step["watermark"])
+    if watermark_name.find("{{")>0:
+        watermark_name = substituteVariablesPlainString(config, watermark_name, subs)
     watermark_pdf(localMergedFileName+".pdf", watermark_name)
     outcome = {"file":localMergedFileName+".wm.pdf"}
     outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".wm.pdf"

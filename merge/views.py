@@ -1,6 +1,7 @@
 import re
 import os
 import zipfile
+import json
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from .docMerge import mergeDocument
@@ -21,6 +22,8 @@ from merge.models import ClientConfig
 
 
 def get_user_config(user):
+    print("user:")
+    print(user)
     config = ClientConfig()
     if MULTI_TENANTED:
         tenant = user.profile.company
@@ -54,7 +57,7 @@ def merge_raw(request, method="POST"):
     abs_uri = request.build_absolute_uri()            
     protocol, uri = abs_uri.split("://")
     site = protocol+"://"+uri.split("/")[0]+"/"
-    id = getParamDefault(params, "identifier", str(randint(0,10000)))
+    id = getParamDefault(params, "identifier", str(randint(0,1000000)))
     if MULTI_TENANTED:
         tenant_extension = "/"+config.tenant
     else:
@@ -107,6 +110,8 @@ def merge_raw(request, method="POST"):
                         remoteOutputFolder, output_subfolder, email=email, payload=payload)    
 
 
+
+
 def push_raw(request, method="POST"):
     if method=="GET":
         params = request.GET
@@ -142,6 +147,101 @@ def push_raw(request, method="POST"):
                         remoteOutputFolder, output_subfolder, email=email, payload=payload, require_template=False)    
 
 
+def read_bulk_data(bulk_list, condition, test, testemail, config):
+    lines = get_local_txt_content(get_working_dir(), config, "test_data", bulk_list).split("\n")
+    selected = []
+    headers = lines[0].split(",")
+    print(headers)
+    for line in lines[1:]:
+        params ={}
+        try:
+            ziplist=list(zip(headers,line.split(",")))
+            for item in ziplist:
+                params[item[0].replace("\n","")]=item[1].replace("\n","")
+        except Exception as e:
+            print(e)
+            print(line)
+        if eval(condition):
+            if test=="True":
+                params["email"]=testemail.replace(" ","+").format(params["Name"].replace(" ",""))
+            case = { "docroot": params }
+            selected +=[ case ]
+    return selected
+
+
+def bulk_merge_raw(request, method="POST"):
+    config = get_user_config(request.user)
+    print("Config:", config)
+    if method=="GET":
+        params = request.GET
+    else:
+        params = request.POST
+    abs_uri = request.build_absolute_uri()            
+    protocol, uri = abs_uri.split("://")
+    site = protocol+"://"+uri.split("/")[0]+"/"
+    # todo better way of id. Dot plus serial?
+    id = getParamDefault(params, "identifier", str(randint(0,10000)))
+    if MULTI_TENANTED:
+        tenant_extension = "/"+config.tenant
+    else:
+        tenant_extension = ""
+
+    flowFolder = getParamDefault(params, "flow_folder", "/"+gdrive_root+tenant_extension+"/Flows")
+    flow = getParamDefault(params, "flow", "md")
+    remoteTemplateFolder = getParamDefault(params, "template_folder", "/"+gdrive_root+tenant_extension+"/Templates")
+    remoteOutputFolder = getParamDefault(params, "output_folder", "/"+gdrive_root+tenant_extension+"/Output")
+    template_subfolder = getParamDefault(params, "template_subfolder", None)
+    output_subfolder = getParamDefault(params, "output_subfolder", None)
+
+    data_folder = getParamDefault(params, "data_folder", "/"+gdrive_root+tenant_extension+"/Test Data")
+    data_file = getParamDefault(params, "data_file", None)
+    data_root = getParamDefault(params, "data_root", "docroot")
+
+    branding_folder = getParamDefault(params, "branding_folder", "/"+gdrive_root+tenant_extension+"/Branding")
+    branding_file = getParamDefault(params, "branding_file", None)
+    if branding_file == "None":
+        branding_file = None
+
+    xform_folder = getParamDefault(params, "xform_folder", "/"+gdrive_root+tenant_extension+"/Transforms")
+    xform_file = getParamDefault(params, "xform_file", None)
+    if xform_file == "None":
+        xform_file = None
+    templateName = getParamDefault(params, "template", "AddParty.md")
+    #Hmmm
+    email = getParamDefault(params, "email", "andrew.elliott+epub@revolutionarysystems.co.uk")
+    templateName = templateName.replace("\\", "/")
+    if template_subfolder:
+        template_subfolder = template_subfolder.replace("\\", "/")
+
+    if branding_file:
+        branding_subs = getData(config, local_data_folder = "branding", remote_data_folder = branding_folder, data_file=branding_file)
+
+    condition = getParamDefault(params, "condition", "True")
+    test = getParamDefault(params, "test", "True")
+    testemail = getParamDefault(params, "testemail", "dummy@dummy.con")
+
+
+    bulk_data = read_bulk_data(data_file, condition, test, testemail, config)
+    results = []
+    for subs in bulk_data:
+    # This within a bulk loop
+        if data_root:
+            if data_root in subs:
+                subs = subs[data_root]
+        if branding_file:
+            subs["branding"]= branding_subs
+        subs["NowDate"]=datetime.now()
+        subs["docs"]=[templateName]
+
+        subs["site"]= site
+
+
+        results+= [mergeDocument(config, flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
+                        remoteOutputFolder, output_subfolder, email=subs["email"], payload="")]
+    return {"bulk_result":results}    
+
+
+
 def error_response(ex):
     overall_outcome = {}
     overall_outcome["success"]=False
@@ -166,10 +266,21 @@ def merge_raw_wrapped(request, method="POST"):
     except Exception as ex:
         return error_response(ex)
 
+def bulk_merge_raw_wrapped(request, method="POST"):
+    try:
+        return bulk_merge_raw(request, method=method)
+    except Exception as ex:
+        return error_response(ex)
+
 @csrf_exempt
 #@token_required
 def merge(request):
     return JsonResponse(merge_raw_wrapped(request))
+    
+@csrf_exempt
+#@token_required
+def bulk_merge(request):
+    return JsonResponse(bulk_merge_raw_wrapped(request))
     
 def push_raw_wrapped(request, method="POST"):
     try:
@@ -248,7 +359,7 @@ def refresh(request):
         response = disallowed_response("No connection to remote library")
     return JsonResponse(response)
 
-def zip(request):
+def zip_files(request):
     config = get_user_config(request.user)
     try:
         params = request.GET
@@ -307,7 +418,7 @@ def handle_uploaded_zip(f, target, target_parent, account):
         for chunk in f.chunks():
             destination.write(chunk)
     zfile = zipfile.ZipFile(target)
-    if account ==".":
+    if account =="." or account=="./":
         zfile.extractall(target_parent)
         return True, "uploaded"
     else:

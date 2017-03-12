@@ -292,11 +292,12 @@ Welcome = {
 Strong = {
 	"data_file":"strongman.xml",
 	"xform_file":None,
-	"flow_file":"docx_2.flo",
-	"template_subfolder":"",
+	"flow_file":"docx-wm.flo",
+	"template_subfolder":"\Demo Examples",
 	"template_file":"Job Description",
 	"payload":None,
-	"uniq":"1.2",
+	"uniq":"2.3",
+	"params":{"border":"SimpleBorder.pdf"},
 	"expected_outcomes": {}
 }
 
@@ -435,7 +436,7 @@ def run():
 #	test_flow(ECVTNC_2)
 #	test_flow(plain_TA)
 #	test_flow(plain_TA_S7)
-	test_flow(config, EPDemo2)
+	test_flow(config, Strong)
 
 
 

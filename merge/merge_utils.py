@@ -342,7 +342,7 @@ def email_file(baseFileName, me, you, subject, credentials):
     password = credentials["password"]
     server = smtplib.SMTP(credentials["server"])
 
-#    server.ehlo()
+    server.ehlo()
     server.starttls()
  #   server.ehlo()
     server.login(username,password)

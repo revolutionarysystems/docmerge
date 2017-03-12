@@ -208,6 +208,8 @@ def getData(config, test_case = None, payload=None, payload_type="xml", params =
         data = xmltodict.parse(payload)
     elif payload and payload_type.lower()=="json":
         payload = payload.replace("\\", "\\\\")
+        print("loading json")
+        print(payload)
         data = json.loads(payload)
     elif payload_type == "params" and params:
         data = {}
@@ -227,10 +229,22 @@ def getData(config, test_case = None, payload=None, payload_type="xml", params =
             data = xmltodict.parse(doc_xml) 
     if data == None: #default
         data = xmltodict.parse(xml)
+    if params and not(payload_type == "params"):
+        print("Adding params")
+        if data["docroot"]:
+            prefix = "docroot."
+        else:
+            prefix = ""
+        for key in params.keys():
+            print("=",key)
+            dictify(data, prefix+key, params[key])
+    print(data)
     data = force_lists(data)
     data = alternate_values(data, config, prefix=prefix)
     return data
 
 #print(json.dumps(getData(), indent=2))
+
+
 
 

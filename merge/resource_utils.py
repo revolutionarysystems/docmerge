@@ -227,6 +227,11 @@ def refresh_files(config, path, local_dir, recursive = False, parent='root', mim
                 files_info.append(exportFile(config, doc_id, localFileName, "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
             else:
                 files_info.append(exportFile(config, doc_id, localFileName, "text/plain"))
+        elif file["mimeType"] == 'application/vnd.google-apps.spreadsheet':
+            if localFileName.find(".") < 0: # no extension
+                files_info.append(exportFile(config, doc_id, localFileName+".docx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+            elif localFileName.find(".csv") >= 0: # extension csv
+                files_info.append(exportFile(config, doc_id, localFileName, "text/csv"))
         else:
             files_info.append(getFile(config, doc_id, localFileName, file["mimeType"]))
     return files_info
