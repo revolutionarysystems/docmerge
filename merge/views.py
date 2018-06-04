@@ -422,7 +422,11 @@ def download_zip(request):
 #    return JsonResponse(response)
 
 @csrf_exempt
-def upload_zip(request) :
+def patch_zip(request):
+    return upload_zip(request, suppress_clear=True)
+
+@csrf_exempt
+def upload_zip(request, suppress_clear=False) :
     config = get_user_config(request.user)
     params = request.POST
     clear = getParamDefault(params, "clear", "false")
@@ -431,7 +435,7 @@ def upload_zip(request) :
     target_dir = get_local_dir(".", config)
     target_parent = get_local_dir("..", config)
     target = os.path.join(target_dir,request.FILES['file']._name)
-    if clear=="on":
+    if (clear=="on" or clear == "true") and not (suppress_clear):
         cleared_files = process_local_files(config, '.', days_ago=0, days_recent=999, action="delete", recursive=True, folders=folders)
     success, message = handle_uploaded_zip(request.FILES['file'], target, target_parent, config.tenant+"/")
     return JsonResponse({"file":target, "success":success, "message": message})
