@@ -20,7 +20,7 @@ xml = '''
 def parse_as_datetime(str_value):
 
     try:
-        return iso8601.parse_date(str_value)
+        return iso8601.parse_date(str_value)#, default_timezone=None)
     except:        
         try:
             str_value=str_value.replace(" ","+")
@@ -208,8 +208,6 @@ def getData(config, test_case = None, payload=None, payload_type="xml", params =
         data = xmltodict.parse(payload)
     elif payload and payload_type.lower()=="json":
         payload = payload.replace("\\", "\\\\")
-        print("loading json")
-        print(payload)
         data = json.loads(payload)
     elif payload_type == "params" and params:
         data = {}
@@ -230,18 +228,50 @@ def getData(config, test_case = None, payload=None, payload_type="xml", params =
     if data == None: #default
         data = xmltodict.parse(xml)
     if params and not(payload_type == "params"):
-        print("Adding params")
         if data["docroot"]:
             prefix = "docroot."
         else:
             prefix = ""
         for key in params.keys():
-            print("=",key)
             dictify(data, prefix+key, params[key])
-    print(data)
     data = force_lists(data)
     data = alternate_values(data, config, prefix=prefix)
     return data
+
+
+def fields_from_subs(subs):
+    fields = {}
+    groups = []
+    tree = []
+    for key in [k  for k in subs.keys() if not(k[0]=="@")]:
+        node = subs[key]
+        if isinstance(node, dict):
+            subfields, subgroups, subtree = fields_from_subs(node)
+            for field in subfields.keys():
+                fields[key+"."+field]=subfields[field]
+            for group in subgroups:
+                groups+=[key+"."+group]
+            if len(subtree)==0:
+                tree+=[{"text":key}]
+            else:
+                tree+=[{"text":key, "children": subtree}]
+        elif isinstance(node, list):
+            groups+=[key]
+            if len(node):
+                    item = node[0]
+                    #fields+=[key]
+                    if isinstance(item, dict):
+                        subfields, subgroups, subtree = fields_from_subs(item)
+                        for field in subfields:
+                            itemname = key[1+key.rfind("."):]+"_item"
+                            fields[itemname+"."+field]=subfields[field]
+                    if len(subtree)==0:
+                        tree+=[{"text":key}]
+                    else:
+                        tree+=[{"text":key, "children": subtree}]
+        else:
+            fields[key]=node
+    return fields, groups, tree
 
 #print(json.dumps(getData(), indent=2))
 

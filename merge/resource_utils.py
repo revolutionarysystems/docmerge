@@ -45,7 +45,7 @@ def get_output_dir():
 def get_local_txt_content(cwd, config, data_folder, data_file):
     try:
         full_file_path = os.path.join(get_local_dir(data_folder, config), data_file)
-        with open(full_file_path, "r") as file:
+        with open(full_file_path, "r", encoding="UTF-8") as file:
             return  file.read()
     except FileNotFoundError:
         return None
@@ -56,20 +56,24 @@ def push_local_txt(cwd, config, data_folder, data_file, payload):
 
 def push_local_txt_fullname(full_file_path, payload):
 #    full_file_path = data_file
-    with open(full_file_path, "w") as file:
+    with open(full_file_path, "w", encoding="UTF-8") as file:
         file.write(payload)
         file.close()
     return full_file_path
 
-def del_local(cwd, data_folder, data_file):
+def del_local(cwd, config, data_folder, data_file):
     full_file_path = os.path.join(get_local_dir(data_folder, config), data_file)
     os.remove(full_file_path)
 
-def local_folder_files(config, path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents", days_ago=0, days_recent=365):
+def local_folder_files(config, path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents", days_ago=0, days_recent=100000):
     cwd = get_working_dir()
 #    full_path = os.path.join(cwd, local_root, path)
     full_path = get_local_dir(path, config)
     files = os.listdir(full_path)
+    
+#    with open("debug.txt", "a") as f:
+#        print(full_path, file=f)
+#        print(files, file=f)
     now = time.time()
     response = []
     for file in files:
@@ -85,21 +89,25 @@ def local_folder_files(config, path, parent='root', mimeType='*', fields="nextPa
     return response
 
 
-def process_local_files(config, subfolder, days_ago=7, days_recent=365, action="report"):
+def process_local_files(config, subfolder, days_ago=7, days_recent=365, action="report", recursive=False, folders="all"):
     path = get_local_dir(subfolder, config)
     #path = os.path.join(get_working_dir(), local_root, subfolder)
     now = time.time()
     to_process = []
     for f in os.listdir(path):
         full = os.path.join(path, f)
-        try:
-            if os.stat(full).st_mtime < now - days_ago * 86400 and os.stat(full).st_mtime >= now - days_recent * 86400:
-                if os.path.isfile(full):
-                    to_process.append(f)
-                    if action == "delete":
-                        os.remove(full)
-        except FileNotFoundError:
-            pass # temp files can exist, don't count if file no longer there
+        if (not(os.path.isdir(full))): # Not a directory
+            try:
+                if os.stat(full).st_mtime < now - days_ago * 86400 and os.stat(full).st_mtime >= now - days_recent * 86400:
+                    if os.path.isfile(full):
+                        to_process.append(f)
+                        if action == "delete":
+                            os.remove(full)
+            except FileNotFoundError:
+                pass # temp files can exist, don't count if file no longer there
+        elif recursive:
+            if folders=="all" or f in folders.split(","):
+                to_process += process_local_files(config, os.path.join(subfolder,f), days_ago=days_ago, days_recent=days_recent, action=action, recursive=recursive, folders="all")
     return to_process
 
 def count_local_files(config, subfolder, days_ago=7, days_recent=365):
@@ -147,12 +155,20 @@ def gd_populate_folders(config):
 # Remote <-> Local methods
 
 
+def is_text(ext):
+    if ext in [".pdf", ".doc", ".docx", ".png", ""]:
+        return False
+    else:
+        return True
+
 def combined_folder_files(config, path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)"):
     local_files = local_folder_files(config, path, parent='root', mimeType='*', fields=fields)
     combined_files = {}
     response = []
     for file in local_files:
         file["is_local"]="Y"
+        if is_text(file["ext"]):
+            file["edit_local"]="Y"
         if remote_library:
             file["is_remote"]="N"
         else:
@@ -198,13 +214,16 @@ def combined_folder_files(config, path, parent='root', mimeType='*', fields="nex
     return response
 
 
-def refresh_files(config, path, local_dir, recursive = False, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
+def refresh_files(config, path, local_dir, recursive = False, clear = False, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents)"):
     #print("refreshing:", path, local_dir)
     foldr = folder(config, path, parent)
     files = folder_contents(config, foldr["id"], mimeType=mimeType, fields=fields)
     files_info=[]
+    
+    if clear: #delete local files
+        process_local_files(config, local_dir, days_ago=0, days_recent=9999999, action="delete")
+
     for file in files:
-#        print(file)
         doc_id =file["id"]
         cwd = get_working_dir()
         localFileName = os.path.join(get_local_dir(local_dir, config), file["name"]).replace("\\", "/").replace("/./", "/")
@@ -218,7 +237,7 @@ def refresh_files(config, path, local_dir, recursive = False, parent='root', mim
             #print("local", localFileName)
             files_info.append({"folder": localFileName})
             if recursive:
-                deep_files = refresh_files(config, "/".join([path,file["name"]]), localFileName, recursive=recursive)
+                deep_files = refresh_files(config, "/".join([path,file["name"]]), localFileName, recursive=recursive, clear=clear)
                 files_info = files_info+deep_files
         elif file["mimeType"] == 'application/vnd.google-apps.document':
             if localFileName.find(".") < 0: # no extension
@@ -271,11 +290,15 @@ def get_json_content(config, local_data_folder, remote_data_folder, data_file):
 def zip_local_dirs(path, zip_file_name, selected_subdirs = ["templates", "flows", "transforms", "test_data", "branding"]):
     zip_name = os.path.join(path,zip_file_name+".zip")
     ziph = zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED)
+    excludepattern = "_.docx" # exclude preprocessed docx
     for root, dirs, files in os.walk(path):
         for file in files:
-            relpath = os.path.relpath(os.path.join(root, file), os.path.join(path, '..'))
-            if selected_subdirs == None or relpath.split(os.path.sep)[1] in selected_subdirs:
-                ziph.write(os.path.join(root, file), relpath)
+            if not(file.find(excludepattern)>0):
+                relpath = os.path.relpath(os.path.join(root, file), os.path.join(path, '..'))
+                if selected_subdirs == None or relpath.split(os.path.sep)[1] in selected_subdirs:
+                    ziph.write(os.path.join(root, file), relpath)
+            else:
+                print("skipping file", file)
     ziph.close()
     return zip_name
 
@@ -289,4 +312,32 @@ def remote_link(config, filename, subfolder):
     return "https://drive.google.com/file/d/{}/view?usp=sharing".format(file_details["id"])
 #    return "https://docs.google.com/document/d/{}/edit?usp=sharing".format(file_details["id"])
 
+
+def get_folders_and_files(template_subfolder, items):
+        files = []
+        folders = []
+        if template_subfolder:
+            parent = template_subfolder[:template_subfolder.rfind("/")+1]
+            if not(parent =="/"):
+                    folders.append({"name":parent, "ext":".."})
+            folders.append({"name":template_subfolder, "ext":"."})
+#        else:
+#            folders.append({"name":"/", "ext":"."})
+        for item in items:
+            if item["isdir"]:
+                item["name"]=(template_subfolder+"/"+item["name"]).replace("//","/")
+                folders.append(item)
+            else:
+                files.append(item)
+        folders = sorted(folders, key=lambda k: k['ext']+k['name']) 
+        folders=[{"name":"/", "ext":"/"}]+folders
+        files = sorted(files, key=lambda k: k['ext']+k['name']) 
+        return folders, files
+
+def clean_subfolder(subfolder):
+    if len(subfolder)>0 and subfolder[-1] =="/":
+        subfolder=subfolder[:-1]
+    elif subfolder != "" and subfolder.find("/")!=0:
+        subfolder = "/"+subfolder
+    return subfolder
 

@@ -149,9 +149,10 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 DATETIME_INPUT_FORMATS = [
+    '%Y-%m-%dT%H:%M:%S',     # '2006-10-25T14:30:59+00'
     '%Y-%m-%dT%H:%M:%S.%f%Z',  # '2006-10-25T14:30:59.000200'
     '%Y-%m-%d %H:%M:%S',     # '2006-10-25 14:30:59'
     '%Y-%m-%d %H:%M:%S.%f',  # '2006-10-25 14:30:59.000200'
@@ -175,5 +176,5 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join('.', 'static')
 
 
-#MULTI_TENANTED = False
-MULTI_TENANTED = True
+MULTI_TENANTED = False
+#MULTI_TENANTED = True

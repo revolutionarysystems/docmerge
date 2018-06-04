@@ -4,29 +4,34 @@
 {% block content %}
 	<h2><a href="">Account Settings and Status</a></h2>
         <div class="row widget">
-                {% for widget in widgets %}
+            {% for widget in widgets %}
                 <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
-                {% if widget.title == "Backup" %}
-	        <div class="row">
-	        <form id = "makeZip" method="GET" class="query-form" action="/download-zip/" target="_blank" > 
-                	<button id="zipDownButton" type="submit" class="save btn btn-warning">Download Backup Zip file</button>
-                </form>
-	        <form id = "backupZip" method="POST" class="query-form" action="/upload-zip/" target="_blank" enctype="multipart/form-data"> 
-                            {{ zipform.as_p }}
-                	<button id="zipButton" type="submit" class="save btn btn-warning">Upload Backup Zip file</button>
-                </form>
+                    {% if widget.title == "Backup and Restore" %}
+        	        <div class="row">
+                        <h4>Backup</h4>
+            	        <form id = "makeZip" method="GET" class="query-form" action="/download-zip/" target="_blank" > 
+                            	<button id="zipDownButton" type="submit" class="save btn btn-warning">Download Backup Zip file</button>
+                        </form>
+                    </div>
+                    <p/>
+                    <div class="row">
+                        <h4>Restore</h4>
+            	        <form id = "backupZip" method="POST" class="query-form" action="/upload-zip/" target="_blank" enctype="multipart/form-data"> 
+                                        {{ zipform.as_p }}
+                            <button id="zipButton" type="submit" class="save btn btn-warning">Upload Backup Zip file</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% if widget.title == "Archive" %}
+                        <li>Output files: {{widget.usage.output}}</li>
+                        <li>Request files: {{widget.usage.requests}}</li>
+                        <li>Dump files: {{widget.usage.dump}}</li>
+                         <form id = "quickTest" method="GET" class="query-form" action="/cull/" target="_blank">
+                         {{ widget.refreshForm.as_p }}
+                        <button id="quickTestButton" type="submit" class="save btn btn-warning">Cull</button>
+                    {% endif %}
                 </div>
-                {% endif %}
-                {% if widget.title == "Archive" %}
-                    <li>Output files: {{widget.usage.output}}</li>
-                    <li>Request files: {{widget.usage.requests}}</li>
-                    <li>Dump files: {{widget.usage.dump}}</li>
-                     <form id = "quickTest" method="GET" class="query-form" action="/cull/" target="_blank">
-                     {{ widget.refreshForm.as_p }}
-                    <button id="quickTestButton" type="submit" class="save btn btn-warning">Cull</button>
-                {% endif %}
-                </div>
-                {% endfor %}
+            {% endfor %}
         </div>
 {% endblock %}        

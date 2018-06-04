@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>Echo Publish Dashboard</title>
+        <!--link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"-->
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="{% static 'css/dash.css' %}">
@@ -9,6 +10,7 @@
         <link href="http://fonts.googleapis.com/css?family=Ubuntu&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css">
         <link rel='shortcut icon' type='image/x-icon' href="{% static './favicon.ico' %}"/>
         <script src="https://unpkg.com/masonry-layout@4.0/dist/masonry.pkgd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
     </head>
     <body>
         <div class="page-header">
@@ -40,5 +42,66 @@
                 </div>
             </div>
         </section>    
+        <!--script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <script>
+            $(document).ready(function() {
+                $('a[data-confirm]').click(function(ev) {
+                    var href = $(this).attr('href');
+                    if (!$('#dataConfirmModal').length) {
+                        $('body').append('<div id="dataConfirmModal" class="modal" role="dialog" aria-labelledby="dataConfirmLabel" aria-hidden="true"><div class="modal-header"><h3 id="dataConfirmLabel">Please Confirm</h3><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></div><div class="modal-body"></div><div class="modal-footer"><button id="dataConfirmCancel" class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button><button id="dataConfirmOK" class="btn"  xdata-dismiss="modal" aria-hidden="true">OK</button></div></div>');
+                    } 
+                    $('#dataConfirmLabel').css('color', 'white');
+                    $('#dataConfirmLabel').css('text-align', 'center');
+                    $('#dataConfirmModal').find('.modal-body').text($(this).attr('data-confirm')+" ("+href+")");
+                    $('#dataConfirmModal').find('.modal-body').css('color', 'white');
+                    $('#dataConfirmModal').find('.modal-body').css('text-align', 'center');
+                    $('#dataConfirmOK').show();
+                    $('#dataConfirmCancel').show();
+                    $('#dataConfirmCancel').click(function(ev){});
+                    $('#dataConfirmOK').attr('href', href);
+                    $('#dataConfirmOK').attr('target', "_blank");
+                    $('#dataConfirmOK').click(function(ev){
+                        $('#dataConfirmOK').hide();
+                        $('#dataConfirmCancel').hide();
+                        $('#dataConfirmLabel').text("Working ...");
+                        $('#dataConfirmModal').find('.modal-body').text(href);
+                        $.ajax({
+                            url: href,
+                            data: {},
+                            dataType: 'json',
+                            success: function (data) {
+                                $('#dataConfirmModal').modal({show:true});
+                                $('#dataConfirmLabel').text("Result");
+                                $('#dataConfirmModal').find('.modal-body').text(JSON.stringify(data));
+                                $('#dataConfirmCancel').show();
+                                $('#dataConfirmCancel').text("Close");
+                                $('#dataConfirmCancel').click(function(ev){
+                                    location.reload();
+                                });
+                            }
+                        });
+                    });
+                    modalSpinner();
+                    $('#dataConfirmModal').modal({show:true});
+                    return false;
+                });
+                function modalSpinner(){
+                    $('#modal-spinner').modal('show');
+                    setTimeout(function () {
+                        $('#modal-spinner').modal('hide');
+                    }, 3000);
+                }
+            });        
+        </script>
+        <div id="modal-spinner" class="modal fade bd-example-modal-lg" data-backdrop="static" data-keyboard="false" tabindex="-1">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content" style="width: 48px">
+                    <span class="fa fa-spinner fa-spin fa-3x"></span>
+                </div>
+            </div>
+        </div>        
+
     </body>
 </html>

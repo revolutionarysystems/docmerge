@@ -2,15 +2,19 @@ import re
 import os
 import zipfile
 import json
+import datetime, time
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from .docMerge import mergeDocument
-from .xml4doc import getData
+#from .xml4doc import getData
+from merge.xml4doc import getData, fields_from_subs
 from random import randint
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 #from .merge_utils import get_local_dir
-from .resource_utils import get_working_dir, get_local_txt_content,get_local_dir, refresh_files, zip_local_dirs, remote_link, process_local_files
+from .resource_utils import (
+    get_working_dir, get_local_txt_content,get_local_dir, refresh_files, zip_local_dirs, remote_link, 
+    process_local_files, get_folders_and_files, combined_folder_files as folder_files, clean_subfolder, del_local)
 from traceback import format_exc
 from dash.forms import UploadZipForm
 from .config import remote_library, gdrive_root, local_root
@@ -19,11 +23,11 @@ from .gd_service import ensure_initialised
 from .gd_resource_utils import gd_path_equivalent
 from docmerge.settings import MULTI_TENANTED
 from merge.models import ClientConfig
+from merge.merge_utils import substituteVariablesPlainString,convert_markdown_string,preprocess
+from pynliner import Pynliner
 
 
 def get_user_config(user):
-    print("user:")
-    print(user)
     config = ClientConfig()
     if MULTI_TENANTED:
         tenant = user.profile.company
@@ -151,7 +155,6 @@ def read_bulk_data(bulk_list, condition, test, testemail, config):
     lines = get_local_txt_content(get_working_dir(), config, "test_data", bulk_list).split("\n")
     selected = []
     headers = lines[0].split(",")
-    print(headers)
     for line in lines[1:]:
         params ={}
         try:
@@ -171,7 +174,6 @@ def read_bulk_data(bulk_list, condition, test, testemail, config):
 
 def bulk_merge_raw(request, method="POST"):
     config = get_user_config(request.user)
-    print("Config:", config)
     if method=="GET":
         params = request.GET
     else:
@@ -301,11 +303,21 @@ def file_raw(request):
     filename = getParamDefault(params, "name", None)
     download = getParamDefault(params, "download", "false")
     subfolder = getParamDefault(params, "path", "output")
+    action = getParamDefault(params, "action", None)
+    print(action)
     filepath = get_local_dir(subfolder, config)
     #file_content=""
     #with open(filepath+filename) as file:
     #    for line in file:
     #        file_content+=(line+"\n")
+    if (action=="delete"):
+        cwd = get_working_dir()
+        print(cwd, subfolder, filename)
+        try:
+            del_local(cwd, config, subfolder, filename)
+        except FileNotFoundError:
+            return JsonResponse({"success":False, "filename":filename, "message":"file not found"})    
+        return JsonResponse({"success":True, "filename":filename, "message":"file deleted"})
     if filename.find(".pdf")>=0: 
         file = open(filepath+"/"+filename, 'rb')
         response = HttpResponse(file, content_type='application/pdf')
@@ -348,10 +360,11 @@ def refresh(request):
         try:
             params = request.GET
             recursive = getParamDefault(params, "all", "false")
+            clear = getParamDefault(params, "clear", "false")
             local = getParamDefault(params, "local", "templates")
-            remote_default = gd_path_equivalent(config, local)
+            remote_default = gd_path_equivalent(config, local.replace("\\","/"))
             remote = getParamDefault(params, "remote", remote_default)
-            files = refresh_files(config, remote, local, recursive=(recursive=="true"))
+            files = refresh_files(config, remote, local, recursive=(recursive=="true"),clear=(clear=="true"))
             response = {"refreshed_files":files}
         except Exception as ex:
             response = error_response(ex)
@@ -379,6 +392,7 @@ def zip_files(request):
         response = error_response(ex)
     return JsonResponse(response)
 
+@csrf_exempt
 def download_zip(request):
     config = get_user_config(request.user)
     try:
@@ -387,15 +401,19 @@ def download_zip(request):
         protocol, uri = abs_uri.split("://")
         site = protocol+"://"+uri.split("/")[0]+"/"
         folders = getParamDefault(params, "folders", "templates,flows,transforms,test_data,branding")
-        zip_file_name = getParamDefault(params, "name", "backup")
+        ts = datetime.now()
+        ziptimestamp = ts.strftime("%Y%m%d%H%M%S")
+        zip_file_name = getParamDefault(params, "name", "backup-"+ziptimestamp)
         if MULTI_TENANTED:
             zip_file_name = config.tenant+"_"+zip_file_name
         target_dir = get_local_dir(".", config)
+        print(target_dir)
         zip_file_full = zip_local_dirs(target_dir, zip_file_name, selected_subdirs = folders.split(","))
         zip_file_name = os.path.split(zip_file_full)[1]
         link = site+"file/?name="+zip_file_full.split(os.path.sep)[-1]+"&path=."
         response = {"zip_files":zip_file_full, "link":link}
     except Exception as ex:
+        print(ex)
         response = error_response(ex)
     file = open(zip_file_full, 'rb')
     response = HttpResponse(file, content_type='application/zip')
@@ -406,10 +424,15 @@ def download_zip(request):
 @csrf_exempt
 def upload_zip(request) :
     config = get_user_config(request.user)
-    form = UploadZipForm(request.POST, request.FILES)
+    params = request.POST
+    clear = getParamDefault(params, "clear", "false")
+    form = UploadZipForm(params, request.FILES)
+    folders = getParamDefault(params, "folders", "templates,flows,transforms,test_data,branding")
     target_dir = get_local_dir(".", config)
     target_parent = get_local_dir("..", config)
     target = os.path.join(target_dir,request.FILES['file']._name)
+    if clear=="on":
+        cleared_files = process_local_files(config, '.', days_ago=0, days_recent=999, action="delete", recursive=True, folders=folders)
     success, message = handle_uploaded_zip(request.FILES['file'], target, target_parent, config.tenant+"/")
     return JsonResponse({"file":target, "success":success, "message": message})
 
@@ -459,3 +482,153 @@ def cull_outputs(request):
     files += process_local_files(config, "requests", days_ago=retain_requests_days, days_recent=1000, action="delete")
     return JsonResponse({"files_culled":len(files)})
 
+def clear_resources(request):
+    config = get_user_config(request.user)
+    params = request.GET
+    recursive = getParamDefault(params, "all", "false")
+    local = getParamDefault(params, "local", None)
+    if local:
+        files = process_local_files(config, local, days_ago=0, days_recent=999, action="delete", recursive=(recursive=="true"))
+    return JsonResponse({"files_cleared":len(files)})
+
+
+def compose_preview(request):
+    config = get_user_config(request.user)
+    params = request.GET
+    template_content= getParamDefault(params, "template_content", "")
+    template_test_case= getParamDefault(params, "template_test_case", "")
+    test_case_xform= getParamDefault(params, "test_case_xform", None)
+    stylesheet_content = getParamDefault(params, "template_stylesheet_content", "")
+    try:
+        subs = getData(config, data_file=template_test_case, local_data_folder="test_data", xform_file=test_case_xform)
+    except:
+        subs={}
+    try:
+        subs=subs["docroot"]
+    except:
+        pass
+
+    template_content  = preprocess(template_content)
+    rendered = substituteVariablesPlainString(config, template_content, subs)
+    rendered = convert_markdown_string(rendered)
+    rendered = '<div class="echo-publish">'+rendered+"</div>"
+    rendered = Pynliner().from_string(rendered).with_cssString(stylesheet_content).run()
+    return JsonResponse({"preview":rendered})
+
+def clean_field(field):
+    if field.find("_item")>=0:
+            fld1=field[:field.rfind("_item")+5]
+            fld1=fld1[fld1.rfind(".")+1:]
+            fld2=field[field.rfind("_item")+5:]
+            fld=fld1+fld2
+    else:
+            fld = field
+    return fld.replace("docroot.","")
+
+def sample_data(request):
+    config = get_user_config(request.user)
+    params = request.GET
+    template_test_case= getParamDefault(params, "template_test_case", "")
+    test_case_xform= getParamDefault(params, "test_case_xform", None)
+    filter_param= getParamDefault(params, "filter", None)
+    parent_param= getParamDefault(params, "parent", None)
+    if filter_param=="docroot":
+        filter_param = None
+    if filter_param:
+        filter_string1=filter_param+"."
+    else:
+        filter_string1 = None
+    if filter_param:
+        filter_string2=filter_param+"_item."
+    else:
+        filter_string2 = None
+    if parent_param and not (parent_param =="docroot"):
+        filter_string1=parent_param+"."+filter_string1
+        filter_string3=parent_param+"_item."+filter_param+"."
+        filter_string4=parent_param+"_item."+filter_param+"_item."
+    else:
+        filter_string3 = "#"
+        filter_string4 = "#"
+    try:
+        subs = getData(config, data_file=template_test_case, local_data_folder="test_data", xform_file=test_case_xform)
+    except:
+        subs={}
+    #try:
+    #    subs=subs["docroot"]
+    #except:
+    #    pass
+
+    fields, groups, tree = fields_from_subs(subs)
+    field_string = "Fields"
+    for field in sorted(fields.keys()):
+        if ((not filter_param) or (clean_field(field)+".").find(filter_string1)>=0 or clean_field(field).find(filter_string2)>=0 
+                                    or clean_field(field).find(filter_string3)>=0 or clean_field(field).find(filter_string4)>=0):
+                field_string+="\n"
+                field_string+='<pre onclick="clip(this);" class="field">'+"{{"+clean_field(field)+"}}"+"</pre>"
+    logic_string = "Logic"
+    for field in sorted(fields):
+        if ((not filter_param) or (clean_field(field)+".").find(filter_string1)>=0 or clean_field(field).find(filter_string2)>=0 
+                                    or clean_field(field).find(filter_string3)>=0 or clean_field(field).find(filter_string4)>=0):
+                logic_string+="\n"
+                logic_string+='<pre onclick="clip(this);" class="field">'+"{% if "+clean_field(field)+" == \""+str(fields[field])+"\" %}{% endif %}"+"</pre>"
+    group_string = "Groups"
+    for field in sorted(groups):
+        if ((not filter_param) or (clean_field(field)+".").find(filter_string1)>=0 or clean_field(field).find(filter_string2)>=0
+                                    or clean_field(field).find(filter_string3)>=0 or clean_field(field).find(filter_string4)>=0):
+                group_string+="\n"
+                itemname = field[1+field.rfind("."):]+"_item"
+                group_string+='<pre onclick="clip(this);" class="field">'+"{% for "+itemname+" in "+field.replace("docroot.","")+" %}{% endfor %}"+"</pre>"
+    template_sample = {
+            "fields": field_string,
+            "logic": logic_string, 
+            "groups":group_string,
+            "tree": tree,
+            };
+    return JsonResponse({"sample":template_sample})
+
+def styling(request):
+    cwd = get_working_dir()
+    config = get_user_config(request.user)
+    params = request.GET
+    template_folder = "templates"
+    template_subfolder= getParamDefault(params, "template_subfolder", "")
+    template_stylesheet= getParamDefault(params, "template_stylesheet", "")
+    stylesheet_content = get_local_txt_content(cwd, config, template_folder+template_subfolder, template_stylesheet)
+
+    return JsonResponse({"styling":stylesheet_content})
+
+def load_template(request):
+    cwd = get_working_dir()
+    config = get_user_config(request.user)
+    params = request.GET
+    template_folder = "templates"
+    template_subfolder= getParamDefault(params, "template_subfolder", "")
+    template= getParamDefault(params, "template_name", "")
+    template_content = get_local_txt_content(cwd, config, template_folder+template_subfolder, template)
+    template_content=template_content.replace("\n\n", "\n")
+
+    return JsonResponse({"template":template_content})
+
+def change_folder(request):
+    cwd = get_working_dir()
+    config = get_user_config(request.user)
+    params = request.GET
+    template_folder = "templates"
+    template_subfolder = clean_subfolder(getParamDefault(params, "template_subfolder", ""))
+    items = folder_files(config, "templates"+template_subfolder)
+    folders, files = get_folders_and_files(template_subfolder, items)
+    template_files = [(file["name"],file["name"]) for file in files if file["name"].find(".css")<0]
+    style_files = [(file["name"],file["name"]) for file in files if file["name"].find(".css")>0]
+    subfolders = [(folder["name"],folder["name"]) for folder in folders]
+
+    return JsonResponse({"folders":subfolders, "styles":style_files, "templates":template_files})
+
+def delete(request):
+    cwd = get_working_dir()
+    config = get_user_config(request.user)
+    params = request.GET
+    path = getParamDefault(params, "file_path", "")
+    file_name= getParamDefault(params, "file_name", "")
+    del_local(cwd, config, path,file_name)
+    return JsonResponse({"file_deleted":file_name})
+    

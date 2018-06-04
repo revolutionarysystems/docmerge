@@ -14,7 +14,7 @@ from .merge_utils import (substituteVariablesDocx, substituteVariablesDocx_direc
     combine_docx, combine_docx_direct, extract_regex_matches_docx,
     substituteVariablesPlainString, merge_docx_footer, merge_docx_header, preprocess_docx_template, 
     postprocess_docx, watermark_pdf)
-from .resource_utils import (push_local_txt, push_local_txt_fullname,get_local_dir)
+from .resource_utils import (push_local_txt, push_local_txt_fullname,get_local_dir, get_local_txt_content)
 from traceback import format_exc
 from .config import remote_library
 import pdfkit
@@ -52,7 +52,6 @@ def get_flow_local(cwd, config, flow_local_folder, flow_file_name):
 def get_flow(cwd, config, flow_local_folder, flow_folder, flow_file_name):
     # potential pre-processing here
     flow = get_flow_local(cwd, config, flow_local_folder, flow_file_name)
-    print("flow", flow)
     if flow == None:
         if remote_library:
             flow = get_flow_resource(config, flow_folder, flow_file_name)
@@ -86,8 +85,6 @@ def process_merge(cwd, config, uniq, step, localTemplateFileName, template_subfo
         outcome = substituteVariablesDocx_direct(config, localTemplateFileName+"_"+step["local_ext"], localMergedFileName+step["local_ext"], subs)
         postprocess_docx(localMergedFileName+step["local_ext"])
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
-        print("merging docx .. 4")
-        print(outcome)
     else:
         outcome = substituteVariablesPlain(config, localTemplateFileName+step["local_ext"], localMergedFileName+step["local_ext"], subs)
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
@@ -235,8 +232,9 @@ def process_upload(config, step, localFileName, subfolder, upload_id):
 
 
 # convert markdown format to html
-def process_markdown(config, step, localMergedFileName, localMergedFileNameOnly, subs):
-    outcome = convert_markdown(localMergedFileName+step["local_ext"], localMergedFileName+".html")  
+def process_markdown(cwd, config, step, localMergedFileName, localMergedFileNameOnly, subs):
+    css_string = get_local_txt_content(cwd, config, "templates", "demo.css") #todo fix
+    outcome = convert_markdown(localMergedFileName+step["local_ext"], localMergedFileName+".html", css_string=css_string)  
     outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".html"
     return outcome
 
@@ -253,7 +251,6 @@ def process_html_pdf(config, step, localMergedFileName, localMergedFileNameOnly,
         html_in = weasyprint.HTML(localMergedFileName+step["local_ext"])
         doc = html_in.write_pdf(target = localMergedFileName+".pdf")
     else:
-
         path_wkthmltopdf = b'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe'
         config = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
         output_dir = localMergedFileName[:localMergedFileName.rfind(os.path.sep)]
@@ -390,7 +387,6 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
                     #else:
                     #    local_folder = template_remote_folder
                     download_folder = gd_path_equivalent(config, local_folder.replace("\\","/"))
-                    print(config.tenant, local_folder, download_folder, template_name)
                     doc = folder_file(config, download_folder, template_name)
                     doc_id = doc["id"]
                     doc_mimetype = doc["mimeType"]
@@ -415,7 +411,7 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
                 outcome = process_compound_merge0(cwd, config, uniq, step, template_subfolder, template_name, output_subfolder, subs)
 
             if step["step"]=="markdown":
-                outcome = process_markdown(config, step, localMergedFileName, localMergedFileNameOnly, subs)
+                outcome = process_markdown(cwd, config, step, localMergedFileName, localMergedFileNameOnly, subs)
 
             if step["step"]=="pdf":
                 outcome = process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs)
@@ -432,10 +428,7 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
                     localFileName = localMergedFileName
                     if output_folder==None:
                         output_folder = "output"
-                    print("output_folder")
-                    print(output_folder)
                     output_folder = gd_path_equivalent(config, output_folder)
-                    print(output_folder)
                     upload_id = folder(config, output_folder)["id"]
                     upload_subfolder = None
                 outcome = process_upload(config, step, localFileName, upload_subfolder, upload_id)

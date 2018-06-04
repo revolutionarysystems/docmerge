@@ -16,8 +16,10 @@
                             <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
                     <div>                            
                     {% if widget.refreshForm %}
-                    <a href = "/refresh/?local={{widget.path}}&remote=" title = "Refresh the files in this folder only" target="_blank">Refresh</a>
-                    <span> - </span><a href = "/refresh/?local={{widget.path}}&remote=&all=true" target="_blank" title = "Refresh the files in this folder and all sub-folders">Refresh All</a>
+                    <a href = "/refresh/?local={{widget.path}}&remote=" title = "Refresh the files in this folder only" target="_blank" data-confirm="Are you sure you want to refresh {{widget.path}}?">Refresh</a>
+                    <span> - </span><a href = "/refresh/?local={{widget.path}}&remote=&all=true" target="_blank" title = "Refresh the files in this folder and all sub-folders" data-confirm="Are you sure you want to refresh '{{widget.path}}'' and ALL SUBFOLDERS?">Refresh All</a>
+                    <span> - </span><a href = "/refresh/?local={{widget.path}}&remote=&all=true&clear=true" target="_blank" title = "Delete the files in this folder and all sub-folders and then refresh from library?" data-confirm="Are you sure you want to clear {{widget.path}} and subfolders and refresh from library?">Rebuild All</a>
+                    <span> - </span><a href = "/clear/?local={{widget.path}}&all=true" target="_blank" title = "Delete the files in this folder and all sub-folders" data-confirm="Are you sure you want to clear {{widget.path}} and subfolders">Clear All</a>
                     {% endif %}
                     {% if "emplate" in widget.title %}{% if widget.refreshForm %}
                     <span> - </span>{% endif %} <a href="../test/?template_subfolder={{ widget.subfolder }}" target="_blank" title = "Test the templates in this folder">Test</a>
@@ -29,7 +31,7 @@
                             <tr>
                             {% if file.isdir %}
                                 <strong>
-                                <td class="libcell" colspan=4>
+                                <td class="libcell" colspan=6>
                                 {% if file.name == ".." %}
                                     {% if file.parent.folder %}
                                         <a href="../library_folder/?root={{ file.parent.root}}&folders={{ file.parent.folder }}" >Open Parent</a> 
@@ -44,10 +46,21 @@
                                 {{ file.name }}
                                 </td>
                                 </strong>
-                            {% else %}
+                            <tr>
+                            {% endif %}
+                        {% endfor %}       
+                        <tr>
+                                <td class="headcell" colspan=2 align="center">GD</td>
+                                <td class="headcell" colspan=1></td>
+                                <td class="headcell" colspan=3 align="center">EP Server</td>
+                                <td class="headcell" colspan=2 align="center">File</td>
+                        </tr>
+                        {% for file in widget.files %}
+                            <tr>
+                            {% if not file.isdir %}
                                 {% if file.is_remote == 'Y' %}
-                                <td class="libcell"><a title = "{{ file.modifiedTime }}" href="https://drive.google.com/open?id={{ file.id}}" target="_blank">E</a></td>
-                                <td class="libcell"><a title = "{{ file.modifiedTime }}" href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">V</a></td>
+                                <td class="libcell"><a title = "Edit in Google Docs; {{ file.modifiedTime }}" href="https://drive.google.com/open?id={{ file.id}}" target="_blank">E</a></td>
+                                <td class="libcell"><a title = "View in Google Docs; {{ file.modifiedTime }}" href="https://drive.google.com/a/revolutionarysystems.co.uk/file/d/{{ file.id }}/view" target="_blank">V</a></td>
                                 {% else %}
                                 <td class="libcell" colspan="2"/>
                                 {% endif %}
@@ -55,16 +68,33 @@
                                 {{ file.is_remote}}-{{file.is_local}}
                                 </td>
                                 {% if file.is_local == 'Y' %}
-                                <td class="libcell"><a title = "{{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Fresh</a></td>
+                                        {% if file.edit_local == 'Y' %}
+                                                {% if file.ext != '.css' or "emplate" in widget.title %}
+                                                        <td class="libcell"><a title = "{{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Fresh</a></td>
+                                                {% else %}
+                                                        <td class="libcell"><a title = "{{ file.mtime }}" href="../edit/?file_name={{ file.name }}&file_path={{ widget.path }}" target="_blank">Fresh</a></td>
+                                                {% endif %}
+                                        {% else %}
+                                                <td class="libcell"><a title = "{{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Fresh</a></td>
+                                        {% endif %}
                                 {% elif file.is_local == 'R' %}
-                                <td class="libcell"><a title = "{{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Stale </a></td>
+                                    <td class="libcell"><a title = "{{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Stale </a></td>
+                                {% elif file.is_local == 'S' %}
+                                    <td class="libcell"><a title = "{{ file.mtime }}" href="../file/?name={{ file.name }}&path={{ widget.path }}" target="_blank">Stale </a></td>
                                 {% else %}
-                                <td class="libcell"/>
+                                    <td class="libcell"/>
                                 {% endif %}
                                 {% if file.is_local == 'Y' %}
-                                <td class="libcell">{{ file.name }}</td>
+                                    <td class="libcell"><a title = "Edit on Echo Server" href="../compose/?file_name={{ file.name }}&file_path={{ widget.path }}" target="_blank">E</a></td>
+                                    <td class="libcell"><a title = "Delete from Echo Server" href="../delete/?file_name={{ file.name }}&file_path={{ widget.path }}" data-confirm="Are you sure you want to delete {{file.name}}?">X</a></td>
+                                    <td class="libcell">{{ file.name }}</td>
+                                {% elif file.is_local == 'S' %}
+                                    <td class="libcell"><a title = "Edit on Echo Server" href="../compose/?file_name={{ file.name }}&file_path={{ widget.path }}" target="_blank">E</a></td>
+                                    <td class="libcell"><a title = "Delete from Echo Server" href="../delete/?file_name={{ file.name }}&file_path={{ widget.path }}" data-confirm="Are you sure you want to delete {{file.name}}?">X</a></td>
+                                    <td class="libcell nb">{{ file.name }}</td>
                                 {% else %}
-                                <td class="libcell nb">{{ file.name }}</td>
+                                    <td class="libcell" colspan="2"/>
+                                    <td class="libcell nb">{{ file.name }}</td>
                                 {% endif %}
                             {% endif %}
                             <tr>

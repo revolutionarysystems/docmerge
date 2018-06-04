@@ -1,5 +1,5 @@
 from merge.models import ClientConfig
-from merge.resource_utils import refresh_files
+from merge.resource_utils import refresh_files,process_local_files
 from merge.gd_service import ensure_initialised
 #from merge.flow import get_flow_local, get_flow
 #from merge.xml4doc import getData
@@ -11,7 +11,7 @@ def run1():
         print(file["id"])
         print(file)
 """
-def run():
+def run2():
     config = ClientConfig()
     config.tenant="ECV"
     ensure_initialised(config)
@@ -51,3 +51,7 @@ def run6():
 #def folder_item(parent, name, mimeType='application/vnd.google-apps.folder', ):
 
 """    
+def run():
+    config = ClientConfig()
+    files = process_local_files(config, "templates", days_ago=0, days_recent=999, action="report", recursive=True)
+    print(files)

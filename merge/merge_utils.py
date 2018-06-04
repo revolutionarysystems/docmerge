@@ -21,6 +21,7 @@ import difflib
 from subprocess import check_output
 import lxml.etree as etree
 import PyPDF2
+from pynliner import Pynliner
 #import merge.mathfilters
 
 from .resource_utils import (
@@ -68,12 +69,12 @@ def get_engine(config):
 
 def substituteVariablesPlain(config, fileNameIn, fileNameOut, subs):
     c = Context(subs)
-    fileIn = open(fileNameIn, "r")
+    fileIn = open(fileNameIn, "r", encoding = "utf-8")
     fullText = fileIn.read()
     t = get_engine(config).from_string(fullText)
     xtxt = t.render(c)
     xtxt = apply_sequence(xtxt)
-    fileOut = open(fileNameOut, "w")
+    fileOut = open(fileNameOut, "w", encoding="utf-8")
     fileOut.write(xtxt)
     return {"file":fileNameOut}
     
@@ -88,7 +89,7 @@ def substituteVariablesPlainString(config, stringIn, subs):
 def preprocess(text):
     text = text.replace("{% #A", "{% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'")    
     text = text.replace("{% #a", "{% cycle 'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm' 'n' 'o' 'p' 'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z'")    
-    text = text.replace("{% #9", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' '23' '24' '25' '26' '27' '28' '29' '30' '31' '32' '33' '34' '35' '36' '37' '38' '39' '40' '41' '42' '43' '44' '45' '46' '47' '48' '49' ")    
+    text = text.replace("{% #9", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' '23' '24' '25' '26' '27' '28' '29' '30' '31' '32' '33' '34' '35' '36' '37' '38' '39' '40' '41' '42' '43' '44' '45' '46' '47' '48' '49' '50' '51' '52' '53' '54' '55' '56' '57' '58' '59' '60' '61' '62' '63' '64' '65' '66' '67' '68' '69' '70' '71' '72' '73' '74' '75' '76' '77' '78' '79' '80' '81' '82' '83' '84' '85' '86' '87' '88' '89' '40' '91' '92' '93' '94' '95' '96' '97' '98' '99' '100' ")    
     text = text.replace("{% #I", "{% cycle 'I' 'II' 'III' 'IV' 'V' 'VI' 'VII' 'VIII' 'IX' 'X' 'XI' 'XII' 'XIII' 'XIV' 'XV' 'XVI' 'XVII' 'XVIII' 'XIX' 'XX'")    
     text = text.replace("{% #i", "{% cycle 'i' 'ii' 'iii' 'iv' 'v' 'vi' 'vii' 'viii' 'ix' 'x' 'xi' 'xii' 'xiii' 'xiv' 'xv' 'xvi' 'xvii' 'xviii' 'xix' 'xx'")    
     return text
@@ -313,12 +314,19 @@ def combine_docx(file_names, file_name_out):
     combined_document.save(file_name_out)
     return {"file":file_name_out}
 
-def convert_markdown(fileNameIn, fileNameOut):
-    fileIn = open(fileNameIn, "r")
-    fileOut = open(fileNameOut, "w")
-    fileOut.write(markdown(fileIn.read()))
+def convert_markdown(fileNameIn, fileNameOut, css_string=None):
+    fileIn = open(fileNameIn, "r", encoding="utf-8")
+    fileOut = open(fileNameOut, "w", encoding="utf-8")
+    html = markdown(fileIn.read())
+    if css_string:
+        html  = '<div class="echo-publish">'+html+"</div>"
+        html = Pynliner().from_string(html).with_cssString(css_string).run()
+    fileOut.write(html)
     fileOut.close()
     return {"file":fileNameOut}
+
+def convert_markdown_string(stringIn):
+    return markdown(stringIn, extensions=['markdown.extensions.admonition','markdown.extensions.tables','markdown.extensions.nl2br'])
 
 def email_file(baseFileName, me, you, subject, credentials):
 
@@ -335,7 +343,6 @@ def email_file(baseFileName, me, you, subject, credentials):
         fp = open(file, 'r')
         content = fp.read()
         fp.close()
-#        print(mime[0].split("/"))
         msg.attach(MIMEText(content, mime[0].split("/")[1]))    
     
     username = credentials["username"]
@@ -684,8 +691,6 @@ def convert_pdf_abiword(filename_in, filename_out, outdir = "."):
     return {"file":filename_out, "response":response, "command": command}
 
 def watermark_pdf(target, wmark):
-    print(">merge")
-    print(wmark)
     optarget = target.replace(".pdf",".wm.pdf")
     target_file = PyPDF2.PdfFileReader(open(target, "rb"))
     wmark_file = PyPDF2.PdfFileReader(open(wmark, "rb"))

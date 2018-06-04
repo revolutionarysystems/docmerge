@@ -4,18 +4,22 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django import forms
-from .forms import MergeForm, SimpleMergeForm, RefreshForm, UploadZipForm, TestNavForm
+from .forms import MergeForm, SimpleMergeForm, RefreshForm, UploadZipForm, TestNavForm, ComposeTemplateForm, EditFileForm
 from .models import MergeJob, RefreshJob
-from merge.resource_utils import combined_folder_files as folder_files, local_folder_files, count_local_files, process_local_files, gd_populate_folders
+from merge.resource_utils import (
+    combined_folder_files as folder_files, local_folder_files, count_local_files, process_local_files, gd_populate_folders, 
+    get_working_dir, get_local_dir, push_local_txt, get_local_txt_content, get_folders_and_files, clean_subfolder)
+from merge.merge_utils import substituteVariablesPlainString,convert_markdown_string
 from merge.views import merge_raw_wrapped,getParamDefault 
-from merge.config import install_display, remote_library
-from merge.config import install_display, remote_library, library_page
+from merge.config import install_display, remote_library, library_page, compose_page
 from merge.gd_service import GDriveAccessException, initialise as library_initialise, get_credentials_ask, get_credentials_store, ensure_initialised
 from merge.gd_resource_utils import gd_build_folders
 from docmerge.settings import MULTI_TENANTED
 from merge.models import ClientConfig
 from merge.flow import json_serial
 from django.core.urlresolvers import reverse
+from merge.xml4doc import getData, fields_from_subs
+from pynliner import Pynliner
 
 def get_user_config(user):
     config = ClientConfig()
@@ -107,12 +111,6 @@ def dash(request):
     return render(request, 'dash/home.html', {"widgets":widgets, "mergeForm": mergeForm, "install_display": install_display, "warning":warning, "authuri":authuri})
 
 
-def clean_subfolder(subfolder):
-    if len(subfolder)>0 and subfolder[-1] =="/":
-        subfolder=subfolder[:-1]
-    elif subfolder != "" and subfolder.find("/")!=0:
-        subfolder = "/"+subfolder
-    return subfolder
 
 def make_test_forms(config, mergeJob, template_subfolder):
         mergeForm = SimpleMergeForm(instance=mergeJob)
@@ -127,6 +125,8 @@ def make_test_forms(config, mergeJob, template_subfolder):
         mergeForm.fields['xform_file'].choices=[("","---"),("None","None")]+[(file["name"],file["name"]) for file in files]
         advMergeForm.fields['xform_file'].choices=[("","---"),("None","None")]+[(file["name"],file["name"]) for file in files]
         items = folder_files(config, "templates"+template_subfolder)
+        folders, files = get_folders_and_files(template_subfolder, items)
+        '''
         files = []
         folders = []
         if template_subfolder:
@@ -143,6 +143,7 @@ def make_test_forms(config, mergeJob, template_subfolder):
                 files.append(item)
         folders = sorted(folders, key=lambda k: k['ext']+k['name']) 
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
+        '''
         mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder),(".",".")]
         advMergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder),(".",".")]
         navForm.fields['template_subfolder'].label = "Template folder"
@@ -213,22 +214,6 @@ def test_result(mergeForm, request, method="POST"):
             data_root = mergeForm["data_root"].value(),
         )
         navForm, mergeForm, advMergeForm = make_test_forms(config, mergeJob, template_subfolder)
-
-    #    mergeForm = SimpleMergeForm(instance=mergeJob)
-    #    advMergeForm = MergeForm(instance=mergeJob)
-    #    navForm = TestNavForm(instance=mergeJob)
-    #    files = folder_files(config, "test_data")
-    #    files = sorted(files, key=lambda k: k['ext']+k['name']) 
-    #    mergeForm.fields['data_file'].choices=[(file["name"],file["name"]) for file in files]
-    #    files = folder_files(config, "templates"+template_subfolder)
-    #    files = sorted(files, key=lambda k: k['ext']+k['name']) 
-    #    mergeForm.fields['template'].choices=[(file["name"],file["name"]) for file in files]
-    #    mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
-    #    mergeForm.fields['template_subfolder'].widget = forms.HiddenInput()
-    #    navForm.fields['template_subfolder'].choices=[(folder["name"],folder["name"]) for folder in folders]
-    #    files = folder_files(config, "flows")
-    #    files = sorted(files, key=lambda k: k['ext']+k['name']) 
-    #    mergeForm.fields['flow'].choices=[(file["name"],file["name"]) for file in files]
         json_response = merge_raw_wrapped(request, method=method)
     except GDriveAccessException:
         warning = "Not yet connected to a library"
@@ -251,10 +236,6 @@ def refresh_form(local):
         return refreshForm
     else:
         return None
-
-
-
-
 
 @login_required 
 def library_folder(request):
@@ -357,7 +338,7 @@ def account(request):
     widgets.append({"title":"Users", "glyph":"glyphicon glyphicon-user"})
     widgets.append({"title":"Reports", "glyph":"glyphicon glyphicon-list-alt"})
     widgets.append({"title":"Credit", "glyph":"glyphicon glyphicon-star"})
-    widgets.append({"title":"Backup", "glyph":"glyphicon glyphicon-sort"})
+    widgets.append({"title":"Backup and Restore", "glyph":"glyphicon glyphicon-sort"})
     widgets.append({"title":"Archive", "glyph":"glyphicon glyphicon-file", "usage":{"requests":nrequests, "output":noutput, "dump":ndump}})
     zipform = UploadZipForm()
     return render(request, 'dash/account.html', {"widgets":widgets, "install_display": install_display, "zipform":zipform})
@@ -376,6 +357,180 @@ def template_guide(request):
 
 def links(request):
     return render(request, 'dash/links.html', {"install_display": install_display})
+
+@login_required 
+def compose(request):
+    cwd = get_working_dir()
+    config = get_user_config(request.user)
+    file_folder = "templates"
+    params = request.POST
+    if len(params)==0:
+        params = request.GET
+ #   nav_form = ComposeNavForm()
+ #   nav_form.fields["template_subfolder"].initial="/"
+    template_subfolder= "/"
+    compose_form = ComposeTemplateForm()
+    compose_form.fields["template_subfolder"].initial="/"
+#    test_form = ComposeTestForm()
+    try:
+        action = params["action"]
+    except:
+        action = "none"
+    template_path = clean_subfolder(getParamDefault(params, "file_path", ""))
+    if template_path.find("/templates\\")==0:
+        subfolder_default = template_path[11:]
+    else:
+        subfolder_default = ""
+
+    template_subfolder = clean_subfolder(getParamDefault(params, "template_subfolder", subfolder_default))
+    file_name= getParamDefault(params, "file_name", "")
+    file_content= getParamDefault(params, "file_content", "")
+    template_test_case= getParamDefault(params, "template_test_case", "")
+    test_case_xform= getParamDefault(params, "test_case_xform", "")
+    template_stylesheet= getParamDefault(params, "template_stylesheet", "")
+    stylesheet_content = getParamDefault(params, "template_stylesheet_content", "")
+    template_sample = getParamDefault(params, "template_sample", "")
+    rendered = ""
+    render_type = "txt"
+    if template_path=="":
+        template_path = file_folder+template_subfolder
+    else:
+        if template_path[0]=="/":
+            template_path= template_path[1:]
+    if not(file_name =="") and (file_content==""):
+        file_content = get_local_txt_content(cwd, config, template_path, file_name)
+        file_content=file_content.replace("\n\n", "\n")
+
+
+    if action=="save":
+        file_content= params["file_content"]
+        if file_name.find(".")<0:
+            file_name= file_name+".txt"
+        template_path = file_folder+template_subfolder
+        push_local_txt(cwd, config, template_path, file_name, file_content)
+        #print(compose_form)
+    elif action=="nav":
+        template_subfolder = clean_subfolder(getParamDefault(params, "template_subfolder", ""))
+        compose_form.fields["template_subfolder"].initial=template_subfolder
+    elif action=="preview":
+        try:
+            subs = getData(config, data_file=template_test_case, local_data_folder="test_data")
+        except:
+            subs={}
+        try:
+            subs=subs["docroot"]
+        except:
+            pass
+
+        rendered = substituteVariablesPlainString(config, file_content, subs)
+        render_type = "txt"
+        if (file_name.find(".md")):#fix needed
+            rendered = convert_markdown_string(rendered)
+            rendered = '<div class="echo-publish">'+rendered+"</div>"
+            rendered = Pynliner().from_string(rendered).with_cssString(stylesheet_content).run()
+            render_type = "md"
+        ###
+    if not(template_stylesheet==""):
+        stylesheet_content = get_local_txt_content(cwd, config, template_folder+template_subfolder, template_stylesheet)
+
+    if not(template_test_case==""):
+        subs = getData(config, data_file=template_test_case, local_data_folder="test_data")
+        try:
+            subs=subs["docroot"]
+        except:
+            pass
+        fields, groups, tree  = fields_from_subs(subs)
+        field_string = "Fields"
+        for field in fields:
+            field_string+="\n"
+            field_string+="{{"+field+"}}"
+        logic_string = "Logic"
+        for field in fields:
+            logic_string+="\n"
+            logic_string+="{% if "+field+" == \"\" %}{% endif %}"
+        group_string = "Groups"
+        for field in fields:
+            group_string+="\n"
+            group_string+="{% for item in "+field+" %}{% endfor %}"
+        template_sample = {"fields":field_string, "logic":logic_string, "groups":group_string}
+
+    items = folder_files(config, "templates"+template_subfolder)
+    folders, files = get_folders_and_files(template_subfolder, items)
+    style_files = [(file["name"],file["name"]) for file in files if file["name"].find(".css")>0]
+    template_files = [(file["name"],file["name"]) for file in files if file["name"].find(".css")<0]
+    compose_form.fields['template_files'].choices=[("","---")]+template_files
+    compose_form.fields["file_name"].initial=file_name
+    compose_form.fields["file_name"].label="File name"
+    compose_form.fields["file_content"].initial=file_content
+    compose_form.fields["file_content"].label="File content"
+    compose_form.fields["template_subfolder"].initial=template_subfolder
+    compose_form.fields['template_subfolder'].choices=[(folder["name"],folder["name"]) for folder in folders]
+    compose_form.fields["template_subfolder"].initial=template_subfolder
+    compose_form.fields['template_test_case'].initial = template_test_case
+    compose_form.fields['template_stylesheet'].choices=[("","---")]+style_files
+    compose_form.fields['template_stylesheet_content'].initial=stylesheet_content
+    #compose_form.fields['template_sample'].initial = template_sample
+    data_files = folder_files(config, "test_data")
+    data_files = sorted(data_files, key=lambda k: k['ext']+k['name']) 
+    compose_form.fields['template_test_case'].choices=[("","---")]+[(file["name"],file["name"]) for file in data_files]
+    data_files = folder_files(config, "transforms")
+    data_files = sorted(data_files, key=lambda k: k['ext']+k['name']) 
+    compose_form.fields['test_case_xform'].choices=[("","---")]+[(file["name"],file["name"]) for file in data_files]
+
+    return render(request, compose_page, {"title":"Compose Template", "glyph":"glyphicon glyphicon-cog", 
+                         "form": compose_form, "sub_title":template_subfolder, "sample": template_sample, #"stylesheet_content": stylesheet_content, 
+                          "rendered":rendered, "render":render_type, "install_display": install_display})
+
+
+@login_required 
+def edit(request):
+    cwd = get_working_dir()
+    config = get_user_config(request.user)
+    params = request.POST
+    if len(params)==0:
+        params = request.GET
+    edit_form = EditFileForm()
+#    test_form = ComposeTestForm()
+    try:
+        action = params["action"]
+    except:
+        action = "none"
+    file_path = clean_subfolder(getParamDefault(params, "file_path", ""))
+    file_name= getParamDefault(params, "file_name", "")
+    file_content= getParamDefault(params, "file_content", "")
+    file_folder = getParamDefault(params, "file_path", ".")
+    if file_path=="":
+        file_path = file_folder+"/"
+    else:
+        if file_path[0]=="/":
+            file_path= file_path[1:]
+    if not(file_name =="") and (file_content==""):
+        file_content = get_local_txt_content(cwd, config, file_path, file_name)
+        file_content=file_content.replace("\n\n", "\n")
+
+    if action=="save":
+        file_content= params["file_content"]
+        file_folder= params["file_folder"]
+        if file_name.find(".")<0:
+            file_name= file_name+".txt"
+        file_path = file_folder
+        push_local_txt(cwd, config, file_path, file_name, file_content)
+        #print(edit_form)
+    elif action=="nav":
+        template_subfolder = clean_subfolder(getParamDefault(params, "template_subfolder", ""))
+        edit_form.fields["template_subfolder"].initial=template_subfolder
+
+    edit_form.fields["file_name"].initial=file_name
+    edit_form.fields["file_name"].label="File name"
+    edit_form.fields["file_content"].initial=file_content
+    edit_form.fields["file_content"].label="File content"
+    edit_form.fields["file_folder"].initial=file_folder
+
+
+    return render(request, 'dash/edit.html', {"title":"Edit File", "glyph":"glyphicon glyphicon-cog", 
+                         "form": edit_form, 
+                          "install_display": install_display})
+
 
 def logout_view(request):
     logout(request)
