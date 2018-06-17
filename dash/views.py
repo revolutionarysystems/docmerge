@@ -17,6 +17,7 @@ from merge.gd_resource_utils import gd_build_folders
 from docmerge.settings import MULTI_TENANTED
 from merge.models import ClientConfig
 from merge.flow import json_serial
+
 from django.urls import reverse
 from merge.xml4doc import getData, fields_from_subs
 from pynliner import Pynliner
