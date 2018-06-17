@@ -1,0 +1,295 @@
+{% extends 'dash/base.html' %}
+
+{% block content %}
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+        <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+                        <script>function openTab(tabName) {
+                                       var i;
+                                       var x = document.getElementsByClassName("tab");
+                                        for (i = 0; i < x.length; i++) {
+                                            x[i].style.display = "none"; 
+                                        }
+                                    document.getElementById(tabName).style.display = "block"; 
+                                    };
+                        </script>
+
+        <!--h2><a href="">Compose Template</a></h2-->
+            {% if warning %}
+            <h3>{{ warning }} </h3>
+            <ul>
+                <li><a href = "{{ authuri }}">Click here to link to Google Drive</a></li>
+            </ul>
+            {% endif %}
+
+        <div class="row widget">
+                    {% if title == "Compose Template" %}
+                        <form id="compose" method="POST" class="query-form" action="/compose/">{% csrf_token %}
+                            <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <h3><a href=""><span class="glyphicon glyphicon-folder-open"></span>  Compose Template</a></h3>
+                                <p>Current template folder: <span id = "current-folder">{% if sub_title %}{{sub_title}}{% else %}/{% endif %}</span></p>
+                                <p>
+                                {{ form.template_subfolder.errors}}
+                                {{ form.template_subfolder.label_tag}}
+                                {{ form.template_subfolder}}
+                                <!--button type="submit" class="save btn btn-warning" name="action" value = "nav">Change folder</button-->
+                                <button id="change-template-folder" class="save btn btn-warning">Change folder</button>
+                                </p>
+                                <hr/>
+                                {{ form.template_files.errors}}
+                                {{ form.template_files.label_tag}}
+                                {{ form.template_files}}
+                                <button id="load-template" class="save btn btn-warning">Load template</button>
+                                <div class="echo-publish">
+                                <p>
+                                {{ form.file_content.errors}}
+                                {{ form.file_content.label_tag}}
+                                {{ form.file_content}}
+                                </p>
+                                </div>
+                                <p>
+                                {{ form.file_name.errors}}
+                                {{ form.file_name.label_tag}}
+                                {{ form.file_name}}
+                                <button type="submit" class="save btn btn-warning" name="action" value = "save">Save file</button>
+                                </p>
+
+                            </div>
+
+
+                            <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <h3 style="display:inline"><span class="{{ glyph }}"></span>&nbsp;Sample Data&nbsp;</h3>
+                                <a href="#" onclick="toggle_visibility('sample-data-panel');$('#sample-data-open').toggleClass('glyphicon-chevron-down glyphicon-chevron-up')"><span id="sample-data-open" class="glyphicon glyphicon-chevron-down"></span></a>
+                                <div id="sample-data-panel" style="display:none">
+                                    {{ form.template_test_case.errors}}
+                                    {{ form.template_test_case.label_tag}}
+                                    {{ form.template_test_case}}
+                                    <br/>
+                                    {{ form.test_case_xform.errors}}
+                                    {{ form.test_case_xform.label_tag}}
+                                    {{ form.test_case_xform}}
+                                    <button id="sample-data" class="save btn btn-warning" >Get Sample Data</button>
+                                    {{ form.template_sample.errors}}
+                                    <div id="sample_data_jstree"></div>
+
+
+
+                                    <div class="w3-bar w3-black">
+                                        <input type="button" style="width:100px" class="w3-bar-item w3-button" onclick="openTab('Fields')" value="Fields"></input>
+                                        <input type="button" style="width:100px" class="w3-bar-item w3-button" onclick="openTab('Logic')" value="Logic"></input>
+                                        <input type="button" style="width:100px" class="w3-bar-item w3-button" onclick="openTab('Groups')" value="Groups"></input>
+                                    </div>                                
+                                    <div  id="Fields" class="tab" style="height:400px;overflow: auto">
+                                        <pre onclick="clip(this);" id="fields-panel">
+                                                test
+                                        </pre>
+                                    </div>
+                                    <div id="Logic" class="tab" style="display:none;height:400px;overflow: auto">
+                                        <pre>
+                                        </pre>
+                                    </div>
+                                    <div id="Groups" class="tab" style="display:none;height:400px;overflow: auto">
+                                        <pre>
+                                        </pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <h3 style="display:inline"><span class="{{ glyph }}"></span>
+                                            &nbsp;Styling&nbsp;
+                                </h3>
+                                    <a href="#" onclick="toggle_visibility('styling-panel');$('#styling-open').toggleClass('glyphicon-chevron-down glyphicon-chevron-up')">
+                                    <span id="styling-open" class="glyphicon glyphicon-chevron-down"></span></a>
+                                <div id="styling-panel" style="display:none">
+                                    {{ form.template_stylesheet.errors}}
+                                    {{ form.template_stylesheet }}
+                                    <button id="styling" class="save btn btn-warning">Get Stylesheet</button>
+                                    <div id = stylesheet-content>
+                                        {{ form.template_stylesheet_content.errors }}
+                                        {{ form.template_stylesheet_content }}
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                               <h3><a href=""><span class="{{ glyph }}"></span> Preview</a></h3>
+                               <button id = "preview-template" class="save btn btn-warning">Preview template</button>
+                                <div  id = "preview" style="background-color: white;border-color: black;border-style: solid;border-width: 1px;padding: 5px;">
+                                </div>
+                        </div>
+                        <script>var simplemde = new SimpleMDE({ element: document.getElementById("id_file_content") });
+                                    simplemde.codemirror.on("change", function(){
+                                        document.getElementById("id_file_content").value = simplemde.value();
+                                    });
+                        </script>
+                        <script>
+                                $(function () { $('#sample_data_jstree').jstree(); });
+                                $('#sample_data_jstree').jstree({ 'core' : {
+                                    'data' : []
+                                } });
+                                $('#sample_data_jstree').on("select_node.jstree", function (e, data) {
+                                        event.preventDefault();
+                                        $.ajax({
+                                            url: '/ajax/sample-data/',
+                                            data: {
+                                                "template_test_case": $("#id_template_test_case").val(),
+                                                "test_case_xform": $("#id_test_case_xform").val(),
+                                                "filter": data.node.text,
+                                                "parent": data.instance.get_node(data.node.parent).text,
+                                            },
+                                            dataType: 'json',
+                                            success: function (data) {
+                                                $("#Fields").html(data.sample.fields);
+                                                $("#Logic").html(data.sample.logic);
+                                                $("#Groups").html(data.sample.groups);
+                            }
+                          });                   
+                          
+                    return false;
+                    }
+                );      
+
+
+
+                        </script>
+                        <script type="text/javascript">
+                            function toggle_visibility3(id1, id2, id3) {
+                                toggle_visibility(id1);
+                                toggle_visibility(id2);
+                                toggle_visibility(id3);
+                            }
+                            function toggle_visibility(id) {
+                               var e = document.getElementById(id);
+                               if(e.style.display == 'block')
+                                  e.style.display = 'none';
+                               else
+                                  e.style.display = 'block';
+                            }
+                            function fill_select(id, option_list){
+                                    var options = [];
+                                    for (var i = 0; i < option_list.length; i++) {
+                                        options.push('<option value="', option_list[i][0], '">', option_list[i][1], '</option>');
+                                    }
+                                    $(id).html(options.join(''));
+                              }
+                        </script>
+        <script>
+                var clip = function(el) {
+                        var range = document.createRange();
+                        range.selectNodeContents(el);
+                        var sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                };        
+        </script>
+        <script>
+            $("#change-template-folder").click( function()
+                {
+                    event.preventDefault();
+                    var current = $("#id_template_subfolder").val();
+                    $.ajax({
+                        url: '/ajax/change-folder/',
+                        data: {
+                            "template_subfolder": $("#id_template_subfolder").val(),
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            fill_select("#id_template_subfolder", data.folders)
+                            $("#current-folder").text(current);
+                            $("#id_template_subfolder").val(current);
+                            fill_select("#id_template_stylesheet", data.styles)
+                            fill_select("#id_template_files", data.templates)
+                        }
+                      });                   
+                    return false;
+                }
+            );      
+        $("#load-template").click( function()
+                {
+                    event.preventDefault();
+                    var current = $("#id_template_files").val();
+                    $.ajax({
+                        url: '/ajax/load-template/',
+                        data: {
+                            "template_name": $("#id_template_files").val(),
+                            "template_subfolder": $("#id_template_subfolder").val(),
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            $("#id_template_name").val(current);
+                            simplemde.value(data.template);
+                        }
+                      });                   
+                      
+                return false;
+                }
+            );      
+            $("#preview-template").click( function()
+                {
+                    event.preventDefault();
+                    $.ajax({
+                        url: '/ajax/compose-preview/',
+                        data: {
+                            "template_content": $("#id_file_content").val(),
+                            "template_test_case": $("#id_template_test_case").val(),
+                            "test_case_xform": $("#id_test_case_xform").val(),
+                            "template_stylesheet_content": $("#id_template_stylesheet_content").val(),
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                        $("#preview").html(data.preview);
+                        }
+                      });                   
+                      
+                return false;
+                }
+            );      
+        $("#sample-data").click( function()
+                {
+                    event.preventDefault();
+                    $.ajax({
+                        url: '/ajax/sample-data/',
+                        data: {
+                            "template_test_case": $("#id_template_test_case").val(),
+                            "test_case_xform": $("#id_test_case_xform").val(),
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+
+                                $("#Fields").html(data.sample.fields);
+                                $("#Logic").html(data.sample.logic);
+                                $("#Groups").html(data.sample.groups);
+                                $('#sample_data_jstree').jstree(true).settings.core.data =data.sample.tree;
+                                $('#sample_data_jstree').jstree(true).refresh();
+                        }
+                      });                   
+                      
+                return false;
+                }
+            );      
+        $("#styling").click( function()
+                {
+                    event.preventDefault();
+                    $.ajax({
+                        url: '/ajax/styling/',
+                        data: {
+                            "template_stylesheet": $("#id_template_stylesheet").val(),
+                            "template_subfolder": $("#id_template_subfolder").val(),
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                                $("#stylesheet-content > textarea").val(data.styling);
+                        }
+                      });                   
+                      
+                return false;
+                }
+            );      
+        </script>
+
+                    {% endif %}    
+        </div>
+{% endblock %}        

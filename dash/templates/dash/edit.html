@@ -1,0 +1,50 @@
+{% extends 'dash/base.html' %}
+
+{% block content %}
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+        <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+                        <script>function openTab(tabName) {
+                                       var i;
+                                       var x = document.getElementsByClassName("tab");
+                                        for (i = 0; i < x.length; i++) {
+                                            x[i].style.display = "none"; 
+                                        }
+                                    document.getElementById(tabName).style.display = "block"; 
+                                    };
+                        </script>
+
+        <!--h2><a href="">Compose Template</a></h2-->
+            {% if warning %}
+            <h3>{{ warning }} </h3>
+            <ul>
+                <li><a href = "{{ authuri }}">Click here to link to Google Drive</a></li>
+            </ul>
+            {% endif %}
+
+        <div class="row widget">
+                        <form id="compose" method="POST" class="query-form" action="/edit/">{% csrf_token %}
+                            <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <h3><a href=""><span class="glyphicon glyphicon-folder-open"></span>  Edit File</a></h3>
+                                <div class="echo-publish">
+                                <p>
+                                {{ form.file_content.errors}}
+                                {{ form.file_content.label_tag}}
+                                {{ form.file_content}}
+                                </p>
+                                </div>
+                                <p>
+                                {{ form.file_name.errors}}
+                                {{ form.file_name.label_tag}}
+                                {{ form.file_name}}
+                                {{ form.file_folder.errors}}
+                                {{ form.file_folder.label_tag}}
+                                {{ form.file_folder}}
+                                <button type="submit" class="save btn btn-warning" name="action" value = "save">Save file</button>
+                                </p>
+
+                            </div>
+
+
+        </div>
+{% endblock %}        
