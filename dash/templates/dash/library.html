@@ -39,7 +39,9 @@
                                         <a href="../library/" >Open Parent</a>
                                     {% endif %}
                                 {% else %}
-                                    <a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" >Open Folder</a>
+                                    {% if file.is_local == 'Y' and file.is_remote == 'Y' or file.is_remote == 'X'%}
+                                        <a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" >Open Folder</a>
+                                    {% elif file.is_remote == 'Y' %}GD Only{% else %}EPServer Only{% endif %}
                                 {% endif %}
                                 </td>
                                 <td class="libcell">
@@ -50,9 +52,9 @@
                             {% endif %}
                         {% endfor %}       
                         <tr>
-                                <td class="headcell" colspan=2 align="center">GD</td>
+                                <td class="headcell" colspan=2 align="center" title="Google Docs Library">GD</td>
                                 <td class="headcell" colspan=1></td>
-                                <td class="headcell" colspan=3 align="center">EP Server</td>
+                                <td class="headcell" colspan=2 align="center" title="Echo Publish Server">EP</td>
                                 <td class="headcell" colspan=2 align="center">File</td>
                         </tr>
                         {% for file in widget.files %}
@@ -93,7 +95,7 @@
                                     <td class="libcell"><a title = "Delete from Echo Server" href="../delete/?file_name={{ file.name }}&file_path={{ widget.path }}" data-confirm="Are you sure you want to delete {{file.name}}?">X</a></td>
                                     <td class="libcell nb">{{ file.name }}</td>
                                 {% else %}
-                                    <td class="libcell" colspan="2"/>
+                                    <td class="libcell" colspan="1"/>
                                     <td class="libcell nb">{{ file.name }}</td>
                                 {% endif %}
                             {% endif %}

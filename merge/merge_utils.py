@@ -54,7 +54,7 @@ def get_engine(config):
             os.path.join(settings.BASE_DIR, local_root,config.tenant+'/templates/').replace('\\', '/'),],
 
         libraries={
-                'relative_path': 'merge.relative_path',
+#                'relative_path': 'merge.relative_path',
                 'mathfilters': 'merge.templatetags.mathfilters',
         },
 

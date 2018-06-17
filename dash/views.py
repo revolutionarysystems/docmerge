@@ -17,7 +17,7 @@ from merge.gd_resource_utils import gd_build_folders
 from docmerge.settings import MULTI_TENANTED
 from merge.models import ClientConfig
 from merge.flow import json_serial
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from merge.xml4doc import getData, fields_from_subs
 from pynliner import Pynliner
 
@@ -43,7 +43,8 @@ def get_library_uri(request):
 
 @login_required 
 def dash(request):
-    if not request.user.is_authenticated():
+#    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return redirect('/login/?next=%s' % request.path)
     widgets = []
     warning = None
@@ -80,26 +81,29 @@ def dash(request):
 
 
     widgets.append({"title":"Service Status", "glyph":"glyphicon glyphicon-info-sign", "status":status, "reason":reason})
-    files = {"files":local_folder_files(config, "templates/Demo Examples",fields="files(id, name, mimeType, trashed)")}
-    template_subfolder = "/Demo Examples"
-    quickTestJob=MergeJob(
-        template_folder="templates",
-        template_subfolder="Demo Examples",
-        template="Library.md",
-        output_folder="output",
-        data_folder="test_data",
-        data_root="",
-        payload = json.dumps(files, default = json_serial),
-#        payload = [{"test":"this"}],
-        payload_type = "json",
-        branding_folder="branding",
-        flow = "md.json",
-        )
-    mergeForm = MergeForm(instance=quickTestJob)
-    mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
-    mergeForm.fields['flow'].choices=[("md.json","md.json")]
-    mergeForm.fields['data_root'].initial=""
-    mergeForm.fields['template'].choices=[("Library.md","Library.md")]
+    try:
+        files = {"files":local_folder_files(config, "templates/Demo Examples",fields="files(id, name, mimeType, trashed)")}
+        template_subfolder = "/Demo Examples"
+        quickTestJob=MergeJob(
+            template_folder="templates",
+            template_subfolder="Demo Examples",
+            template="Library.md",
+            output_folder="output",
+            data_folder="test_data",
+            data_root="",
+            payload = json.dumps(files, default = json_serial),
+    #        payload = [{"test":"this"}],
+            payload_type = "json",
+            branding_folder="branding",
+            flow = "md.json",
+            )
+        mergeForm = MergeForm(instance=quickTestJob)
+        mergeForm.fields['template_subfolder'].choices=[(template_subfolder, template_subfolder)]
+        mergeForm.fields['flow'].choices=[("md.json","md.json")]
+        mergeForm.fields['data_root'].initial=""
+        mergeForm.fields['template'].choices=[("Library.md","Library.md")]
+    except:
+        mergeForm = None
 
     try:
         dummy = folder_files(config, "flows")
@@ -289,6 +293,8 @@ def library(request):
     try:
         files = folder_files(config, "templates",fields="files(id, name, mimeType)")
         files = sorted(files, key=lambda k: ('..' if k['isdir'] else k['ext'])+k['name']) 
+        for file in files:
+            print(">", file)
         widgets.append({"title":"Templates", "path":"templates", "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form("templates")})
         files = folder_files(config, "flows",fields="files(id, name, mimeType)")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 
@@ -363,6 +369,7 @@ def compose(request):
     cwd = get_working_dir()
     config = get_user_config(request.user)
     file_folder = "templates"
+    template_folder = "templates"
     params = request.POST
     if len(params)==0:
         params = request.GET

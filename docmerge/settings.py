@@ -49,8 +49,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE_CLASSES = [
 #    'sslify.middleware.SSLifyMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -60,6 +60,15 @@ MIDDLEWARE_CLASSES = [
     'django_password_protect.PasswordProtectMiddleware',
 ]
 
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 #SSLIFY_DISABLE = True
 
 ROOT_URLCONF = 'docmerge.urls'
@@ -76,13 +85,13 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
- #           'loaders': [
- #               'merge.relative_path.FileSystem19',
- #               'merge.relative_path.AppDirectories19',
+#           'loaders': [
+#               'merge.relative_path.FileSystem19',
+#               'merge.relative_path.AppDirectories19',
  #               'django.template.loaders.app_directories.Loader',
  #           ],
             'libraries': {
-                'relative_path': 'merge.relative_path',
+#                'relative_path': 'merge.relative_path',
                 'mathfilters': 'merge.templatetags.mathfilters',
             },
         },

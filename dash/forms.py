@@ -69,5 +69,5 @@ class RefreshForm(forms.ModelForm):
 class UploadZipForm(forms.Form):
     #title = forms.CharField(max_length=50)
     file = forms.FileField(label="Select a backup .zip file to load")
-    clear = forms.BooleanField(required=False, label="Clear existing resources?")
+    preserve = forms.BooleanField(initial=True, required=False, label="Preserve existing resources?")
     

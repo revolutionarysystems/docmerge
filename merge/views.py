@@ -364,6 +364,8 @@ def refresh(request):
             local = getParamDefault(params, "local", "templates")
             remote_default = gd_path_equivalent(config, local.replace("\\","/"))
             remote = getParamDefault(params, "remote", remote_default)
+            if (clear=="true"):
+                process_local_files(config, local, days_ago=0, days_recent=999, action="delete", recursive=(recursive=="true"))
             files = refresh_files(config, remote, local, recursive=(recursive=="true"),clear=(clear=="true"))
             response = {"refreshed_files":files}
         except Exception as ex:
@@ -429,14 +431,17 @@ def patch_zip(request):
 def upload_zip(request, suppress_clear=False) :
     config = get_user_config(request.user)
     params = request.POST
-    clear = getParamDefault(params, "clear", "false")
+    preserve = getParamDefault(params, "preserve", "false")
     form = UploadZipForm(params, request.FILES)
     folders = getParamDefault(params, "folders", "templates,flows,transforms,test_data,branding")
     target_dir = get_local_dir(".", config)
     target_parent = get_local_dir("..", config)
-    target = os.path.join(target_dir,request.FILES['file']._name)
-    if (clear=="on" or clear == "true") and not (suppress_clear):
+#    target = os.path.join(target_dir,request.FILES['file']._name)
+    print("uploading", preserve, suppress_clear)
+    if (preserve=="false") and not (suppress_clear):
+        print("clearing")
         cleared_files = process_local_files(config, '.', days_ago=0, days_recent=999, action="delete", recursive=True, folders=folders)
+    target = os.path.join(target_dir,request.FILES['file']._name)
     success, message = handle_uploaded_zip(request.FILES['file'], target, target_parent, config.tenant+"/")
     return JsonResponse({"file":target, "success":success, "message": message})
 
@@ -491,7 +496,7 @@ def clear_resources(request):
     params = request.GET
     recursive = getParamDefault(params, "all", "false")
     local = getParamDefault(params, "local", None)
-    if local:
+    if local != None:
         files = process_local_files(config, local, days_ago=0, days_recent=999, action="delete", recursive=(recursive=="true"))
     return JsonResponse({"files_cleared":len(files)})
 

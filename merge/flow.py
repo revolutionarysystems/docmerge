@@ -106,6 +106,7 @@ def process_compound_merge(cwd, config, uniq, step, template_subfolder, template
     localCombinedFileNameOnly = (template_subfolder[1:]+"/"+template_list.split(".")[0]).replace("//", "/")
     localCombinedFileNameOnly = localCombinedFileNameOnly.replace(" ","_").replace("/","-")
     localCombinedFileName = os.path.join(get_local_dir(local_output_folder, config), localCombinedFileNameOnly+"_"+uniq+step["local_ext"])
+    print("Locally:",localCombinedFileName)
 #    localCombinedFileName = cwd+"/"+local_root+"/"+local_output_folder+"/"+localCombinedFileNameOnly+"_"+uniq+step["local_ext"]
     template_list_content = get_template_list_local(config, template_local_folder, template_list, subs=subs)
     if not template_list_content:

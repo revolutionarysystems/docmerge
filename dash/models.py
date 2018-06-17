@@ -42,7 +42,7 @@ class ComposeTemplate(EditFile):
     #template_sample = models.TextField(max_length=1000)
 
 class UserProfile(models.Model):
-    user = models.ForeignKey(User, unique=True)
+    user = models.ForeignKey(User, unique=True, on_delete=models.CASCADE)
     company = models.CharField(max_length=50, blank=True)
 
 User.profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])

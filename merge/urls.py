@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^delete/$', views.delete, name='delete'),
     url(r'^zip/', views.zip_files, name='zip'),
     url(r'^upload-zip/$', views.upload_zip, name='upload_zip'),
+    url(r'^patch-zip/$', views.patch_zip, name='patch_zip'),
     url(r'^download-zip/$', views.download_zip, name='download_zip'),
     url(r'^ajax/compose-preview/$', views.compose_preview, name='compose_preview'),
     url(r'^ajax/sample-data/$', views.sample_data, name='sample_data'),

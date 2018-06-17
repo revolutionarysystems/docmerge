@@ -29,6 +29,7 @@
                     {% endif %}    
                 </div>
                 {% endfor %}
+                {% if mergeForm %}
                 <div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <h3><a href=""><span class="glyphicon glyphicon-check"></span> Quick Test</a></h3>
                     {% if mergeForm %}
@@ -39,5 +40,6 @@
                     </form>
                     {% endif %}
                 </div>
+                {% endif %}
         </div>
 {% endblock %}        

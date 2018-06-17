@@ -4,6 +4,7 @@ import pytz
 import iso8601
 import datetime
 import zipfile
+import stat
 from .config import install_name, remote_library, gdrive_root, local_root, extend_path
 from .gd_resource_utils import (folder, folder_contents, exportFile, getFile, folder_item, file_content_as, 
         gd_folder_files, gd_path_equivalent, gd_folder_files, gd_folder_item, uploadAsGoogleDoc, uploadFile, gd_mimetype_equivalent)
@@ -89,6 +90,15 @@ def local_folder_files(config, path, parent='root', mimeType='*', fields="nextPa
     return response
 
 
+def handleRemoveReadonly(func, path, exc):
+  print("handling error")  
+  excvalue = exc[1]
+  if func in (os.rmdir, os.remove) and excvalue.errno == errno.EACCES:
+      os.chmod(path, stat.S_IRWXU| stat.S_IRWXG| stat.S_IRWXO) # 0777
+      func(path)
+  else:
+      raise
+
 def process_local_files(config, subfolder, days_ago=7, days_recent=365, action="report", recursive=False, folders="all"):
     path = get_local_dir(subfolder, config)
     #path = os.path.join(get_working_dir(), local_root, subfolder)
@@ -108,6 +118,15 @@ def process_local_files(config, subfolder, days_ago=7, days_recent=365, action="
         elif recursive:
             if folders=="all" or f in folders.split(","):
                 to_process += process_local_files(config, os.path.join(subfolder,f), days_ago=days_ago, days_recent=days_recent, action=action, recursive=recursive, folders="all")
+            # If folder is now empty                
+                subpath = get_local_dir(os.path.join(subfolder,f), config)
+                subpathcontent = os.listdir(subpath)
+                print("Cleared",full)
+                if len(subpathcontent)==0:
+                    to_process.append(f)
+                    if action == "delete":
+                        print("Deleting",full)
+                        os.rmdir(full)
     return to_process
 
 def count_local_files(config, subfolder, days_ago=7, days_recent=365):
@@ -221,7 +240,7 @@ def refresh_files(config, path, local_dir, recursive = False, clear = False, par
     files_info=[]
     
     if clear: #delete local files
-        process_local_files(config, local_dir, days_ago=0, days_recent=9999999, action="delete")
+        process_local_files(config, local_dir, days_ago=0, days_recent=9999999, action="delete", recursive=True)
 
     for file in files:
         doc_id =file["id"]
