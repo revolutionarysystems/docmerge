@@ -1,0 +1,10 @@
+install_name="docmerge"
+gdrive_root ="Doc Merge"
+install_display={"name":"Echo Publish for Glanty","about":["Build date 2 Oct 2020", "Echo Publish for Glanty.", "Please See the 'Help' page for guidance.", "You may have questions: please get in touch.", "We welcome feedback: please get in touch.", "Contact: publish@echo-central.com", "(c) Echo Central Ventures 2017-2020"]}
+local_root ="resources"
+email_credentials = {"username":"", "password":"", "server":""}
+email_default_recipient=""
+remote_library = True
+library_page = "dash/library.html"
+compose_page = "dash/nocompose.html"
+extend_path = False

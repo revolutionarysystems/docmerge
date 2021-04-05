@@ -1,0 +1,33 @@
+[
+    	{
+			"name": "Dump payload dict",
+			"step": "payload",
+			"mimetype": "text/plain",
+			"local_ext":".payload.dict",
+			"type":"json",
+			"folder":"dump"
+		},
+		{
+			"name": "Merge docx",
+			"step": "merge",
+			"mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+			"footer":"true",
+			"header":"true",
+			"local_ext":".docx"
+		},
+		{
+			"name": "Upload to gdoc",
+			"step": "upload",
+			"convert":"gdoc",
+			"folder": "output",
+			"mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+			"local_ext":".docx"
+		},
+		{
+			"name": "Generate pdf",
+			"step": "download",
+			"folder": "output",
+			"mimetype": "application/pdf",
+			"local_ext":".pdf"
+		}
+]

@@ -1,0 +1,277 @@
+h1, h2, h3, h4 {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+}
+
+select {
+    padding: 3px 0;
+}
+
+textarea {
+    vertical-align: top;
+}
+
+td.libcell {
+    padding: 0.45rem;
+    font-size: 14px;
+}
+
+td.nb {
+    font-weight: bold;
+}
+
+.page-header {
+    background-color: #5e5293;
+    margin-top: 0;
+    padding: 20px 20px 60px 40px;
+}
+
+
+
+.page-header h1, .page-header h1 a, .page-header h1 a:visited, .page-header h1 a:active {
+    color: #ffffff;
+    font-size: 36pt;
+    text-decoration: none;
+}
+
+.page-header a, .page-header h3 {
+    color: #A0A0A0;
+}
+
+.page-header h3 a:hover {
+    color: white;
+    text-decoration: none;
+}
+
+.page-header .user {
+    float: right;
+}
+
+.share {
+    height: 3rem;
+}
+
+form.freeform p {
+    display:inline;
+    font-size: 32px
+}
+
+form.choice {
+    display:inline;
+}
+
+.row:nth-child(2) .blog-summary> div {
+    height: 65rem;
+    overflow: auto;
+}
+
+.row:nth-child(2) .blog-summary-shallow> div {
+    height: 35rem;
+    overflow: auto;
+}
+
+.row:nth-child(2) .widget > div p a {
+    word-break: break-all;
+}
+
+.content {
+    padding: 0 5rem;
+}
+
+.content h1 a, .content h2, .content h3 a {
+    color: #231858
+}
+
+div.content.container{
+    xwidth:800px;
+}
+
+.content .widget {
+    padding: 0.5rem;
+    border: 0 solid transparent;
+    border-width: 0 1rem 1rem 0;
+    background-clip: padding-box;
+}
+
+.content .widget h1 {
+    margin-top: 0;
+    font-size: 28px;
+}
+
+.content .widget > div {
+    background-color: rgba(170,148,57,0.1);
+    padding: 1rem;
+}
+
+.content .widget .headcell {
+    background-color: rgba(170,148,57,0.1);
+    padding: 0.45rem;
+    font-size: 14px;
+}
+
+.content .widget .query-form  >  div {
+    background-color: rgba(170,148,57,0.1);
+    padding: 1rem;
+}
+
+
+.content .fact {
+    background-color: rgba(72,125,24,0.1);
+    padding: 1rem;
+}
+
+.content .widget label {
+    width: 10em;
+}
+
+.content .widget input, .content .widget select {
+    width: 45%;
+}
+
+.content .embed {
+    float: right;
+}
+.content .twitter-share-button {
+    width: 23px !important;
+    opacity: 0.4;
+    -webkit-filter: grayscale(1);
+    border-radius: 4px;
+}
+
+.tumblr-post .post-header {
+    visibility: hidden;
+}
+
+#ads {
+    background-color: #EEE;
+    margin-top: 0.5rem;
+}
+
+#ads li {
+    padding-top: 1rem;
+}
+
+.date {
+    float: right;
+    color: #6262FF;
+}
+
+.xsave {
+    float: right;
+}
+
+.post-form textarea, .post-form input {
+    width: 100%;
+}
+
+.top-menu, .top-menu:hover, .top-menu:visited {
+    color: #ffffff;
+    float: right;
+    font-size: 26pt;
+    margin-right: 20px;
+}
+
+.post {
+    margin-bottom: 70px;
+}
+
+.post h1 a, .post h1 a:visited {
+    color: #000000;
+}
+
+#form_control {
+    visibility: hidden;
+}
+
+#form_control + label {
+    font-size: 80%;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+#form_control:checked + label {
+    text-decoration: underline;
+}
+
+#advanced {
+    display: none;
+}
+
+#form_control:checked + label + #basic {
+    display: none;
+}
+
+#form_control:checked + label + form + #advanced {
+    display: block;
+}
+
+#quickTest > p {
+    display: none;
+}
+
+#quickTestButton {
+   float: right;
+   margin-top: -4rem;
+}
+
+#refresh > p , #refreshAll > p {
+    display: none;
+}
+
+.refresh.query-form > p {
+    display: none;
+}
+
+.grid .widget a {
+    ###
+}
+/*#refresh button, #refreshAll button{
+   float: right; 
+   margin-top: -4rem;
+}*/
+
+
+#logo {
+    height: 5.5rem;
+    width: 5.5rem;
+    padding-bottom: 1rem;
+    padding-right: 1rem;
+}
+
+
+.content .grid-item {
+    margin-bottom: 1rem;
+    padding-right: 1rem;
+    width: 50%;
+}
+/*
+.content .grid-item h1,.content .grid-item-doubled h1 {
+    margin-top: 0;
+    font-size: 28px;
+}
+
+
+*/
+.content div .grid-item {
+    background-color: rgba(170,148,57,0.1);
+    padding: 1rem;
+}
+/*
+.content .grid-item label, .content .grid-item-doubled label {
+    width: 7em;
+}
+*/
+
+.CodeMirror, .CodeMirror-scroll {
+        max-height: 500px;
+}
+
+.field {
+    padding:0;
+    margin:0;
+    border:0;
+    overflow-x:hidden;
+}
+
+div.modal-backdrop {
+    opacity: 0.5;
+}
