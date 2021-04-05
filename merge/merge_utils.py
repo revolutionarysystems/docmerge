@@ -87,11 +87,14 @@ def substituteVariablesPlainString(config, stringIn, subs):
     return xtxt
     
 def preprocess(text):
+    text = text.replace("‘","'",).replace("’","'",)
     text = text.replace("{% #A", "{% cycle 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'")    
     text = text.replace("{% #a", "{% cycle 'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm' 'n' 'o' 'p' 'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z'")    
     text = text.replace("{% #9", "{% cycle '1' '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' '17' '18' '19' '20' '21' '22' '23' '24' '25' '26' '27' '28' '29' '30' '31' '32' '33' '34' '35' '36' '37' '38' '39' '40' '41' '42' '43' '44' '45' '46' '47' '48' '49' '50' '51' '52' '53' '54' '55' '56' '57' '58' '59' '60' '61' '62' '63' '64' '65' '66' '67' '68' '69' '70' '71' '72' '73' '74' '75' '76' '77' '78' '79' '80' '81' '82' '83' '84' '85' '86' '87' '88' '89' '40' '91' '92' '93' '94' '95' '96' '97' '98' '99' '100' ")    
     text = text.replace("{% #I", "{% cycle 'I' 'II' 'III' 'IV' 'V' 'VI' 'VII' 'VIII' 'IX' 'X' 'XI' 'XII' 'XIII' 'XIV' 'XV' 'XVI' 'XVII' 'XVIII' 'XIX' 'XX'")    
     text = text.replace("{% #i", "{% cycle 'i' 'ii' 'iii' 'iv' 'v' 'vi' 'vii' 'viii' 'ix' 'x' 'xi' 'xii' 'xiii' 'xiv' 'xv' 'xvi' 'xvii' 'xviii' 'xix' 'xx'")    
+    text = clean_tags_in_word(text, ('{{', '}}'))
+    text = clean_tags_in_word(text, ('{%', '%}'))
     return text
 
 def apply_sequence(text):
@@ -166,11 +169,21 @@ def wrap_list_xml(childlist, root_tag, child_tag):
 
 def docx_text(file_name_in):
     doc_in = Document(docx=file_name_in)
-    paras=doc_in.paragraphs
-    fullText="" 
+    paras = doc_in.paragraphs
+    fullText = ""
     for para in paras:
-        paraText=para.text
-        fullText+=paraText
+        paraText = para.text
+        fullText += paraText
+    tables = doc_in.tables
+    for table in tables:
+        rows = table.rows
+        for row in rows:
+            cells = row.cells
+            for cell in cells:
+                paras = cell.paragraphs
+                for para in paras:
+                    paraText = para.text
+                    fullText += paraText
     return fullText
 
 def extract_regex_matches_docx(file_name_in, regex, wrap=None, root_tag="list", child_tag="item"):
@@ -377,6 +390,7 @@ def merge_docx_header_footer(config, full_local_filename, subs, xmlname):
 ###
     xml_content = xml_content.decode("UTF-8")
     try:
+        xml_content = clean_tags_in_word(xml_content)
         xml_content = substituteVariablesPlainString(config, xml_content, subs)
     except:
         pass
@@ -479,8 +493,16 @@ def substituteVariablesDocx_direct(config, file_name_in, file_name_out, subs):
     tmp_dir = tempfile.mkdtemp()
     zip.extractall(tmp_dir)
 
-    candidates = ["word/document.xml","word/header1.xml","word/header2.xml","word/footer1.xml","word/footer2.xml"]
-    image_subs=[]
+    candidates = [
+        "word/document.xml",
+        "word/header1.xml",
+        "word/header2.xml",
+        "word/header3.xml",
+        "word/footer1.xml",
+        "word/footer2.xml",
+        "word/footer3.xml"
+    ]
+    image_subs = []
     for filename in filenames:
         if filename in candidates:
             docx_subfile(config, zip, tmp_dir, subs, filename)
@@ -704,4 +726,52 @@ def watermark_pdf(target, wmark):
         output_file.write(outputStream)
     return {"filename":optarget}
 
+def password_pdf(target, password):
+    optarget = target.replace(".pdf",".pw.pdf")
+    target_file = PyPDF2.PdfFileReader(open(target, "rb"))
+    output_file = PyPDF2.PdfFileWriter()
 
+    for i in range(0, target_file.getNumPages()):
+        output_file.addPage(target_file.getPage(i))
+ 
+    outputStream = open(optarget, "wb")
+ 
+    # Set user and owner password to pdf file
+    output_file.encrypt(password, password, use_128bit=True)
+    output_file.write(outputStream)
+    outputStream.close()
+
+    return {"filename":optarget}
+
+
+def clean_tag(tag):
+    #intrusive_tag_start = tag.find("<")
+    #intrusive_tag_end = tag.rfind(">")
+    #if intrusive_tag_start >= 0 and intrusive_tag_end > intrusive_tag_start:
+    #    return ''.join([tag[:intrusive_tag_start], tag[intrusive_tag_end+1:]])
+    #else:
+    #    return tag
+    intrusive_tag_start = tag.find("<")
+    intrusive_tag_end = tag.find(">")
+    while intrusive_tag_start >= 0 and intrusive_tag_end > intrusive_tag_start:
+        tag = ''.join([tag[:intrusive_tag_start], tag[intrusive_tag_end+1:]])
+        intrusive_tag_start = tag.find("<")
+        intrusive_tag_end = tag.find(">")
+    return tag.replace("‘", "'").replace("’", "'")
+
+def clean_tags_in_word(text, tag_def):
+    done = []
+    remaining = text
+    regex = '%s[^{]*(<.*>)[^{]*%s' % tag_def
+    p = re.compile(regex)
+    while tag_def[0] in remaining:
+        tagspan = (remaining.find(tag_def[0]), remaining.find(tag_def[1])+2)
+        tag0 = remaining[tagspan[0]: tagspan[1]]
+        tag1 = clean_tag(tag0)
+        print(tag0)
+        print(tag1)
+        done.append(remaining[:tagspan[0]])
+        done.append(tag1)
+        remaining = remaining[tagspan[1]:]
+    done.append(remaining)
+    return ''.join(done)

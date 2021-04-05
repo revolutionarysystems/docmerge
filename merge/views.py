@@ -81,6 +81,7 @@ def merge_raw(request, method="POST"):
     data_root = getParamDefault(params, "data_root", "docroot")
     branding_folder = getParamDefault(params, "branding_folder", "/"+gdrive_root+tenant_extension+"/Branding")
     branding_file = getParamDefault(params, "branding_file", None)
+    password = getParamDefault(params, "password", None)
     if branding_file == "None":
         branding_file = None
     xform_folder = getParamDefault(params, "xform_folder", "/"+gdrive_root+tenant_extension+"/Transforms")
@@ -111,7 +112,7 @@ def merge_raw(request, method="POST"):
     subs["site"]= site
 #    return mergeDocument(flowFolder, flow, remoteTemplateFolder, templateName, id, subs, remoteOutputFolder, email=email, payload=payload)    
     return mergeDocument(config, flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
-                        remoteOutputFolder, output_subfolder, email=email, payload=payload)    
+                        remoteOutputFolder, output_subfolder, email=email, payload=payload, password=password)    
 
 
 
@@ -147,6 +148,7 @@ def push_raw(request, method="POST"):
             template_subfolder+="/"+path
     subs={}
     subs["site"]= site
+    print("push_raw")
     return mergeDocument(flowFolder, flow, remoteTemplateFolder, template_subfolder, templateName, id, subs, 
                         remoteOutputFolder, output_subfolder, email=email, payload=payload, require_template=False)    
 
@@ -222,7 +224,7 @@ def bulk_merge_raw(request, method="POST"):
     test = getParamDefault(params, "test", "True")
     testemail = getParamDefault(params, "testemail", "dummy@dummy.con")
 
-
+    print("bulk_merge_raw")
     bulk_data = read_bulk_data(data_file, condition, test, testemail, config)
     results = []
     for subs in bulk_data:

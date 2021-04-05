@@ -121,10 +121,9 @@ def process_local_files(config, subfolder, days_ago=7, days_recent=365, action="
             # If folder is now empty                
                 subpath = get_local_dir(os.path.join(subfolder,f), config)
                 subpathcontent = os.listdir(subpath)
-                print("Cleared",full)
                 if len(subpathcontent)==0:
                     to_process.append(f)
-                    if action == "delete":
+                    if action == "delete" and not(f in ["templates","flows","transforms","test_data","branding"]):
                         print("Deleting",full)
                         os.rmdir(full)
     return to_process
@@ -181,7 +180,10 @@ def is_text(ext):
         return True
 
 def combined_folder_files(config, path, parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)"):
-    local_files = local_folder_files(config, path, parent='root', mimeType='*', fields=fields)
+    try:
+        local_files = local_folder_files(config, path, parent='root', mimeType='*', fields=fields)
+    except:
+        local_files = []
     combined_files = {}
     response = []
     for file in local_files:
@@ -198,7 +200,10 @@ def combined_folder_files(config, path, parent='root', mimeType='*', fields="nex
     if remote_library:
         if path[-1] == "/":
             path = path[:-1]
-        remote_files = gd_folder_files(config, gd_path_equivalent(config, path), parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)")
+        try:
+            remote_files = gd_folder_files(config, gd_path_equivalent(config, path), parent='root', mimeType='*', fields="nextPageToken, files(id, name, mimeType, parents, modifiedTime)")
+        except:
+            remote_files = []
         for file in remote_files:
             if file["name"] in combined_files.keys():
                 combined_files[file["name"]]["mimeType"]=file["mimeType"]

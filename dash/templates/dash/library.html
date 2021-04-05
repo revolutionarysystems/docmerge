@@ -14,7 +14,7 @@
                     <div class="grid-item widget">
                         <!--div class="widget col-lg-6 col-md-6 col-sm-6 col-xs-12"-->
                             <h3><a href=""><span class="{{ widget.glyph }}"></span> {{ widget.title }}</a></h3>
-                    <div>                            
+                    <div>                     
                     {% if widget.refreshForm %}
                     <a href = "/refresh/?local={{widget.path}}&remote=" title = "Refresh the files in this folder only" target="_blank" data-confirm="Are you sure you want to refresh {{widget.path}}?">Refresh</a>
                     <span> - </span><a href = "/refresh/?local={{widget.path}}&remote=&all=true" target="_blank" title = "Refresh the files in this folder and all sub-folders" data-confirm="Are you sure you want to refresh '{{widget.path}}'' and ALL SUBFOLDERS?">Refresh All</a>
@@ -22,7 +22,7 @@
                     <span> - </span><a href = "/clear/?local={{widget.path}}&all=true" target="_blank" title = "Delete the files in this folder and all sub-folders" data-confirm="Are you sure you want to clear {{widget.path}} and subfolders">Clear All</a>
                     {% endif %}
                     {% if "emplate" in widget.title %}{% if widget.refreshForm %}
-                    <span> - </span>{% endif %} <a href="../test/?template_subfolder={{ widget.subfolder }}" target="_blank" title = "Test the templates in this folder">Test</a>
+                    <span> - </span>{% endif %} <a href="../test/?template_subfolder={{ widget.subfolder }}" target="_blank" title = "Test the templates in this folder">Test</a><span> - </span><a title = "{{widget}}">*</a>
                     {% endif %}
                     </div>
                     </form>
@@ -41,7 +41,7 @@
                                 {% else %}
                                     {% if file.is_local == 'Y' and file.is_remote == 'Y' or file.is_remote == 'X'%}
                                         <a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" >Open Folder</a>
-                                    {% elif file.is_remote == 'Y' %}GD Only{% else %}EPServer Only{% endif %}
+                                    {% elif file.is_remote == 'Y' %}<a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" >GD Only</a>{% else %}<a href="../library_folder/?root={{ widget.title}}&folders={{ file.name }}" >EPServer Only</a>{% endif %}
                                 {% endif %}
                                 </td>
                                 <td class="libcell">

@@ -164,7 +164,10 @@ def alternate_values(doc, config, prefix=None):
                         ext_key = ".".join([prefix, key])
                     else:
                         ext_key = key
-                    newValues[key.replace(".","_")+"_file"]=write_retrieved_file(ext_key, doc[key], config)
+                    try:
+                        newValues[key.replace(".","_")+"_file"]=write_retrieved_file(ext_key, doc[key], config)
+                    except urllib.error.HTTPError:
+                        print("Failed to retrieve: %s" % url)
                 else:
                     #embedded file
                     if prefix:

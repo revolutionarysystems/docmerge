@@ -198,7 +198,7 @@ def test_result(mergeForm, request, method="POST"):
     warning = None
     navForm = None
     advMergeForm = None
-    json_response = merge_raw_wrapped(request, method=method)
+    #json_response = merge_raw_wrapped(request, method=method)
     try:
         params = request.GET
         hideforms = getParamDefault(params, "hide_forms", "N")
@@ -294,8 +294,6 @@ def library(request):
     try:
         files = folder_files(config, "templates",fields="files(id, name, mimeType)")
         files = sorted(files, key=lambda k: ('..' if k['isdir'] else k['ext'])+k['name']) 
-        for file in files:
-            print(">", file)
         widgets.append({"title":"Templates", "path":"templates", "files":files, "glyph":"glyphicon glyphicon-file", "refreshForm": refresh_form("templates")})
         files = folder_files(config, "flows",fields="files(id, name, mimeType)")
         files = sorted(files, key=lambda k: k['ext']+k['name']) 

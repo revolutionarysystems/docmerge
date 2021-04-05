@@ -2,7 +2,7 @@ import httplib2
 import os
 import ssl
 from time import sleep
-from apiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload
 from apiclient import errors
 from apiclient.errors import HttpError
 from .config import install_name, gdrive_root, remote_library

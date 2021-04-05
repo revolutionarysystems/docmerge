@@ -28,7 +28,7 @@ SECRET_KEY = '&p!r!g^6+)&#bg(#ph#w=2uq)f@y#lsn2flx_!c+ndlbl&!up1'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -44,13 +44,13 @@ INSTALLED_APPS = [
     'dash',
     'merge',
     'django_extensions',
-    'tokenapi',
 ]
 
 MIDDLEWARE_CLASSES = [
 #    'sslify.middleware.SSLifyMiddleware',
 
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,6 +69,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 #SSLIFY_DISABLE = True
 
 ROOT_URLCONF = 'docmerge.urls'
@@ -85,19 +86,12 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-#           'loaders': [
-#               'merge.relative_path.FileSystem19',
-#               'merge.relative_path.AppDirectories19',
- #               'django.template.loaders.app_directories.Loader',
- #           ],
             'libraries': {
-#                'relative_path': 'merge.relative_path',
                 'mathfilters': 'merge.templatetags.mathfilters',
             },
         },
     },
 ]
-
 
 
 WSGI_APPLICATION = 'docmerge.wsgi.application'
@@ -131,19 +125,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_PROFILE_MODULE = "dash.UserProfile"
-
-AUTHENTICATION_BACKENDS = [
-    'tokenapi.backends.TokenBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
-
-TOKEN_TIMEOUT_DAYS = 10000
 
 #Site-wide password protection
 PASSWORD_PROTECT= False
-PASSWORD_PROTECT_USERNAME= "EchoUser"
-PASSWORD_PROTECT_PASSWORD= "EchoPublish"
+PASSWORD_PROTECT_USERNAME= "PrimeUser"
+PASSWORD_PROTECT_PASSWORD= "EchoPrime"
 PASSWORD_PROTECT_REALM= "Password Protected"
 
 
@@ -158,10 +144,9 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = False
+USE_TZ = True
 
 DATETIME_INPUT_FORMATS = [
-    '%Y-%m-%dT%H:%M:%S',     # '2006-10-25T14:30:59+00'
     '%Y-%m-%dT%H:%M:%S.%f%Z',  # '2006-10-25T14:30:59.000200'
     '%Y-%m-%d %H:%M:%S',     # '2006-10-25 14:30:59'
     '%Y-%m-%d %H:%M:%S.%f',  # '2006-10-25 14:30:59.000200'
@@ -184,6 +169,6 @@ DATETIME_INPUT_FORMATS = [
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join('.', 'static')
 
-
 MULTI_TENANTED = False
-#MULTI_TENANTED = True
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

@@ -24,8 +24,8 @@ urlpatterns = [
     url(r'^api-guide/$', views.api_guide, name='api_guide'),
     url(r'^flow-guide/$', views.flow_guide, name='flow_guide'),
     url(r'^template-guide/$', views.template_guide, name='template_guide'),
-    url(r'^login/', auth_views.login, name='login'),
-    url(r'^accounts/login/', auth_views.login, name='login'),
+    url(r'^login/', auth_views.LoginView.as_view(), name='login'),
+    url(r'^accounts/login/', auth_views.LoginView.as_view(), name='login'),
     url(r'^accounts/logout/', views.logout_view),
  #   url(r'^(?P<shelf>\w+)/$', views.dash, name='dash'),
 ]

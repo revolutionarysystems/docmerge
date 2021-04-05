@@ -1,12 +1,11 @@
 import httplib2
 import os
-#import ssl
 from apiclient import discovery
 #from apiclient.http import MediaFileUpload
 import oauth2client
 from oauth2client import tools
+from oauth2client import file
 from oauth2client import client,clientsecrets
-#from apiclient import errors
 from apiclient.errors import HttpError
 from .config import install_name, extend_path, remote_library
 from time import sleep

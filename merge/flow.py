@@ -13,7 +13,7 @@ from .merge_utils import (substituteVariablesDocx, substituteVariablesDocx_direc
     convert_markdown, convert_pdf, convert_pdf_abiword, email_file, 
     combine_docx, combine_docx_direct, extract_regex_matches_docx,
     substituteVariablesPlainString, merge_docx_footer, merge_docx_header, preprocess_docx_template, 
-    postprocess_docx, watermark_pdf)
+    postprocess_docx, watermark_pdf, password_pdf)
 from .resource_utils import (push_local_txt, push_local_txt_fullname,get_local_dir, get_local_txt_content)
 from traceback import format_exc
 from .config import remote_library
@@ -82,7 +82,8 @@ def process_merge(cwd, config, uniq, step, localTemplateFileName, template_subfo
         pass        
     if step["local_ext"]==".docx":
         preprocess_docx_template(localTemplateFileName+step["local_ext"], localTemplateFileName+"_"+step["local_ext"])
-        outcome = substituteVariablesDocx_direct(config, localTemplateFileName+"_"+step["local_ext"], localMergedFileName+step["local_ext"], subs)
+        localfile = localTemplateFileName+"_"+step["local_ext"]
+        outcome = substituteVariablesDocx_direct(config, localfile, localMergedFileName+step["local_ext"], subs)
         postprocess_docx(localMergedFileName+step["local_ext"])
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
     else:
@@ -201,7 +202,7 @@ def process_compound_merge0(cwd, config, uniq, step, template_subfolder, templat
     return outcome
 
 # perform a download from Google drive, either as an export or getting content directly
-def process_download(config, step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs):
+def process_download(config, step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs, password=None):
 #    print("downloading")
 #    print(doc_id)
 #    print(doc_mimetype)
@@ -215,6 +216,14 @@ def process_download(config, step, doc_id, doc_mimetype, localTemplateFileName, 
     else:
         outcome = getFile(config, doc_id, localFileName+step["local_ext"], step["mimetype"])
         outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+step["local_ext"]
+    if password and step["local_ext"].lower() == ".pdf":
+        password_pdf(localMergedFileName+".pdf", password)
+        outcome["plainlink"] = outcome["link"]
+        outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".pw.pdf"
+        outcome["password"]=True
+    else:
+        outcome["password"]=False
+
     return outcome
 
 
@@ -282,13 +291,21 @@ def process_docx_pdf(config, step, localMergedFileName, localMergedFileNameOnly,
 
 
 # convert to pdf
-def process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs):
+def process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs, password=None):
     if step["local_ext"]==".docx":
-        return process_docx_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs)
+        outcome = process_docx_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs)
     elif step["local_ext"]==".html":
-        return process_html_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs)
+        outcome = process_html_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs)
     else:
-        return {}
+        outcome = {}
+    if password:
+        password_pdf(localMergedFileName+".pdf", password)
+        outcome["plainlink"] = outcome["link"]
+        outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".pw.pdf"
+        outcome["password"]=True
+    else:
+        outcome["password"]=False
+    return outcome
 
 def wmark_pdf(config, step, localMergedFileName, localMergedFileNameOnly, template_subfolder, subs):
     if template_subfolder:
@@ -301,6 +318,7 @@ def wmark_pdf(config, step, localMergedFileName, localMergedFileNameOnly, templa
     outcome = {"file":localMergedFileName+".wm.pdf"}
     outcome["link"] = subs["site"]+"file/?name="+localMergedFileNameOnly+".wm.pdf"
     return outcome
+
 
 '''
 # upload to Google drive, optionally converting to Google Drive format
@@ -365,7 +383,7 @@ def localNames(cwd, config, uniq, template_subfolder, template_name, output_subf
 
 
 # Process all steps in the flow: grab the template document, construct local path names and then invoke steps in turn
-def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, template_name, uniq, subs, output_folder, output_subfolder, you, email_credentials, payload=None, require_template=True):
+def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, template_name, uniq, subs, output_folder, output_subfolder, you, email_credentials, payload=None, require_template=True, password=None):
     localTemplateFileName, localMergedFileName, localMergedFileNameOnly = localNames(cwd, config, uniq, template_subfolder, template_name, output_subfolder)
     outcomes = []
     overall_outcome = {}
@@ -391,7 +409,7 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
                     doc = folder_file(config, download_folder, template_name)
                     doc_id = doc["id"]
                     doc_mimetype = doc["mimeType"]
-                outcome = process_download(config, step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
+                outcome = process_download(config, step, doc_id, doc_mimetype, localTemplateFileName, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs, password=password)
 
             if step["step"]=="merge":
                 outcome = process_merge(cwd, config, uniq, step, localTemplateFileName, template_subfolder, localMergedFileName, localMergedFileNameOnly, output_subfolder, subs)
@@ -415,7 +433,8 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
                 outcome = process_markdown(cwd, config, step, localMergedFileName, localMergedFileNameOnly, subs)
 
             if step["step"]=="pdf":
-                outcome = process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs)
+                print("Password", password)
+                outcome = process_pdf(config, step, localMergedFileName, localMergedFileNameOnly, subs, password=password)
 
             if step["step"]=="watermark_pdf":
                 outcome = wmark_pdf(config, step, localMergedFileName, localMergedFileNameOnly, template_subfolder, subs)
@@ -452,7 +471,7 @@ def process_flow(cwd, config, flow, template_remote_folder, template_subfolder, 
             outcomes.append({"step":step["name"], "success": True, "outcome":outcome, "time": step_end_time-step_time})
             step_time = step_end_time
             for key in outcome.keys():
-                if key in ["link", "id", "mimeType"]:
+                if key in ["link", "id", "mimeType", "plainlink"]:
                     overall_outcome[key]=outcome[key]
                     overall_outcome[key+"_"+step["name"].replace(" ","_")]=outcome[key]
         except Exception as ex:
